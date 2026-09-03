@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Set white background and forced high-contrast dark text */
+html, 
+body, 
+#root {
+  min-height: 100vh;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  background-color: #ffffff !important;
+  color: #09090b !important; /* Pure Dark Slate / Black Text */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom Typography */
+.font-serif-luxury {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+}
+
+/* Rich Gold/Dark Bronze Text Gradient */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #451a03 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* White Card with Solid Dark Borders */
+.glass-card {
+  background: #ffffff;
+  border: 1.5px solid #18181b !important; /* Crisp Dark Zinc-900 Border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.glass-card:hover {
+  border-color: #000000 !important;
+}
+
+/* High-Contrast Action Button with Solid Dark Border */
+.btn-gold {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff !important;
+  font-weight: 800;
+  border: 1.5px solid #78350f;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+  box-shadow: 0 6px 16px rgba(180, 83, 9, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-gold:active {
+  transform: translateY(1px);
+}
