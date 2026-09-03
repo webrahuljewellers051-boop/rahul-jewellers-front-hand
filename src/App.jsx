@@ -18,7 +18,6 @@ import {
   History, 
   X, 
   Download, 
-  LogIn, 
   LogOut,
   Smartphone,
   Lock
@@ -30,7 +29,7 @@ const getApiBaseUrl = () => {
   const currentHost = window.location.hostname;
   if (currentHost.includes('ngrok')) return 'https://squire-brought-decency.ngrok-free.dev';
   if (currentHost === 'localhost' || currentHost === '127.0.0.1') return 'http://localhost:5000';
-  return `http://${currentHost || '192.168.1.11'}:5000`;
+  return 'https://rahul-jewellers-backend-jlr0.onrender.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -126,21 +125,6 @@ export default function App() {
     setSchemeUser(null);
     handleTabChange('showroom');
   };
-  <CustomerLoginModal 
-        isOpen={showLoginModal} 
-        onClose={() => {
-          setShowLoginModal(false);
-          if (!schemeUser) handleTabChange('showroom');
-        }}
-        onLoginSuccess={(user) => {
-          setSchemeUser(user);
-          localStorage.setItem('schemeUserInfo', JSON.stringify(user));
-          setShowLoginModal(false);
-          setActiveTab('scheme'); // Forces activeTab state instantly
-          sessionStorage.setItem('rj_customer_active_tab', 'scheme');
-          syncCustomerData();
-        }}
-      />
 
   const handleDownloadReceipt = (monthNum, amount) => {
     const element = document.createElement('div');
@@ -494,7 +478,7 @@ export default function App() {
           localStorage.setItem('schemeUserInfo', JSON.stringify(user));
           syncCustomerData();
           setShowLoginModal(false);
-          handleTabChange('scheme'); // Forces active tab to scheme on successful login
+          handleTabChange('scheme');
         }}
       />
 
@@ -519,7 +503,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* RENDER STORE QR CODE UPLOADED FROM ADMIN PANEL */}
               {storeQrCodeUrl ? (
                 <div className="p-3 bg-stone-50 rounded-2xl border-2 border-stone-200 flex flex-col items-center gap-2">
                   <p className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Scan QR Code via UPI App</p>
