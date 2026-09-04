@@ -20,7 +20,9 @@ import {
   Download, 
   LogOut,
   Smartphone,
-  Lock
+  Lock,
+  Calculator,
+  Gift
 } from 'lucide-react';
 
 const STORE_PHONE = '9950091024';
@@ -166,6 +168,10 @@ export default function App() {
   const paidCount = schemeUser?.paidMonths || 0;
   const progressPercent = Math.min(100, (paidCount / 12) * 100);
 
+  const totalPaid = 12 * monthly;
+  const freeBonus = monthly;
+  const totalValue = totalPaid + freeBonus;
+
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12">
       <GoldTicker rate24K="1,58,390" rate22K="1,45,190" />
@@ -270,78 +276,78 @@ export default function App() {
                     <option value="above_100k">Above ₹1,00,000</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-stone-100 overflow-x-auto pb-1 text-xs font-bold">
-                {['All', 'Gold', 'Silver', 'Bridal Wear', 'Antique'].map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-1.5 rounded-full transition shrink-0 ${
-                      selectedCategory === category 
-                        ? 'bg-amber-900 text-white shadow-sm' 
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                    }`}
-                  >
-                    {category === 'All' ? 'All Collections' : `${category} Collection`}
-                  </button>
-                ))}
-              </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.length === 0 ? (
-                <div className="col-span-full py-16 text-center space-y-2 bg-white rounded-3xl border border-stone-200">
-                  <Gem className="w-8 h-8 text-stone-300 mx-auto" />
-                  <p className="text-xs font-bold text-stone-500">No matching jewelry items found.</p>
-                </div>
-              ) : (
-                filteredProducts.map((p) => {
-                  const whatsappMessage = `Namaste Rahul Jewellers (Sheoganj), I am interested in this item:\n\n*Title:* ${p.title}\n*Category:* ${p.category}\n*Net Weight:* ${p.weight}\n*Price:* ₹${p.price.toLocaleString('en-IN')}\n*Image:* ${p.imageUrl}\n\nPlease share further details.`;
-                  const whatsappUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(whatsappMessage)}`;
+            <div className="flex gap-2 pt-2 border-t border-stone-100 overflow-x-auto pb-1 text-xs font-bold">
+              {['All', 'Gold', 'Silver', 'Bridal Wear', 'Antique'].map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-1.5 rounded-full transition shrink-0 ${
+                    selectedCategory === category 
+                      ? 'bg-amber-900 text-white shadow-sm' 
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  {category === 'All' ? 'All Collections' : `${category} Collection`}
+                </button>
+              ))}
+            </div>
+          </div>
 
-                  return (
-                    <div 
-                      key={p._id}
-                      className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
-                    >
-                      <div className="relative aspect-square bg-stone-100 overflow-hidden">
-                        <img 
-                          src={p.imageUrl} 
-                          alt={p.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <span className="absolute top-2 left-2 bg-stone-900/80 backdrop-blur-sm text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                          {p.category}
-                        </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.length === 0 ? (
+              <div className="col-span-full py-16 text-center space-y-2 bg-white rounded-3xl border border-stone-200">
+                <Gem className="w-8 h-8 text-stone-300 mx-auto" />
+                <p className="text-xs font-bold text-stone-500">No matching jewelry items found.</p>
+              </div>
+            ) : (
+              filteredProducts.map((p) => {
+                const whatsappMessage = `Namaste Rahul Jewellers (Sheoganj), I am interested in this item:\n\n*Title:* ${p.title}\n*Category:* ${p.category}\n*Net Weight:* ${p.weight}\n*Price:* ₹${p.price.toLocaleString('en-IN')}\n*Image:* ${p.imageUrl}\n\nPlease share further details.`;
+                const whatsappUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(whatsappMessage)}`;
+
+                return (
+                  <div 
+                    key={p._id}
+                    className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
+                  >
+                    <div className="relative aspect-square bg-stone-100 overflow-hidden">
+                      <img 
+                        src={p.imageUrl} 
+                        alt={p.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <span className="absolute top-2 left-2 bg-stone-900/80 backdrop-blur-sm text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
+                        {p.category}
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <h3 className="text-xs font-bold text-stone-900 line-clamp-2 leading-snug">{p.title}</h3>
+                        <p className="text-[10px] text-stone-500 font-semibold">Net Weight: <span className="text-stone-900 font-bold">{p.weight}</span></p>
                       </div>
 
-                      <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
-                        <div className="space-y-1">
-                          <h3 className="text-xs font-bold text-stone-900 line-clamp-2 leading-snug">{p.title}</h3>
-                          <p className="text-[10px] text-stone-500 font-semibold">Net Weight: <span className="text-stone-900 font-bold">{p.weight}</span></p>
-                        </div>
+                      <div className="pt-2 border-t border-stone-100">
+                        <p className="text-[9px] font-bold text-stone-400 uppercase">STORE PRICE</p>
+                        <p className="text-sm font-black text-amber-900 font-serif">₹{p.price.toLocaleString('en-IN')}</p>
+                      </div>
 
-                        <div className="pt-2 border-t border-stone-100">
-                          <p className="text-[9px] font-bold text-stone-400 uppercase">STORE PRICE</p>
-                          <p className="text-sm font-black text-amber-900 font-serif">₹{p.price.toLocaleString('en-IN')}</p>
-                        </div>
-
-                        <div className="pt-1">
-                          <button
-                            type="button"
-                            onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}
-                            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
-                          >
-                            <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
-                          </button>
-                        </div>
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}
+                          className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                        >
+                          <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
+                        </button>
                       </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
           </div>
         )}
 
@@ -399,6 +405,38 @@ export default function App() {
               </div>
             </div>
 
+            {/* FIXED 12+1 SCHEME BREAKDOWN CARD */}
+            <div className="bg-[#FFFDF9] border-2 border-amber-400 p-5 rounded-3xl relative space-y-3 shadow-sm font-sans text-stone-900 my-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs uppercase tracking-wider">
+                  <Calculator className="w-4 h-4 text-[#E65C00]" />
+                  12+1 Scheme Breakdown
+                </div>
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
+                  Fixed Plan
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs pt-2 border-t border-amber-200">
+                <div className="flex justify-between font-medium text-stone-700">
+                  <span>Customer Pays (12 Months):</span>
+                  <span className="font-bold font-mono">₹{totalPaid.toLocaleString('en-IN')}</span>
+                </div>
+
+                <div className="flex justify-between font-bold text-emerald-700 items-center">
+                  <span className="flex items-center gap-1">
+                    <Gift className="w-3.5 h-3.5" /> + 1 Month Free Store Bonus:
+                  </span>
+                  <span className="font-mono">+ ₹{freeBonus.toLocaleString('en-IN')}</span>
+                </div>
+
+                <div className="pt-2 border-t border-amber-200 flex justify-between items-center font-black text-sm text-[#E65C00]">
+                  <span>Total Jewelry Purchase Value:</span>
+                  <span className="font-mono text-base">₹{totalValue.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
             {/* PASSBOOK CHECKLIST */}
             <div className="bg-white p-6 rounded-3xl border-2 border-zinc-900 shadow-xl space-y-3">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -416,42 +454,42 @@ export default function App() {
                       key={monthNum}
                       className={`p-3.5 rounded-2xl border-2 flex items-center justify-between text-xs transition ${
                         isPaid ? 'bg-emerald-50 border-emerald-600' : isNextDue ? 'bg-amber-50/50 border-amber-400' : 'bg-stone-50 border-stone-200 opacity-60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {isPaid ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        ) : isNextDue ? (
-                          <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-                        ) : (
-                          <Lock className="w-4 h-4 text-stone-400 shrink-0" />
-                        )}
-                        <div>
-                          <p className="font-bold text-stone-900">Month #{monthNum}</p>
-                          <p className="text-[11px] text-stone-500 font-medium">
-                            ₹{monthly.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
                       {isPaid ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-xl border border-emerald-300 shadow-sm">
-                          Paid / Verified
-                        </span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       ) : isNextDue ? (
-                        <button
-                          onClick={() => setActivePaymentMonth(monthNum)}
-                          className="px-3.5 py-1.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs uppercase animate-bounce"
-                        >
-                          <Smartphone className="w-3.5 h-3.5" /> Pay
-                        </button>
+                        <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
                       ) : (
-                        <span className="text-[10px] font-bold text-stone-500 bg-stone-200 px-2.5 py-1 rounded-lg">
-                          Locked (Pay #{paidCount + 1} First)
-                        </span>
+                        <Lock className="w-4 h-4 text-stone-400 shrink-0" />
                       )}
+                      <div>
+                        <p className="font-bold text-stone-900">Month #{monthNum}</p>
+                        <p className="text-[11px] text-stone-500 font-medium">
+                          ₹{monthly.toLocaleString('en-IN')}
+                        </p>
+                      </div>
                     </div>
-                  );
+
+                    {isPaid ? (
+                      <span className="text-xs font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-xl border border-emerald-300 shadow-sm">
+                        Paid / Verified
+                      </span>
+                    ) : isNextDue ? (
+                      <button
+                        onClick={() => setActivePaymentMonth(monthNum)}
+                        className="px-3.5 py-1.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs uppercase animate-bounce"
+                      >
+                        <Smartphone className="w-3.5 h-3.5" /> Pay
+                      </button>
+                    ) : (
+                      <span className="text-[10px] font-bold text-stone-500 bg-stone-200 px-2.5 py-1 rounded-lg">
+                        Locked (Pay #{paidCount + 1} First)
+                      </span>
+                    )}
+                  </div>
+                );
                 })}
               </div>
             </div>
