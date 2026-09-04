@@ -3,10 +3,7 @@ import axios from 'axios';
 import { X, LogIn, Sparkles } from 'lucide-react';
 
 const getApiBaseUrl = () => {
-  const currentHost = window.location.hostname;
-  if (currentHost.includes('ngrok')) return 'https://squire-brought-decency.ngrok-free.dev';
-  if (currentHost === 'localhost' || currentHost === '127.0.0.1') return 'http://localhost:5000';
-  return `http://${currentHost || '192.168.1.11'}:5000`;
+  return 'https://rahul-jewellers-backend-jlr0.onrender.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();
