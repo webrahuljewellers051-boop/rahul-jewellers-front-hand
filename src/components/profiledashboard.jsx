@@ -17,7 +17,9 @@ import {
   Calendar,
   AlertCircle,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Calculator,
+  Gift
 } from 'lucide-react';
 
 const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
@@ -105,6 +107,12 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
   // --- INSTALLMENT STATUS CALCULATIONS ---
   const paidMonths = user?.paidMonths || 0;
   const nextMonthNum = paidMonths + 1;
+  const customInstallment = user?.customInstallment || 10000;
+  const startDateStr = user?.startDate || new Date().toISOString().split('T')[0];
+
+  const totalPaid = 12 * customInstallment;
+  const freeBonus = customInstallment;
+  const totalValue = totalPaid + freeBonus;
 
   const getNextDueDate = () => {
     if (!user?.startDate) return new Date();
@@ -209,6 +217,13 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
             className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${activeTab === 'orders' ? 'bg-amber-600 text-white' : 'text-stone-400 hover:text-white'}`}
           >
             <ShoppingBag className="w-3.5 h-3.5" /> Purchases
+          </button>
+
+          <button
+            onClick={() => setActiveTab('scheme')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${activeTab === 'scheme' ? 'bg-amber-600 text-white' : 'text-stone-400 hover:text-white'}`}
+          >
+            <Calculator className="w-3.5 h-3.5" /> Scheme Plan
           </button>
 
           <button
@@ -361,7 +376,67 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
           </div>
         )}
 
-        {/* TAB 4: SETTINGS */}
+        {/* TAB 4: SCHEME PLAN BREAKDOWN */}
+        {activeTab === 'scheme' && (
+          <div className="space-y-4 max-w-md mx-auto">
+            <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2 mb-2">
+              <Calculator className="w-4 h-4 text-amber-800" /> 12+1 Gold Scheme Details
+            </h3>
+
+            <div className="space-y-4 text-xs font-sans text-stone-900">
+              <div>
+                <label className="font-bold text-stone-700 block mb-1 uppercase tracking-wider">
+                  Monthly Installment Amount (₹)
+                </label>
+                <div className="w-full p-3 bg-stone-50 border-2 border-stone-900 rounded-2xl text-sm font-black font-mono">
+                  ₹{Number(customInstallment).toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1 uppercase tracking-wider">
+                  Scheme Start Date
+                </label>
+                <div className="w-full p-3 bg-stone-50 border-2 border-stone-900 rounded-2xl text-sm font-bold font-mono">
+                  {startDateStr}
+                </div>
+              </div>
+
+              <div className="bg-[#FFFDF9] border-2 border-amber-400 p-4 rounded-2xl relative space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs uppercase tracking-wider">
+                    <Calculator className="w-4 h-4 text-[#E65C00]" />
+                    12+1 Scheme Breakdown
+                  </div>
+                  <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
+                    Fixed Plan
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs pt-1 border-t border-amber-200">
+                  <div className="flex justify-between font-medium text-stone-700">
+                    <span>Customer Pays (12 Months):</span>
+                    <span className="font-bold font-mono">₹{totalPaid.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex justify-between font-bold text-emerald-700 items-center">
+                    <span className="flex items-center gap-1">
+                      <Gift className="w-3.5 h-3.5" /> + 1 Month Free Store Bonus:
+                    </span>
+                    <span className="font-mono">+ ₹{freeBonus.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="pt-2 border-t border-amber-200 flex justify-between items-center font-black text-sm text-[#E65C00]">
+                    <span>Total Jewelry Purchase Value:</span>
+                    <span className="font-mono text-base">₹{totalValue.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: SETTINGS */}
         {activeTab === 'settings' && (
           <form onSubmit={handleSaveSettings} className="space-y-4 max-w-md mx-auto text-xs">
             <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2 mb-2">
