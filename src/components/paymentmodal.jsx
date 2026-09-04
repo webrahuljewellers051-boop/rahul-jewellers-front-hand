@@ -10,14 +10,7 @@ import {
   Check
 } from 'lucide-react';
 
-const getApiBaseUrl = () => {
-  const currentHost = window.location.hostname;
-  if (currentHost.includes('ngrok')) return 'https://squire-brought-decency.ngrok-free.dev';
-  if (currentHost === 'localhost' || currentHost === '127.0.0.1') return 'http://localhost:5000';
-  return `http://${currentHost || '192.168.1.11'}:5000`;
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
 
 export default function PaymentModal({ monthNum, monthlyAmount, user, onClose, onSuccess }) {
   const [upiId, setUpiId] = useState('9950091024@okbizaxis');

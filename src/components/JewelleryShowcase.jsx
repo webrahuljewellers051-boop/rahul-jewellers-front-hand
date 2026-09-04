@@ -93,7 +93,7 @@ export default function JewelleryShowcase() {
                   <PhoneCall className="w-3.5 h-3.5 text-amber-800" /> Inquiry Direct
                 </a>
                 <span className="text-[11px] font-semibold text-stone-500 flex items-center gap-1">
-                  Shivganj Showroom <MapPin className="w-3 h-3 text-amber-800" />
+                  Sheoganj Showroom <MapPin className="w-3 h-3 text-amber-800" />
                 </span>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Lock, User, MapPin, Calendar, Phone, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const NGROK_BASE_URL = 'https://squire-brought-decency.ngrok-free.dev';
+const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
 
 export default function CustomerRegisterModal({ isOpen, onClose, onRegisterSuccess }) {
   const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ export default function CustomerRegisterModal({ isOpen, onClose, onRegisterSucce
     setLoading(true);
 
     try {
-      const res = await fetch(`${NGROK_BASE_URL}/api/customer/register`, {
+      const res = await fetch(`${API_BASE_URL}/api/customer/register`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

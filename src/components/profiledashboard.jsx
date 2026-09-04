@@ -20,8 +20,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-const NGROK_BASE_URL = 'https://squire-brought-decency.ngrok-free.dev';
-const ngrokConfig = {
+const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
+const requestConfig = {
   headers: {
     'ngrok-skip-browser-warning': 'true'
   }
@@ -41,13 +41,13 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
     const newQty = currentQty + delta;
     try {
       const res = await axios.post(
-        `${NGROK_BASE_URL}/api/customer/cart/update`, 
+        `${API_BASE_URL}/api/customer/cart/update`, 
         {
           userId: user._id,
           productId,
           quantity: newQty
         },
-        ngrokConfig
+        requestConfig
       );
       if (res.data.success) {
         onUpdateUser(res.data.user);
@@ -60,12 +60,12 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
   const handleToggleWishlist = async (productId) => {
     try {
       const res = await axios.post(
-        `${NGROK_BASE_URL}/api/customer/wishlist/toggle`, 
+        `${API_BASE_URL}/api/customer/wishlist/toggle`, 
         {
           userId: user._id,
           productId
         },
-        ngrokConfig
+        requestConfig
       );
       if (res.data.success) {
         onUpdateUser(res.data.user);
@@ -80,14 +80,14 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
     setSavingSettings(true);
     try {
       const res = await axios.put(
-        `${NGROK_BASE_URL}/api/customer/settings/update`, 
+        `${API_BASE_URL}/api/customer/settings/update`, 
         {
           userId: user._id,
           name: settingsForm.name,
           address: settingsForm.address,
           ...(settingsForm.password ? { password: settingsForm.password } : {})
         },
-        ngrokConfig
+        requestConfig
       );
 
       if (res.data.success) {

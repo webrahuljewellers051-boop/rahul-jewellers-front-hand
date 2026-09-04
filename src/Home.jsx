@@ -24,15 +24,7 @@ import {
 } from 'lucide-react';
 
 const STORE_PHONE = '9950091024';
-
-const getApiBaseUrl = () => {
-  const currentHost = window.location.hostname;
-  if (currentHost.includes('ngrok')) return 'https://squire-brought-decency.ngrok-free.dev';
-  if (currentHost === 'localhost' || currentHost === '127.0.0.1') return 'http://localhost:5000';
-  return 'https://rahul-jewellers-backend-jlr0.onrender.com';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
 
 const requestConfig = {
   headers: {

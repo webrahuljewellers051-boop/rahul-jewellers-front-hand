@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { History, CheckCircle2, AlertTriangle, Clock, Calendar, Gift } from 'lucide-react';
 
-const NGROK_BASE_URL = 'https://squire-brought-decency.ngrok-free.dev';
-const ngrokConfig = {
+const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
+const requestConfig = {
   headers: {
     'ngrok-skip-browser-warning': 'true'
   }
@@ -50,7 +50,7 @@ export default function TransactionHistory({ userId, paidMonths = 4, installment
 
       try {
         setLoading(true);
-        const res = await axios.get(`${NGROK_BASE_URL}/api/transactions/${userId}`, ngrokConfig);
+        const res = await axios.get(`${API_BASE_URL}/api/transactions/${userId}`, requestConfig);
         if (res.data.success) {
           setTransactions(res.data.transactions);
         }

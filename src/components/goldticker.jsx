@@ -6,7 +6,7 @@ export default function GoldTicker({ rate24K = "1,58,390", rate22K = "1,45,190" 
     <div className="bg-zinc-950/90 border-b border-amber-500/20 px-4 py-2 text-[11px] font-semibold flex items-center justify-between">
       <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase tracking-wider">
         <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> 
-        <span>Shivganj Today Rate</span>
+        <span>Sheoganj Today Rate</span>
       </div>
 
       <div className="flex items-center gap-4">
