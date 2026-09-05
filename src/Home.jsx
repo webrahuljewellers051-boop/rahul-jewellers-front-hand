@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
 
-import GoldTicker from './components/goldticker';
+import StoreNavbar from './components/StoreNavbar.jsx';
 import CustomerLoginModal from './components/loginmodal';
 
 import { 
