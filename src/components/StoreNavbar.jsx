@@ -6,44 +6,47 @@ export default function StoreNavbar() {
 
   return (
     <>
-      <div className="bg-stone-900 text-amber-400 text-xs py-2 px-6 flex flex-col sm:flex-row justify-between items-center gap-2 font-mono tracking-wider border-b border-amber-500/35">
+      <div className="bg-stone-900 text-amber-400 text-xs py-2 px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-2 font-mono tracking-wider border-b border-amber-500/35 relative z-30">
         <div className="flex items-center gap-2">
-          <Crown className="w-4 h-4 text-amber-500" />
-          <span className="font-bold text-white uppercase tracking-widest">RAHUL JEWELLERS (SHEOGANJ)</span>
+          <Crown className="w-4 h-4 text-amber-500 shrink-0" />
+          <span className="font-bold text-white uppercase tracking-widest text-[11px] sm:text-xs">RAHUL JEWELLERS (SHEOGANJ)</span>
         </div>
         
-        <div className="flex items-center gap-6 text-[11px] font-sans">
+        <div className="flex items-center gap-4 sm:gap-6 text-[11px] font-sans">
           <button 
+            type="button"
             onClick={() => setActiveModal('about')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer"
+            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
           >
-            <Info className="w-3.5 h-3.5 text-amber-500" /> About Us
+            <Info className="w-3.5 h-3.5 text-amber-500 shrink-0" /> About Us
           </button>
           <button 
+            type="button"
             onClick={() => setActiveModal('contact')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer"
+            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
           >
-            <Phone className="w-3.5 h-3.5 text-amber-500" /> Contact
+            <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Contact
           </button>
           <button 
+            type="button"
             onClick={() => setActiveModal('support')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer"
+            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-500" /> Support
+            <HelpCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Support
           </button>
         </div>
       </div>
 
       {/* About Us Modal */}
       {activeModal === 'about' && (
-        <div className="fixed inset-0 bg-stone-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative">
+        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-amber-700" />
                 <h3 className="font-serif font-bold text-base uppercase text-stone-900">About Rahul Jewellers</h3>
               </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500">
+              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -59,8 +62,9 @@ export default function StoreNavbar() {
               </p>
             </div>
             <button 
+              type="button"
               onClick={() => setActiveModal(null)}
-              className="w-full py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition"
+              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
             >
               Close
             </button>
@@ -70,14 +74,14 @@ export default function StoreNavbar() {
 
       {/* Contact Modal */}
       {activeModal === 'contact' && (
-        <div className="fixed inset-0 bg-stone-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative">
+        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5 text-amber-700" />
                 <h3 className="font-serif font-bold text-base uppercase text-stone-900">Contact Showroom</h3>
               </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500">
+              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -100,15 +104,17 @@ export default function StoreNavbar() {
               </div>
 
               <button
+                type="button"
                 onClick={() => window.open('https://wa.me/919950091024?text=Namaste%20Rahul%20Jewellers,%20I%20have%20an%20inquiry.', '_blank')}
-                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition"
+                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
               </button>
             </div>
             <button 
+              type="button"
               onClick={() => setActiveModal(null)}
-              className="w-full py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition"
+              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
             >
               Close
             </button>
@@ -118,14 +124,14 @@ export default function StoreNavbar() {
 
       {/* Support Modal */}
       {activeModal === 'support' && (
-        <div className="fixed inset-0 bg-stone-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative">
+        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
               <div className="flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-amber-700" />
                 <h3 className="font-serif font-bold text-base uppercase text-stone-900">Customer Support & Guidelines</h3>
               </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500">
+              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -151,8 +157,9 @@ export default function StoreNavbar() {
               </div>
             </div>
             <button 
+              type="button"
               onClick={() => setActiveModal(null)}
-              className="w-full py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition"
+              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
             >
               Close
             </button>
