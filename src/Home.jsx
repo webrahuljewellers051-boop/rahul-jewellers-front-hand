@@ -51,6 +51,7 @@ export default function App() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   
   const [storeUpiId, setStoreUpiId] = useState('9950091024@okbizaxis');
   const [storeMerchantName, setStoreMerchantName] = useState('Rahul Jewellers');
@@ -311,15 +312,21 @@ export default function App() {
                       key={p._id}
                       className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
                     >
-                      <div className="relative aspect-square bg-stone-100 overflow-hidden">
+                      <div 
+                        onClick={() => setPreviewImage(p.imageUrl)}
+                        className="relative aspect-square bg-stone-100 overflow-hidden cursor-pointer group/img"
+                      >
                         <img 
                           src={p.imageUrl} 
                           alt={p.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
                         />
                         <span className="absolute top-2 left-2 bg-stone-900/80 backdrop-blur-sm text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
                           {p.category}
                         </span>
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1">
+                          <span>🔍 Click to View Large</span>
+                        </div>
                       </div>
 
                       <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
@@ -337,7 +344,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}
-                            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
                           >
                             <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
                           </button>
@@ -479,7 +486,7 @@ export default function App() {
                       ) : isNextDue ? (
                         <button
                           onClick={() => setActivePaymentMonth(monthNum)}
-                          className="px-3.5 py-1.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs uppercase animate-bounce"
+                          className="px-3.5 py-1.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs uppercase animate-bounce cursor-pointer"
                         >
                           <Smartphone className="w-3.5 h-3.5" /> Pay
                         </button>
@@ -511,6 +518,26 @@ export default function App() {
           handleTabChange('scheme');
         }}
       />
+
+      {/* FULL-SIZE IMAGE LIGHTBOX PREVIEW MODAL */}
+      {previewImage && (
+        <div 
+          onClick={() => setPreviewImage(null)}
+          className="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-[999] flex items-center justify-center p-4 cursor-zoom-out"
+        >
+          <div className="relative max-w-2xl w-full bg-stone-900 rounded-3xl overflow-hidden border-2 border-amber-500/40 p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-4 right-4 z-10 w-9 h-9 bg-stone-950/80 text-white rounded-full flex items-center justify-center border border-amber-500/40 hover:bg-stone-900 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="aspect-square bg-black rounded-2xl overflow-hidden flex items-center justify-center">
+              <img src={previewImage} alt="Expanded Jewelry Preview" className="w-full h-full object-contain" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* UPI INTENT MODAL WITH DYNAMIC STORE QR CODE DISPLAY */}
       {activePaymentMonth !== null && (() => {
@@ -550,14 +577,14 @@ export default function App() {
                   window.location.href = upiIntentUri;
                   setShowInstructionModal(true);
                 }}
-                className="w-full py-3.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Smartphone className="w-4 h-4" /> Open UPI App & Pay
               </button>
 
               <button
                 onClick={() => setActivePaymentMonth(null)}
-                className="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs uppercase rounded-xl transition"
+                className="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs uppercase rounded-xl transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -598,7 +625,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => window.open(`https://wa.me/919950091024?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have paid ₹${monthly} for Month #${activePaymentMonth} of Scheme ID ${schemeUser?.customerId}. Here is my payment screenshot:`)}`, '_blank', 'noopener,noreferrer')}
-                className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" /> Send Screenshot
               </button>
@@ -607,7 +634,7 @@ export default function App() {
                   setShowInstructionModal(false);
                   setActivePaymentMonth(null);
                 }}
-                className="px-4 py-3 bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                className="px-4 py-3 bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
               >
                 Close
               </button>
@@ -623,7 +650,7 @@ export default function App() {
               <h3 className="text-xs font-bold text-stone-900 uppercase flex items-center gap-1.5">
                 <History className="w-4 h-4 text-amber-800" /> Payment Receipts
               </h3>
-              <button onClick={() => setShowHistoryModal(false)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500">
+              <button onClick={() => setShowHistoryModal(false)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -642,7 +669,7 @@ export default function App() {
                       </div>
                       <button
                         onClick={() => handleDownloadReceipt(monthNum, monthly)}
-                        className="px-2.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-bold text-[10px] flex items-center gap-1 shadow-sm transition"
+                        className="px-2.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-bold text-[10px] flex items-center gap-1 shadow-sm transition cursor-pointer"
                       >
                         <Download className="w-3 h-3" /> Receipt PDF
                       </button>
