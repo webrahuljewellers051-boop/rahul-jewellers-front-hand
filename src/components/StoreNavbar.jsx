@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Crown, Phone, Info, HelpCircle, X, MapPin, Clock, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Crown, Phone, Info, HelpCircle, X, MapPin, Clock, ShieldCheck, MessageCircle, Instagram } from 'lucide-react';
 
 export default function StoreNavbar() {
   const [activeModal, setActiveModal] = useState(null);
@@ -12,28 +12,36 @@ export default function StoreNavbar() {
           <span className="font-bold text-white uppercase tracking-widest text-[11px] sm:text-xs">RAHUL JEWELLERS (SHEOGANJ)</span>
         </div>
         
-        <div className="flex items-center gap-4 sm:gap-6 text-[11px] font-sans">
+        <div className="flex items-center gap-3 sm:gap-5 text-[11px] font-sans">
           <button 
             type="button"
             onClick={() => setActiveModal('about')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
+            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
           >
             <Info className="w-3.5 h-3.5 text-amber-500 shrink-0" /> About Us
           </button>
           <button 
             type="button"
             onClick={() => setActiveModal('contact')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
+            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
           >
             <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Contact
           </button>
           <button 
             type="button"
             onClick={() => setActiveModal('support')}
-            className="hover:text-white transition flex items-center gap-1.5 text-stone-300 cursor-pointer py-1 px-1.5 rounded active:bg-stone-800"
+            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
           >
             <HelpCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Support
           </button>
+          <a 
+            href="https://instagram.com/rahuljewellers9" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-white transition flex items-center gap-1 text-pink-400 cursor-pointer py-1 px-1 rounded active:bg-stone-800 font-bold"
+          >
+            <Instagram className="w-3.5 h-3.5 shrink-0" /> Insta
+          </a>
         </div>
       </div>
 
@@ -101,6 +109,21 @@ export default function StoreNavbar() {
                   <p className="font-mono font-bold text-amber-900">+91 9950091024</p>
                   <p className="font-mono font-bold text-amber-900">+91 9461452322</p>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-pink-50 rounded-2xl border border-pink-200">
+                <div className="flex items-center gap-2">
+                  <Instagram className="w-4 h-4 text-pink-600" />
+                  <span className="font-bold text-stone-900">Instagram Handle</span>
+                </div>
+                <a 
+                  href="https://instagram.com/rahuljewellers9" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-mono font-bold text-pink-600 hover:underline"
+                >
+                  @rahuljewellers9
+                </a>
               </div>
 
               <button
