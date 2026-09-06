@@ -235,59 +235,64 @@ export default function App() {
       <StoreNavbar />
 
       <header className="bg-stone-900 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-800 p-0.5 shadow-lg">
-              <div className="w-full h-full bg-stone-950 rounded-[14px] flex items-center justify-center text-amber-400">
-                <Crown className="w-5 h-5" />
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-800 p-0.5 shadow-lg shrink-0">
+                <div className="w-full h-full bg-stone-950 rounded-[14px] flex items-center justify-center text-amber-400">
+                  <Crown className="w-5 h-5" />
+                </div>
               </div>
-            </div>
-            <div>
-              <h1 className="text-base font-serif font-bold tracking-widest bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-100 bg-clip-text text-transparent uppercase">
-                RAHUL JEWELLERS
-              </h1>
-              <p className="text-[9px] text-amber-500/80 font-bold tracking-widest uppercase">SHEOGANJ SHOWROOM</p>
+              <div>
+                <h1 className="text-sm sm:text-base font-serif font-bold tracking-widest bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-100 bg-clip-text text-transparent uppercase">
+                  RAHUL JEWELLERS
+                </h1>
+                <p className="text-[9px] text-amber-500/80 font-bold tracking-widest uppercase">SHEOGANJ SHOWROOM</p>
+              </div>
             </div>
           </div>
 
-          <div className="bg-stone-950/80 p-1.5 rounded-full border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5">
-            <button
-              onClick={() => handleTabChange('showroom')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'showroom' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
-              }`}
-            >
-              <Gem className="w-3.5 h-3.5" /> Showroom
-            </button>
+          {/* HORIZONTALLY SLIDABLE / SCROLLABLE NAVIGATION CONTAINER FOR MOBILE */}
+          <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none flex justify-start sm:justify-end">
+            <div className="bg-stone-950/80 p-1.5 rounded-full border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => handleTabChange('showroom')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab === 'showroom' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <Gem className="w-3.5 h-3.5" /> Showroom
+              </button>
 
-            <button
-              onClick={() => handleTabChange('scheme')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider transition flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'scheme' && schemeUser
-                  ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-stone-950 border border-amber-300'
-                  : 'bg-stone-900 text-amber-300 border border-amber-500/50 hover:bg-stone-800'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="uppercase font-extrabold">Scheme</span>
-            </button>
+              <button
+                onClick={() => handleTabChange('scheme')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab === 'scheme' && schemeUser
+                    ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-stone-950 border border-amber-300'
+                    : 'bg-stone-900 text-amber-300 border border-amber-500/50 hover:bg-stone-800'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="uppercase font-extrabold">Scheme</span>
+              </button>
 
-            {schemeUser && (
-              <>
-                <button
-                  onClick={() => setShowProfileModal(true)}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1 transition border border-amber-500/30 cursor-pointer bg-stone-900"
-                >
-                  <User className="w-3.5 h-3.5" /> Profile
-                </button>
-                <button
-                  onClick={handleSchemeLogout}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" /> Logout
-                </button>
-              </>
-            )}
+              {schemeUser && (
+                <>
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1 transition border border-amber-500/30 cursor-pointer bg-stone-900 whitespace-nowrap"
+                  >
+                    <User className="w-3.5 h-3.5" /> Profile
+                  </button>
+                  <button
+                    onClick={handleSchemeLogout}
+                    className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer whitespace-nowrap"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Logout
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
