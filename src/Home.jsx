@@ -39,8 +39,6 @@ export default function App() {
   const [schemeUser, setSchemeUser] = useState(() => JSON.parse(localStorage.getItem('schemeUserInfo') || 'null'));
 
   const [activeTab, setActiveTab] = useState(() => {
-    const savedUser = localStorage.getItem('schemeUserInfo');
-    if (savedUser) return 'scheme';
     return sessionStorage.getItem('rj_customer_active_tab') || 'showroom';
   });
 
@@ -196,7 +194,7 @@ export default function App() {
           <div className="bg-stone-950/80 p-1.5 rounded-full border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5">
             <button
               onClick={() => handleTabChange('showroom')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'showroom' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
               }`}
             >
@@ -205,7 +203,7 @@ export default function App() {
 
             <button
               onClick={() => handleTabChange('scheme')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider transition flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'scheme' && schemeUser
                   ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-stone-950 border border-amber-300'
                   : 'bg-stone-900 text-amber-300 border border-amber-500/50 hover:bg-stone-800'
@@ -218,7 +216,7 @@ export default function App() {
             {schemeUser && (
               <button
                 onClick={handleSchemeLogout}
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" /> Logout
               </button>
@@ -269,7 +267,7 @@ export default function App() {
                   <select
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
-                    className="w-full sm:w-auto px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-800 outline-none"
+                    className="w-full sm:w-auto px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-800 outline-none cursor-pointer"
                   >
                     <option value="All">All Price Ranges</option>
                     <option value="under_50k">Under ₹50,000</option>
@@ -284,7 +282,7 @@ export default function App() {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-1.5 rounded-full transition shrink-0 ${
+                    className={`px-4 py-1.5 rounded-full transition shrink-0 cursor-pointer ${
                       selectedCategory === category 
                         ? 'bg-amber-900 text-white shadow-sm' 
                         : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -372,7 +370,7 @@ export default function App() {
                   </span>
                   <button
                     onClick={handleSchemeLogout}
-                    className="text-[10px] font-bold text-red-600 hover:underline flex items-center gap-0.5"
+                    className="text-[10px] font-bold text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer"
                   >
                     <LogOut className="w-3 h-3" /> Logout
                   </button>
@@ -399,7 +397,7 @@ export default function App() {
 
               <button
                 onClick={() => setShowHistoryModal(true)}
-                className="w-full py-2.5 bg-stone-100 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+                className="w-full py-2.5 bg-stone-100 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <History className="w-4 h-4" /> View Downloadable Receipts
               </button>
