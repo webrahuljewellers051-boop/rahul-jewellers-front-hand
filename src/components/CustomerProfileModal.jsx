@@ -78,7 +78,7 @@ export default function CustomerProfileModal({ isOpen, onClose, user, onUpdateUs
 
           <div>
             <label className="font-bold text-stone-700 block mb-1 flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5 text-amber-700" /> Account Password <span className="text-[10px] text-stone-400 font-normal">(Visible to admin directory)</span>
+              <Lock className="w-3.5 h-3.5 text-amber-700" /> Account Password
             </label>
             <input type="text" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2.5 bg-stone-50 border-2 border-stone-900 rounded-xl font-mono font-bold outline-none" />
           </div>
