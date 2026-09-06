@@ -4,6 +4,7 @@ import html2pdf from 'html2pdf.js';
 
 import StoreNavbar from './components/StoreNavbar.jsx';
 import CustomerLoginModal from './components/loginmodal';
+import IntroSplash from './components/IntroSplash.jsx';
 
 import { 
   Crown, 
@@ -36,6 +37,10 @@ const requestConfig = {
 };
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(() => {
+    return !sessionStorage.getItem('rj_intro_played');
+  });
+
   const [schemeUser, setSchemeUser] = useState(() => JSON.parse(localStorage.getItem('schemeUserInfo') || 'null'));
 
   const [activeTab, setActiveTab] = useState(() => {
@@ -57,6 +62,11 @@ export default function App() {
   
   const [activePaymentMonth, setActivePaymentMonth] = useState(null);
   const [showInstructionModal, setShowInstructionModal] = useState(false);
+
+  const handleIntroFinish = () => {
+    setShowIntro(false);
+    sessionStorage.setItem('rj_intro_played', 'true');
+  };
 
   const handleTabChange = (tabName) => {
     if (tabName === 'scheme' && !schemeUser) {
@@ -172,7 +182,9 @@ export default function App() {
   const totalValue = totalPaid + freeBonus;
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12">
+    <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
+      {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
+
       <StoreNavbar />
 
       <header className="bg-stone-900 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20">
