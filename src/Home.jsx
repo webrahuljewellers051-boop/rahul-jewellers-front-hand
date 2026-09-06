@@ -7,6 +7,7 @@ import CustomerLoginModal from './components/loginmodal';
 import IntroSplash from './components/IntroSplash.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
+import RahulHero3D from './components/RahulHero3D.jsx';
 
 import { 
   Crown, 
@@ -299,6 +300,8 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 pt-6">
         {activeTab === 'showroom' && (
           <div className="space-y-6">
+            <RahulHero3D />
+
             <div className="relative rounded-3xl overflow-hidden bg-stone-900 text-white p-6 sm:p-10 border border-stone-800 shadow-xl flex flex-col justify-end min-h-[220px]">
               <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-900/70 to-transparent z-10" />
               <img 
