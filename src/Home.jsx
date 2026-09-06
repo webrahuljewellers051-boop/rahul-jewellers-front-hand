@@ -5,6 +5,8 @@ import html2pdf from 'html2pdf.js';
 import StoreNavbar from './components/StoreNavbar.jsx';
 import CustomerLoginModal from './components/loginmodal';
 import IntroSplash from './components/IntroSplash.jsx';
+import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
+import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 
 import { 
   Crown, 
@@ -23,7 +25,9 @@ import {
   Smartphone,
   Lock,
   Calculator,
-  Gift
+  Gift,
+  User,
+  Award
 } from 'lucide-react';
 
 const STORE_PHONE = '9950091024';
@@ -54,6 +58,7 @@ export default function App() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   
   const [storeUpiId, setStoreUpiId] = useState('9950091024@okbizaxis');
@@ -161,6 +166,47 @@ export default function App() {
     html2pdf().set(opt).from(element).save();
   };
 
+  const handleDownloadMaturityCertificate = () => {
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="padding: 40px; font-family: serif; border: 8px double #b45309; border-radius: 16px; max-width: 600px; margin: auto; background: #fffdf9; color: #1c1917; text-align: center;">
+        <h1 style="font-size: 26px; margin: 0; color: #b45309; letter-spacing: 2px;">RAHUL JEWELLERS</h1>
+        <p style="font-size: 11px; font-sans: sans-serif; letter-spacing: 3px; font-weight: bold; color: #78716c; margin-top: 4px;">MAIN MARKET, SHEOGANJ • CERTIFICATE OF COMPLETION</p>
+        
+        <div style="margin: 30px 0;">
+          <p style="font-size: 14px; font-style: italic; color: #57534e;">This prestigious certificate is proudly presented to</p>
+          <h2 style="font-size: 28px; margin: 10px 0; color: #1c1917; border-bottom: 2px solid #e7e5e4; display: inline-block; padding-bottom: 5px;">${schemeUser?.name}</h2>
+          <p style="font-size: 12px; font-sans: sans-serif; color: #78716c;">Customer ID: <strong>${schemeUser?.customerId}</strong></p>
+        </div>
+
+        <p style="font-size: 13px; line-height: 1.6; color: #292524; padding: 0 20px;">
+          For successfully completing all <strong>12 monthly installments</strong> under the 12+1 Gold Savings Scheme, along with the <strong>1 Month Free Store Bonus</strong>. You are now fully eligible to redeem your total accumulated maturity value for exquisite hallmarked jewelry.
+        </p>
+
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 30px; font-size: 12px; font-sans: sans-serif;">
+          <div>
+            <p style="margin: 0; font-weight: bold;">Date: ${new Date().toLocaleDateString('en-IN')}</p>
+            <p style="margin: 0; color: #78716c;">Issue Date</p>
+          </div>
+          <div>
+            <p style="margin: 0; font-weight: bold;">Rahul Jewellers</p>
+            <p style="margin: 0; color: #78716c;">Authorized Signatory</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const opt = {
+      margin: 0.5,
+      filename: `Maturity_Certificate_${schemeUser?.customerId}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
+
   const filteredProducts = products.filter((p) => {
     const matchesCategory = selectedCategory === 'All' || p.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -184,6 +230,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
+      <FloatingWhatsApp />
 
       <StoreNavbar />
 
@@ -226,12 +273,20 @@ export default function App() {
             </button>
 
             {schemeUser && (
-              <button
-                onClick={handleSchemeLogout}
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" /> Logout
-              </button>
+              <>
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1 transition border border-amber-500/30 cursor-pointer bg-stone-900"
+                >
+                  <User className="w-3.5 h-3.5" /> Profile
+                </button>
+                <button
+                  onClick={handleSchemeLogout}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> Logout
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -380,12 +435,20 @@ export default function App() {
                   <span className="text-xs font-mono font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
                     ID: {schemeUser.customerId}
                   </span>
-                  <button
-                    onClick={handleSchemeLogout}
-                    className="text-[10px] font-bold text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer"
-                  >
-                    <LogOut className="w-3 h-3" /> Logout
-                  </button>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      onClick={() => setShowProfileModal(true)}
+                      className="text-[10px] font-bold text-amber-700 hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <User className="w-3 h-3" /> Profile
+                    </button>
+                    <button
+                      onClick={handleSchemeLogout}
+                      className="text-[10px] font-bold text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <LogOut className="w-3 h-3" /> Logout
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -413,6 +476,15 @@ export default function App() {
               >
                 <History className="w-4 h-4" /> View Downloadable Receipts
               </button>
+
+              {paidCount >= 12 && (
+                <button
+                  onClick={handleDownloadMaturityCertificate}
+                  className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md transition cursor-pointer uppercase tracking-wider"
+                >
+                  <Award className="w-4 h-4" /> Download Maturity Certificate
+                </button>
+              )}
 
               <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 flex items-center gap-2.5 text-amber-950 text-xs font-medium">
                 <Sparkles className="w-4 h-4 text-amber-800 shrink-0" />
@@ -526,6 +598,16 @@ export default function App() {
           syncCustomerData();
           setShowLoginModal(false);
           handleTabChange('scheme');
+        }}
+      />
+
+      <CustomerProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={schemeUser}
+        onUpdateUser={(updatedUser) => {
+          setSchemeUser(updatedUser);
+          localStorage.setItem('schemeUserInfo', JSON.stringify(updatedUser));
         }}
       />
 
