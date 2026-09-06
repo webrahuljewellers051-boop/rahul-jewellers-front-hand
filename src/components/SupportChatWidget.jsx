@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { MessageSquare, X, Send, Bot, User } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, User, MessageCircle } from 'lucide-react';
 
 const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
+const STORE_PHONE = '9950091024';
 
 const requestConfig = {
   headers: {
@@ -18,6 +19,7 @@ export default function SupportChatWidget() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showWhatsAppHandoff, setShowWhatsAppHandoff] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -37,12 +39,23 @@ export default function SupportChatWidget() {
       const res = await axios.post(`${API_BASE_URL}/api/support/chat`, { message: userText }, requestConfig);
       if (res.data.success) {
         setMessages(prev => [...prev, { sender: 'bot', text: res.data.reply }]);
+        // Show WhatsApp transfer option after a few turns or complex requests
+        if (messages.length >= 3) {
+          setShowWhatsAppHandoff(true);
+        }
       }
     } catch (err) {
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, I am having trouble connecting right now. Please reach us directly on WhatsApp at +91 9950091024.' }]);
+      setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, I am having trouble connecting right now. Please connect with our human support team on WhatsApp.' }]);
+      setShowWhatsAppHandoff(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWhatsAppTransfer = () => {
+    const lastUserQuery = messages.filter(m => m.sender === 'user').pop()?.text || 'Hello';
+    const waUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(`Namaste Rahul Jewellers, I was chatting with your AI assistant and would like human support regarding: "${lastUserQuery}"`)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -56,7 +69,7 @@ export default function SupportChatWidget() {
           <MessageSquare className="w-7 h-7" />
         </button>
       ) : (
-        <div className="bg-white w-80 sm:w-96 h-[480px] rounded-3xl border-2 border-stone-900 shadow-2xl flex flex-col overflow-hidden">
+        <div className="bg-white w-80 sm:w-96 h-[500px] rounded-3xl border-2 border-stone-900 shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-stone-900 text-amber-400 p-4 flex justify-between items-center border-b border-amber-500/30">
             <div className="flex items-center gap-2">
@@ -99,6 +112,18 @@ export default function SupportChatWidget() {
             {loading && (
               <div className="flex gap-2 items-center text-stone-400 italic text-[11px]">
                 <Bot className="w-3.5 h-3.5 animate-spin text-amber-600" /> Assistant is typing...
+              </div>
+            )}
+            
+            {/* WhatsApp Handoff Option */}
+            {showWhatsAppHandoff && (
+              <div className="pt-2 text-center">
+                <button
+                  onClick={handleWhatsAppTransfer}
+                  className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 shadow transition cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" /> Transfer Chat to WhatsApp Support
+                </button>
               </div>
             )}
             <div ref={chatEndRef} />

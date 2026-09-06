@@ -5,8 +5,8 @@ import html2pdf from 'html2pdf.js';
 import StoreNavbar from './components/StoreNavbar.jsx';
 import CustomerLoginModal from './components/loginmodal';
 import IntroSplash from './components/IntroSplash.jsx';
-import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
+import SupportChatWidget from './components/SupportChatWidget.jsx';
 
 import { 
   Crown, 
@@ -230,7 +230,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
-      <FloatingWhatsApp />
+      <SupportChatWidget />
 
       <StoreNavbar />
 
@@ -252,7 +252,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* HORIZONTALLY SLIDABLE / SCROLLABLE NAVIGATION CONTAINER FOR MOBILE */}
           <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none flex justify-start sm:justify-end">
             <div className="bg-stone-950/80 p-1.5 rounded-full border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5 shrink-0">
               <button
