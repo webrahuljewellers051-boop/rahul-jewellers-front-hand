@@ -27,7 +27,8 @@ import {
   Calculator,
   Gift,
   User,
-  Award
+  Award,
+  ShieldCheck
 } from 'lucide-react';
 
 const STORE_PHONE = '9950091024';
@@ -180,7 +181,7 @@ export default function App() {
         </div>
 
         <p style="font-size: 13px; line-height: 1.6; color: #292524; padding: 0 20px;">
-          For successfully completing all <strong>12 monthly installments</strong> under the 12+1 Gold Savings Scheme, along with the <strong>1 Month Free Store Bonus</strong>. You are now fully eligible to redeem your total accumulated maturity value for exquisite hallmarked jewelry.
+          For successfully completing all <strong>12 monthly installments</strong> under the 12-Month Savings Scheme. You are now fully eligible for <strong>100% OFF on Making Charges / Labor Cost</strong> on your final jewelry redemption.
         </p>
 
         <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 30px; font-size: 12px; font-sans: sans-serif;">
@@ -223,9 +224,7 @@ export default function App() {
   const paidCount = schemeUser?.paidMonths || 0;
   const progressPercent = Math.min(100, (paidCount / 12) * 100);
 
-  const totalPaid = 12 * monthly;
-  const freeBonus = monthly;
-  const totalValue = totalPaid + freeBonus;
+  const totalAccumulatedValue = 12 * monthly;
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
@@ -299,6 +298,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 pt-6">
         {activeTab === 'showroom' && (
           <div className="space-y-6">
+            {/* UPDATED HERO BANNER COPY */}
             <div className="relative rounded-3xl overflow-hidden bg-stone-900 text-white p-6 sm:p-10 border border-stone-800 shadow-xl flex flex-col justify-end min-h-[220px]">
               <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-900/70 to-transparent z-10" />
               <img 
@@ -306,15 +306,15 @@ export default function App() {
                 alt="Rahul Jewellers Luxury Collection" 
                 className="absolute inset-0 w-full h-full object-cover opacity-50"
               />
-              <div className="relative z-20 space-y-2 max-w-lg">
+              <div className="relative z-20 space-y-2 max-w-xl">
                 <span className="text-[10px] font-bold text-amber-400 tracking-widest uppercase bg-amber-950/80 px-3 py-1 rounded-full border border-amber-700/50">
-                  SHEOGANJ EXCLUSIVE SHOWROOM
+                  SHEOGANJ EXCLUSIVE SAVINGS SCHEME
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-100">
-                  Pure 916 Hallmarked Gold & Silver Jewellery
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-stone-100 leading-snug">
+                  Pay 12 monthly installments, get 100% OFF on Making Charges / Labor Cost on your final jewelry purchase!
                 </h2>
                 <p className="text-xs text-stone-300 font-medium">
-                  Crafting trust and royal heritage with bespoke bridal sets, antique kadas, and authentic Kundan craftsmanship.
+                  Invest securely in pure 916 hallmarked gold & silver. All 12 monthly payments apply fully toward your gold value.
                 </p>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function App() {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-stone-700 uppercase">12+1 Bonus Scheme Progress</span>
+                  <span className="font-bold text-stone-700 uppercase">12-Month Scheme Progress</span>
                   <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                     {paidCount}/12 Paid
                   </span>
@@ -469,7 +469,7 @@ export default function App() {
                 </div>
 
                 <div className="flex justify-between text-[11px] font-medium text-stone-500 pt-1">
-                  <span>Total Paid: ₹{(paidCount * monthly).toLocaleString('en-IN')}</span>
+                  <span>Total Accumulated: ₹{(paidCount * monthly).toLocaleString('en-IN')}</span>
                   <span>Target: ₹{(12 * monthly).toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -490,51 +490,68 @@ export default function App() {
                 </button>
               )}
 
-              <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 flex items-center gap-2.5 text-amber-950 text-xs font-medium">
-                <Sparkles className="w-4 h-4 text-amber-800 shrink-0" />
-                <p>
-                  Complete 12 installments to get <span className="font-bold underline">1 Month Free Store Bonus (₹{monthly.toLocaleString('en-IN')})</span>!
-                </p>
+              {/* REWARD MILESTONE BADGE / BANNER */}
+              <div className={`p-3.5 rounded-2xl border flex items-center gap-3 text-xs font-medium transition ${
+                paidCount >= 12 
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950' 
+                  : 'bg-amber-50 border-amber-200 text-amber-950'
+              }`}>
+                <ShieldCheck className={`w-5 h-5 shrink-0 ${paidCount >= 12 ? 'text-emerald-700' : 'text-amber-700'}`} />
+                <div>
+                  <p className="font-bold uppercase tracking-wide text-[10px]">
+                    {paidCount >= 12 ? 'Benefit Unlocked!' : 'Milestone Reward'}
+                  </p>
+                  <p className="font-semibold">
+                    {paidCount >= 12 
+                      ? 'Benefit Earned: Zero Making Charges (Free Labor) on your final redemption.' 
+                      : 'Complete all 12 installments to earn 100% OFF on Making Charges / Labor Cost.'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* FIXED 12+1 SCHEME BREAKDOWN CARD */}
+            {/* REDEMPTION SUMMARY CARD (CHECKOUT SIMULATION) */}
             <div className="bg-[#FFFDF9] border-2 border-amber-400 p-5 rounded-3xl relative space-y-3 shadow-sm font-sans text-stone-900 my-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs uppercase tracking-wider">
                   <Calculator className="w-4 h-4 text-[#E65C00]" />
-                  12+1 Scheme Breakdown
+                  Redemption Summary Card
                 </div>
                 <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
-                  Fixed Plan
+                  Scheme Value
                 </span>
               </div>
 
               <div className="space-y-2 text-xs pt-2 border-t border-amber-200">
                 <div className="flex justify-between font-medium text-stone-700">
-                  <span>Customer Pays (12 Months):</span>
-                  <span className="font-bold font-mono">₹{totalPaid.toLocaleString('en-IN')}</span>
+                  <span>Total Accumulated Installment Value:</span>
+                  <span className="font-bold font-mono">₹{(paidCount * monthly).toLocaleString('en-IN')}</span>
                 </div>
 
                 <div className="flex justify-between font-bold text-emerald-700 items-center">
                   <span className="flex items-center gap-1">
-                    <Gift className="w-3.5 h-3.5" /> + 1 Month Free Store Bonus:
+                    <Gift className="w-3.5 h-3.5" /> Making Charges / Labor Cost:
                   </span>
-                  <span className="font-mono">+ ₹{freeBonus.toLocaleString('en-IN')}</span>
+                  <span className="font-mono font-black">
+                    {paidCount >= 12 ? '₹0 (100% Scheme Benefit Applied)' : 'Standard Charges Apply'}
+                  </span>
                 </div>
 
                 <div className="pt-2 border-t border-amber-200 flex justify-between items-center font-black text-sm text-[#E65C00]">
-                  <span>Total Jewelry Purchase Value:</span>
-                  <span className="font-mono text-base">₹{totalValue.toLocaleString('en-IN')}</span>
+                  <span>Total Target Value (12 Months):</span>
+                  <span className="font-mono text-base">₹{totalAccumulatedValue.toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>
 
-            {/* PASSBOOK CHECKLIST */}
+            {/* PASSBOOK CHECKLIST - ALL 12 MONTHS PAYABLE */}
             <div className="bg-white p-6 rounded-3xl border-2 border-zinc-900 shadow-xl space-y-3">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Receipt className="w-4 h-4 text-amber-800" /> Scheme Passbook Status
+                <Receipt className="w-4 h-4 text-amber-800" /> Plan Tracker & Payment Schedule
               </h3>
+              <p className="text-[11px] text-stone-500 font-medium">
+                All 12 monthly installments must be paid in full to unlock free labor/making charges on redemption.
+              </p>
 
               <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
                 {Array.from({ length: 12 }).map((_, index) => {
@@ -558,7 +575,7 @@ export default function App() {
                           <Lock className="w-4 h-4 text-stone-400 shrink-0" />
                         )}
                         <div>
-                          <p className="font-bold text-stone-900">Month #{monthNum}</p>
+                          <p className="font-bold text-stone-900">Month #{monthNum} Installment</p>
                           <p className="text-[11px] text-stone-500 font-medium">
                             ₹{monthly.toLocaleString('en-IN')}
                           </p>
@@ -585,6 +602,15 @@ export default function App() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* TERMS & FAQS / TOOLTIPS */}
+            <div className="bg-stone-900 text-stone-200 p-5 rounded-3xl space-y-2 text-xs">
+              <h4 className="font-bold uppercase text-amber-400 tracking-wider">Scheme Terms & FAQs</h4>
+              <p className="text-stone-300 leading-relaxed">
+                <strong>Q: Is any installment free?</strong><br />
+                A: No. All 12 monthly installments must be paid in full by the customer. Upon successful completion of all 12 payments, you receive a 100% waiver on making charges / labor costs during final jewelry redemption.
+              </p>
             </div>
           </div>
         )}
@@ -649,7 +675,7 @@ export default function App() {
 
               <div className="space-y-1">
                 <h3 className="text-sm font-black uppercase text-stone-900">
-                  Pay Month #{activePaymentMonth}
+                  Pay Month #{activePaymentMonth} Installment
                 </h3>
                 <p className="text-xs text-stone-600 font-medium">
                   Amount: <strong className="text-[#E65C00]">₹{monthly.toLocaleString('en-IN')}</strong> to <span className="font-mono">{storeUpiId}</span>
@@ -720,7 +746,7 @@ export default function App() {
             <div className="flex gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => window.open(`https://wa.me/919950091024?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have paid ₹${monthly} for Month #${activePaymentMonth} of Scheme ID ${schemeUser?.customerId}. Here is my payment screenshot:`)}`, '_blank', 'noopener,noreferrer')}
+                onClick={() => window.open(`https://wa.me/919950091024?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have paid ₹${monthly} for Month #${activePaymentMonth} of Scheme ID${schemeUser?.customerId}. Here is my payment screenshot:`)}`, '_blank', 'noopener,noreferrer')}
                 className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" /> Send Screenshot
