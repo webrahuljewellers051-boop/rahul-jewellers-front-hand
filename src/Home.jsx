@@ -298,7 +298,6 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 pt-6">
         {activeTab === 'showroom' && (
           <div className="space-y-6">
-            {/* UPDATED HERO BANNER COPY */}
             <div className="relative rounded-3xl overflow-hidden bg-stone-900 text-white p-6 sm:p-10 border border-stone-800 shadow-xl flex flex-col justify-end min-h-[220px]">
               <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-900/70 to-transparent z-10" />
               <img 
@@ -510,7 +509,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* REDEMPTION SUMMARY CARD (CHECKOUT SIMULATION) */}
+            {/* REDEMPTION SUMMARY CARD */}
             <div className="bg-[#FFFDF9] border-2 border-amber-400 p-5 rounded-3xl relative space-y-3 shadow-sm font-sans text-stone-900 my-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs uppercase tracking-wider">
