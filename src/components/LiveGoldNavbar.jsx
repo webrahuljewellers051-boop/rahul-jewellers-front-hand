@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Sparkles, TrendingUp, RefreshCw } from 'lucide-react';
+import { Crown, Sparkles, TrendingUp } from 'lucide-react';
 
 const API_KEY = import.meta.env.VITE_FCS_API_KEY || 'R0x3HM70X0Ypiert8zqiTEhnm3daVJ51j';
 
 export default function LiveGoldNavbar() {
-  const [gold24k, setGold24k] = useState(74500); // Instant default fallback so it never shows loading
-  const [gold22k, setGold22k] = useState(68300);
-  const [loading, setLoading] = useState(false);
+  const [gold24k, setGold24k] = useState(745000); // Default fallback per 10 grams
+  const [gold22k, setGold22k] = useState(683000); // Default fallback per 10 grams
   const [lastUpdated, setLastUpdated] = useState('Live');
 
   const fetchGoldRate = async () => {
     try {
-      // Using FCS API endpoint to query XAU/USD live price safely via HTTP
-      const res = await fetch(`https://fcsapi.com/api-v3/forex/latest?symbol=XAU/USD&access_key=${API_KEY}`);
+      // Correct endpoint and symbol format for gold commodity on FCS API
+      const res = await fetch(`https://fcsapi.com/api-v3/forex/latest?symbol=XAUUSD&access_key=${API_KEY}`);
       const data = await res.json();
 
       if (data && data.status && data.response && data.response[0]) {
         const ouncePrice = parseFloat(data.response[0].c);
-        const gram24K = ouncePrice / 31.1034768; // Convert troy ounce to grams
-        const gram22K = gram24K * (22 / 24);
+        
+        // 1 troy ounce = 31.1034768 grams, multiplied by 10 for 10-gram rate
+        const pricePer10Gram24K = (ouncePrice / 31.1034768) * 10;
+        const pricePer10Gram22K = pricePer10Gram24K * (22 / 24);
 
-        setGold24k(Math.round(gram24K));
-        setGold22k(Math.round(gram22K));
+        setGold24k(Math.round(pricePer10Gram24K));
+        setGold22k(Math.round(pricePer10Gram22K));
         setLastUpdated(new Date().toLocaleTimeString());
       }
     } catch (err) {
@@ -31,7 +32,7 @@ export default function LiveGoldNavbar() {
 
   useEffect(() => {
     fetchGoldRate();
-    const interval = setInterval(fetchGoldRate, 30000); // Refresh every 30 seconds
+    const interval = setInterval(fetchGoldRate, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -54,11 +55,11 @@ export default function LiveGoldNavbar() {
           </div>
         </div>
 
-        {/* Live Rates Ticker Banner */}
+        {/* Live Rates Ticker Banner (Per 10 Grams) */}
         <div className="flex items-center gap-4 bg-stone-900/90 px-4 py-2 rounded-2xl border border-amber-500/20 text-xs shadow-inner">
           <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase tracking-wider">
             <TrendingUp className="w-4 h-4 animate-pulse" />
-            <span>Live Market Rates (Per Gram):</span>
+            <span>Live Gold Rates (Per 10 Gram):</span>
           </div>
 
           <div className="flex items-center gap-4 font-mono font-bold">
