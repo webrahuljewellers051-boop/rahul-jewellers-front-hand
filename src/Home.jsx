@@ -3,6 +3,7 @@ import axios from 'axios';
 import html2pdf from 'html2pdf.js';
 
 import StoreNavbar from './components/StoreNavbar.jsx';
+import LiveGoldNavbar from './components/LiveGoldNavbar.jsx'; // <-- Live Gold Rates Ticker Component
 import CustomerLoginModal from './components/loginmodal';
 import IntroSplash from './components/IntroSplash.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
@@ -230,6 +231,9 @@ export default function App() {
     <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
       <SupportChatWidget />
+
+      {/* Live Gold Rates Ticker Bar */}
+      <LiveGoldNavbar />
 
       <StoreNavbar />
 
