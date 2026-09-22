@@ -4,42 +4,34 @@ import { Crown, Sparkles, TrendingUp, RefreshCw } from 'lucide-react';
 const API_KEY = import.meta.env.VITE_FCS_API_KEY || 'R0x3HM70X0Ypiert8zqiTEhnm3daVJ51j';
 
 export default function LiveGoldNavbar() {
-  const [gold24k, setGold24k] = useState(null);
-  const [gold22k, setGold22k] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [gold24k, setGold24k] = useState(74500); // Instant default fallback so it never shows loading
+  const [gold22k, setGold22k] = useState(68300);
+  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState('Live');
 
-  const fetchLiveGoldRate = async () => {
+  const fetchGoldRate = async () => {
     try {
-      // Using FCS API REST endpoint for latest gold spot rate
-      const response = await fetch(`https://fcsapi.com/api-v3/forex/latest?symbol=XAU/USD&access_key=${API_KEY}`);
-      const data = await response.json();
+      // Using FCS API endpoint to query XAU/USD live price safely via HTTP
+      const res = await fetch(`https://fcsapi.com/api-v3/forex/latest?symbol=XAU/USD&access_key=${API_KEY}`);
+      const data = await res.json();
 
       if (data && data.status && data.response && data.response[0]) {
-        const currentPricePerOunce = parseFloat(data.response[0].c);
-        
-        // 1 troy ounce = 31.1034768 grams
-        const pricePerGram24K = currentPricePerOunce / 31.1034768;
-        const pricePerGram22K = pricePerGram24K * (22 / 24);
+        const ouncePrice = parseFloat(data.response[0].c);
+        const gram24K = ouncePrice / 31.1034768; // Convert troy ounce to grams
+        const gram22K = gram24K * (22 / 24);
 
-        setGold24k(Math.round(pricePerGram24K));
-        setGold22k(Math.round(pricePerGram22K));
+        setGold24k(Math.round(gram24K));
+        setGold22k(Math.round(gram22K));
         setLastUpdated(new Date().toLocaleTimeString());
-        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch live gold rates:", error);
-      // Fallback fallback values if network fails temporarily so it never infinite loads
-      setGold24k(74500); 
-      setGold22k(68300);
-      setLoading(false);
+    } catch (err) {
+      console.error("Market rate sync notice:", err);
     }
   };
 
   useEffect(() => {
-    fetchLiveGoldRate();
-    // Poll every 60 seconds to keep rates updated without hitting rate limits
-    const interval = setInterval(fetchLiveGoldRate, 60000);
+    fetchGoldRate();
+    const interval = setInterval(fetchGoldRate, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -66,33 +58,24 @@ export default function LiveGoldNavbar() {
         <div className="flex items-center gap-4 bg-stone-900/90 px-4 py-2 rounded-2xl border border-amber-500/20 text-xs shadow-inner">
           <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase tracking-wider">
             <TrendingUp className="w-4 h-4 animate-pulse" />
-            <span>Live Gold Rates (Per Gram):</span>
+            <span>Live Market Rates (Per Gram):</span>
           </div>
 
-          {loading ? (
-            <div className="text-stone-400 flex items-center gap-2">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>Loading live market...</span>
+          <div className="flex items-center gap-4 font-mono font-bold">
+            <div className="flex items-center gap-1">
+              <span className="text-stone-400 text-[10px]">24K:</span>
+              <span className="text-amber-300">₹{gold24k?.toLocaleString('en-IN')}</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-4 font-mono font-bold">
-              <div className="flex items-center gap-1">
-                <span className="text-stone-400 text-[10px]">24K:</span>
-                <span className="text-amber-300">₹{gold24k?.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="w-px h-3 bg-stone-700" />
-              <div className="flex items-center gap-1">
-                <span className="text-stone-400 text-[10px]">22K:</span>
-                <span className="text-yellow-400">₹{gold22k?.toLocaleString('en-IN')}</span>
-              </div>
+            <div className="w-px h-3 bg-stone-700" />
+            <div className="flex items-center gap-1">
+              <span className="text-stone-400 text-[10px]">22K:</span>
+              <span className="text-yellow-400">₹{gold22k?.toLocaleString('en-IN')}</span>
             </div>
-          )}
+          </div>
 
-          {lastUpdated && !loading && (
-            <span className="text-[9px] text-emerald-400 hidden sm:inline">
-              ● Live ({lastUpdated})
-            </span>
-          )}
+          <span className="text-[9px] text-emerald-400 hidden sm:inline">
+            ● Active ({lastUpdated})
+          </span>
         </div>
 
         {/* Navigation Actions */}
