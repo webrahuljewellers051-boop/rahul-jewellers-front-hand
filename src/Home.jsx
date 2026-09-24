@@ -3,8 +3,7 @@ import axios from 'axios';
 import html2pdf from 'html2pdf.js';
 
 import StoreNavbar from './components/StoreNavbar.jsx';
-import LiveGoldNavbar from './components/LiveGoldNavbar.jsx'; // <-- Live Gold Rates Ticker Component
-import CustomerLoginModal from './components/loginmodal';
+import LiveGoldNavbar from './components/LiveGoldNavbar';
 import IntroSplash from './components/IntroSplash.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
