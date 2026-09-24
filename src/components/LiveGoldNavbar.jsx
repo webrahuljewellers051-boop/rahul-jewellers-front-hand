@@ -1,206 +1,476 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, ArrowDown, ArrowUp, CircleDollarSign, Wifi, WifiOff } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
+
+import './LiveGoldNavbar.css';
 
 const API_KEY = import.meta.env.VITE_FCS_API_KEY;
+
 const WS_URL = 'wss://ws-v4.fcsapi.com/ws';
 
-const OUNCE_TO_GRAMS = 31.1034768;
+// FCS symbols
+const GOLD_SYMBOL = 'FLC:XAUUSD';
+const INR_SYMBOL = 'FLC:USDINR';
 
-const FALLBACK = {
-  usdGold: null,
-  usdInr: null,
-  gold24k: 74500,
-  gold22k: 68300,
-  gold18k: 55875,
+const TIMEFRAME = '1';
+
+// 1 troy ounce = 31.1034768 grams
+const TROY_OUNCE_GRAMS = 31.1034768;
+
+const formatINR = (value) => {
+  if (!Number.isFinite(value)) {
+    return '—';
+  }
+
+  return `₹${Math.round(value).toLocaleString('en-IN')}`;
 };
 
-const money = (value, decimals = 0) =>
-  Number.isFinite(value)
-    ? `₹${Math.round(value).toLocaleString('en-IN')}`
-    : '—';
+const getCurrentPrice = (data) => {
+  const value =
+    data?.prices?.c ??
+    data?.prices?.a ??
+    data?.prices?.b;
+
+  const number = Number(value);
+
+  if (Number.isFinite(number) && number > 0) {
+    return number;
+  }
+
+  return null;
+};
 
 export default function LiveGoldNavbar() {
-  const [usdGold, setUsdGold] = useState(FALLBACK.usdGold);
-  const [usdInr, setUsdInr] = useState(FALLBACK.usdInr);
-  const [last24k, setLast24k] = useState(FALLBACK.gold24k);
-  const [last22k, setLast22k] = useState(FALLBACK.gold22k);
-  const [last18k, setLast18k] = useState(FALLBACK.gold18k);
+  const [goldUsd, setGoldUsd] = useState(null);
+  const [usdInr, setUsdInr] = useState(null);
+
+  const [previous24k, setPrevious24k] = useState(null);
+
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const [connected, setConnected] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
+
+  const [connectionMessage, setConnectionMessage] =
+    useState('Connecting to FCS…');
+
   const [direction, setDirection] = useState(0);
-  const previous24k = useRef(FALLBACK.gold24k);
+
+  const socketRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const reconnectCountRef = useRef(0);
+  const stoppedRef = useRef(false);
 
   useEffect(() => {
     if (!API_KEY) {
-      console.warn('VITE_FCS_API_KEY is not configured. Gold ticker is using fallback values.');
+      console.error(
+        'VITE_FCS_API_KEY is missing. Add it to your Vercel Environment Variables.'
+      );
+
+      setConnectionMessage('FCS KEY MISSING');
+
       return undefined;
     }
 
-    let socket;
-    let heartbeat;
-    let reconnectTimer;
-    let stopped = false;
-
     const connect = () => {
-      if (stopped) return;
+      if (stoppedRef.current) {
+        return;
+      }
+
+      setConnectionMessage('Connecting to FCS…');
 
       try {
-        socket = new WebSocket(`${WS_URL}?access_key=${encodeURIComponent(API_KEY)}`);
+        const socket = new WebSocket(
+          `${WS_URL}?access_key=${encodeURIComponent(API_KEY)}`
+        );
+
+        socketRef.current = socket;
 
         socket.onopen = () => {
-          setConnected(true);
+          console.log('FCS WebSocket connected');
 
-          // Stream both XAU/USD and USD/INR. This lets us display an
-          // approximate international gold price converted to INR.
-          socket.send(JSON.stringify({
-            type: 'join_symbol',
-            symbol: 'XAUUSD',
-            timeframe: '60',
-          }));
-
-          socket.send(JSON.stringify({
-            type: 'join_symbol',
-            symbol: 'USDINR',
-            timeframe: '60',
-          }));
-
-          heartbeat = window.setInterval(() => {
-            if (socket?.readyState === WebSocket.OPEN) {
-              socket.send(JSON.stringify({ type: 'ping' }));
-            }
-          }, 30000);
+          setConnectionMessage('Authenticating…');
         };
 
         socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            const symbol = String(data.symbol || data.ticker || '').toUpperCase();
-            const close = Number(data?.prices?.c ?? data?.active?.c ?? data?.price);
 
-            if (!Number.isFinite(close)) return;
+            console.log('FCS WebSocket message:', data);
 
-            if (symbol.includes('XAUUSD')) {
-              setUsdGold(close);
-            } else if (symbol.includes('USDINR')) {
-              setUsdInr(close);
+            /*
+             * FCS authentication / welcome message
+             */
+            if (
+              data.type === 'welcome' ||
+              data.welcome?.type === 'welcome'
+            ) {
+              console.log('FCS WebSocket authenticated');
+
+              setConnected(true);
+              setConnectionMessage('LIVE FEED');
+
+              reconnectCountRef.current = 0;
+
+              /*
+               * Subscribe to Gold / USD
+               */
+              socket.send(
+                JSON.stringify({
+                  type: 'join_symbol',
+                  symbol: GOLD_SYMBOL,
+                  timeframe: TIMEFRAME,
+                })
+              );
+
+              /*
+               * Subscribe to USD / INR
+               */
+              socket.send(
+                JSON.stringify({
+                  type: 'join_symbol',
+                  symbol: INR_SYMBOL,
+                  timeframe: TIMEFRAME,
+                })
+              );
+
+              return;
             }
 
-            setLastUpdated(new Date());
+            /*
+             * FCS error message
+             */
+            if (data.type === 'error') {
+              console.error(
+                'FCS WebSocket error:',
+                data.message
+              );
+
+              setConnected(false);
+
+              setConnectionMessage(
+                data.message || 'FCS rejected connection'
+              );
+
+              return;
+            }
+
+            /*
+             * We only process price messages
+             */
+            if (data.type !== 'price') {
+              return;
+            }
+
+            const symbol = String(
+              data.symbol || ''
+            ).toUpperCase();
+
+            const price = getCurrentPrice(data);
+
+            if (!price) {
+              return;
+            }
+
+            /*
+             * XAU/USD
+             */
+            if (symbol.includes('XAUUSD')) {
+              console.log(
+                'Gold USD price:',
+                price
+              );
+
+              setGoldUsd(price);
+              setLastUpdated(new Date());
+            }
+
+            /*
+             * USD/INR
+             */
+            else if (symbol.includes('USDINR')) {
+              console.log(
+                'USD INR price:',
+                price
+              );
+
+              setUsdInr(price);
+              setLastUpdated(new Date());
+            }
           } catch (error) {
-            console.error('Gold ticker message error:', error);
+            console.error(
+              'FCS message parsing error:',
+              error
+            );
           }
         };
 
-        socket.onerror = () => {
+        socket.onerror = (error) => {
+          console.error(
+            'FCS WebSocket connection error:',
+            error
+          );
+
           setConnected(false);
+
+          setConnectionMessage(
+            'Connection error'
+          );
         };
 
         socket.onclose = () => {
-          setConnected(false);
-          window.clearInterval(heartbeat);
+          console.log(
+            'FCS WebSocket disconnected'
+          );
 
-          if (!stopped) {
-            reconnectTimer = window.setTimeout(connect, 5000);
+          setConnected(false);
+
+          if (stoppedRef.current) {
+            return;
           }
+
+          setConnectionMessage(
+            'Reconnecting…'
+          );
+
+          /*
+           * Exponential reconnect delay
+           *
+           * 5 sec
+           * 10 sec
+           * 15 sec
+           * ...
+           * maximum 30 sec
+           */
+          reconnectCountRef.current += 1;
+
+          const delay = Math.min(
+            5000 * reconnectCountRef.current,
+            30000
+          );
+
+          reconnectTimerRef.current =
+            window.setTimeout(
+              connect,
+              delay
+            );
         };
       } catch (error) {
-        console.error('Gold ticker connection error:', error);
+        console.error(
+          'Unable to create FCS WebSocket:',
+          error
+        );
+
         setConnected(false);
+
+        setConnectionMessage(
+          'Unable to connect'
+        );
+
+        reconnectCountRef.current += 1;
+
+        const delay = Math.min(
+          5000 * reconnectCountRef.current,
+          30000
+        );
+
+        reconnectTimerRef.current =
+          window.setTimeout(
+            connect,
+            delay
+          );
       }
     };
 
     connect();
 
     return () => {
-      stopped = true;
-      window.clearInterval(heartbeat);
-      window.clearTimeout(reconnectTimer);
-      socket?.close();
+      stoppedRef.current = true;
+
+      window.clearTimeout(
+        reconnectTimerRef.current
+      );
+
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
     };
   }, []);
 
-  const rates = useMemo(() => {
-    if (Number.isFinite(usdGold) && Number.isFinite(usdInr)) {
-      // XAUUSD = USD per troy ounce.
-      // Convert to INR per 10g and then to INR per gram.
-      const perGram24k = (usdGold * usdInr) / OUNCE_TO_GRAMS;
-      return {
-        gold24k: perGram24k,
-        gold22k: perGram24k * (22 / 24),
-        gold18k: perGram24k * (18 / 24),
-      };
+  /*
+   * Calculate 24K gold price in INR per gram.
+   *
+   * XAUUSD = USD price of one troy ounce of gold
+   * USDINR = INR value of one USD
+   *
+   * INR per gram =
+   * (XAUUSD × USDINR) / 31.1034768
+   */
+  const gold24k =
+    Number.isFinite(goldUsd) &&
+    Number.isFinite(usdInr)
+      ? (goldUsd * usdInr) /
+        TROY_OUNCE_GRAMS
+      : null;
+
+  /*
+   * 22K = 22 / 24 of 24K
+   */
+  const gold22k =
+    Number.isFinite(gold24k)
+      ? gold24k * (22 / 24)
+      : null;
+
+  /*
+   * 18K = 18 / 24 of 24K
+   */
+  const gold18k =
+    Number.isFinite(gold24k)
+      ? gold24k * (18 / 24)
+      : null;
+
+  /*
+   * Detect whether gold price is moving
+   * up or down.
+   */
+  useEffect(() => {
+    if (!Number.isFinite(gold24k)) {
+      return;
     }
 
-    return {
-      gold24k: last24k,
-      gold22k: last22k,
-      gold18k: last18k,
-    };
-  }, [usdGold, usdInr, last24k, last22k, last18k]);
+    if (Number.isFinite(previous24k)) {
+      if (gold24k > previous24k) {
+        setDirection(1);
+      } else if (gold24k < previous24k) {
+        setDirection(-1);
+      } else {
+        setDirection(0);
+      }
+    }
 
-  useEffect(() => {
-    if (!Number.isFinite(rates.gold24k)) return;
-
-    if (rates.gold24k > previous24k.current) setDirection(1);
-    else if (rates.gold24k < previous24k.current) setDirection(-1);
-
-    previous24k.current = rates.gold24k;
-    setLast24k(rates.gold24k);
-    setLast22k(rates.gold22k);
-    setLast18k(rates.gold18k);
-  }, [rates.gold24k, rates.gold22k, rates.gold18k]);
+    setPrevious24k(gold24k);
+  }, [gold24k, previous24k]);
 
   const items = [
-    { label: '24K', value: rates.gold24k },
-    { label: '22K', value: rates.gold22k },
-    { label: '18K', value: rates.gold18k },
+    ['24K', gold24k],
+    ['22K', gold22k],
+    ['18K', gold18k],
   ];
 
   return (
-    <div className="gold-ticker-shell" role="status" aria-label="Live gold rates">
-      <div className="gold-ticker-track">
-        <div className="gold-ticker-brand">
-          <span className="gold-ticker-live-dot" />
-          <span>LIVE GOLD RATE</span>
-        </div>
+    <div
+      className="gold-rate-bar"
+      role="status"
+      aria-label="Live FCS gold rates"
+    >
+      <div className="gold-rate-marquee">
+        <div className="gold-rate-content">
 
-        {items.map((item) => (
-          <React.Fragment key={item.label}>
-            <span className="gold-ticker-divider" />
-            <div className="gold-ticker-rate">
-              <span className="gold-ticker-purity">{item.label}</span>
-              <strong>{money(item.value)}</strong>
-              <span className="gold-ticker-unit">/ g</span>
-            </div>
-          </React.Fragment>
-        ))}
+          {/* LIVE GOLD RATE */}
+          <div className="gold-rate-brand">
+            <span
+              className={`gold-live-dot ${
+                connected ? 'is-live' : ''
+              }`}
+            />
 
-        <span className="gold-ticker-divider" />
+            <span>
+              LIVE GOLD RATE
+            </span>
+          </div>
 
-        <div className={`gold-ticker-move ${direction > 0 ? 'up' : direction < 0 ? 'down' : ''}`}>
-          {direction > 0 ? <ArrowUp size={13} /> : direction < 0 ? <ArrowDown size={13} /> : <Activity size={13} />}
-          <span>MARKET MOVING</span>
-        </div>
+          {/* GOLD RATES */}
+          {items.map(
+            ([purity, rate]) => (
+              <React.Fragment key={purity}>
 
-        <span className="gold-ticker-divider" />
+                <span className="gold-separator" />
 
-        <div className={`gold-ticker-status ${connected ? 'online' : ''}`}>
-          {connected ? <Wifi size={13} /> : <WifiOff size={13} />}
-          <span>{connected ? 'LIVE FEED' : 'RECONNECTING'}</span>
-        </div>
+                <div className="gold-rate-item">
 
-        <span className="gold-ticker-divider" />
+                  <span className="gold-purity">
+                    {purity}
+                  </span>
 
-        <div className="gold-ticker-time">
-          {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString('en-IN')}` : 'Connecting to market feed…'}
-        </div>
+                  <strong>
+                    {formatINR(rate)}
+                  </strong>
 
-        {/* Duplicate content creates a seamless marquee on wide screens. */}
-        <span className="gold-ticker-divider ticker-duplicate" />
-        <div className="gold-ticker-brand ticker-duplicate">
-          <CircleDollarSign size={14} />
-          <span>RAHUL JEWELLERS</span>
+                  <span className="gold-unit">
+                    /g
+                  </span>
+
+                </div>
+
+              </React.Fragment>
+            )
+          )}
+
+          {/* MARKET MOVEMENT */}
+          <span className="gold-separator" />
+
+          <div
+            className={`gold-movement ${
+              direction > 0
+                ? 'up'
+                : direction < 0
+                ? 'down'
+                : ''
+            }`}
+          >
+            {direction > 0 ? (
+              <ArrowUp size={14} />
+            ) : direction < 0 ? (
+              <ArrowDown size={14} />
+            ) : (
+              <Activity size={14} />
+            )}
+
+            <span>
+              {direction > 0
+                ? 'RISING'
+                : direction < 0
+                ? 'FALLING'
+                : 'LIVE MARKET'}
+            </span>
+          </div>
+
+          {/* CONNECTION STATUS */}
+          <span className="gold-separator" />
+
+          <div
+            className={`gold-connection ${
+              connected
+                ? 'online'
+                : 'offline'
+            }`}
+          >
+            {connected ? (
+              <Wifi size={14} />
+            ) : (
+              <WifiOff size={14} />
+            )}
+
+            <span>
+              {connected
+                ? 'LIVE'
+                : 'OFFLINE'}
+            </span>
+          </div>
+
+          {/* LAST UPDATE */}
+          <span className="gold-update">
+            {lastUpdated
+              ? `Updated ${lastUpdated.toLocaleTimeString(
+                  'en-IN'
+                )}`
+              : connectionMessage}
+          </span>
+
         </div>
       </div>
     </div>
