@@ -1,140 +1,208 @@
-import React, { useState, useEffect } from 'react';
-import { Crown, Sparkles, TrendingUp, RefreshCw } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Activity, ArrowDown, ArrowUp, CircleDollarSign, Wifi, WifiOff } from 'lucide-react';
 
-const API_KEY = import.meta.env.VITE_FCS_API_KEY || 'R0x3HM70X0Ypiert8zqiTEhnm3daVJ51j';
+const API_KEY = import.meta.env.VITE_FCS_API_KEY;
 const WS_URL = 'wss://ws-v4.fcsapi.com/ws';
 
+const OUNCE_TO_GRAMS = 31.1034768;
+
+const FALLBACK = {
+  usdGold: null,
+  usdInr: null,
+  gold24k: 74500,
+  gold22k: 68300,
+  gold18k: 55875,
+};
+
+const money = (value, decimals = 0) =>
+  Number.isFinite(value)
+    ? `₹${Math.round(value).toLocaleString('en-IN')}`
+    : '—';
+
 export default function LiveGoldNavbar() {
-  const [gold24k, setGold24k] = useState(745000); // डिफ़ॉल्ट फॉलबैक प्रति 10 ग्राम
-  const [gold22k, setGold22k] = useState(683000); // डिफ़ॉल्ट फॉलबैक प्रति 10 ग्राम
-  const [isConnected, setIsConnected] = useState(false);
+  const [usdGold, setUsdGold] = useState(FALLBACK.usdGold);
+  const [usdInr, setUsdInr] = useState(FALLBACK.usdInr);
+  const [last24k, setLast24k] = useState(FALLBACK.gold24k);
+  const [last22k, setLast22k] = useState(FALLBACK.gold22k);
+  const [last18k, setLast18k] = useState(FALLBACK.gold18k);
+
+  const [connected, setConnected] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [direction, setDirection] = useState(0);
+  const previous24k = useRef(FALLBACK.gold24k);
 
   useEffect(() => {
-    let ws = null;
-    let heartbeatTimer = null;
+    if (!API_KEY) {
+      console.warn('VITE_FCS_API_KEY is not configured. Gold ticker is using fallback values.');
+      return undefined;
+    }
 
-    const connectWebSocket = () => {
+    let socket;
+    let heartbeat;
+    let reconnectTimer;
+    let stopped = false;
+
+    const connect = () => {
+      if (stopped) return;
+
       try {
-        ws = new WebSocket(`${WS_URL}?access_key=${API_KEY}`);
+        socket = new WebSocket(`${WS_URL}?access_key=${encodeURIComponent(API_KEY)}`);
 
-        ws.onopen = () => {
-          setIsConnected(true);
-          console.log("Connected to FCS API WebSocket Server");
+        socket.onopen = () => {
+          setConnected(true);
 
-          // गोल्ड सिंबल ज्वाइन करें (उदाहरण: XAUUSD या CURRENCY:XAUUSD)
-          ws.send(JSON.stringify({
-            type: "join_symbol",
-            symbol: "XAUUSD",
-            timeframe: "60"
+          // Stream both XAU/USD and USD/INR. This lets us display an
+          // approximate international gold price converted to INR.
+          socket.send(JSON.stringify({
+            type: 'join_symbol',
+            symbol: 'XAUUSD',
+            timeframe: '60',
           }));
 
-          // कनेक्शन जीवंत रखने के लिए पिंग भेजें
-          heartbeatTimer = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: "ping" }));
+          socket.send(JSON.stringify({
+            type: 'join_symbol',
+            symbol: 'USDINR',
+            timeframe: '60',
+          }));
+
+          heartbeat = window.setInterval(() => {
+            if (socket?.readyState === WebSocket.OPEN) {
+              socket.send(JSON.stringify({ type: 'ping' }));
             }
           }, 30000);
         };
 
-        ws.onmessage = (event) => {
+        socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            
-            // लाइव प्राइस डेटा हैंडल करना
-            if (data.type === "price" && data.prices && data.prices.c) {
-              const ouncePrice = parseFloat(data.prices.c);
-              
-              // 1 ट्रॉय औंस = 31.1034768 ग्राम, प्रति 10 ग्राम की गणना
-              const pricePer10Gram24K = (ouncePrice / 31.1034768) * 10;
-              const pricePer10Gram22K = pricePer10Gram24K * (22 / 24);
+            const symbol = String(data.symbol || data.ticker || '').toUpperCase();
+            const close = Number(data?.prices?.c ?? data?.active?.c ?? data?.price);
 
-              setGold24k(Math.round(pricePer10Gram24K));
-              setGold22k(Math.round(pricePer10Gram22K));
-              setLastUpdated(new Date().toLocaleTimeString());
+            if (!Number.isFinite(close)) return;
+
+            if (symbol.includes('XAUUSD')) {
+              setUsdGold(close);
+            } else if (symbol.includes('USDINR')) {
+              setUsdInr(close);
             }
-          } catch (err) {
-            console.error("Error parsing WebSocket message:", err);
+
+            setLastUpdated(new Date());
+          } catch (error) {
+            console.error('Gold ticker message error:', error);
           }
         };
 
-        ws.onerror = (err) => {
-          console.error("WebSocket error:", err);
+        socket.onerror = () => {
+          setConnected(false);
         };
 
-        ws.onclose = () => {
-          setIsConnected(false);
-          clearInterval(heartbeatTimer);
-          // 5 सेकंड बाद पुनः कनेक्ट करने का प्रयास
-          setTimeout(connectWebSocket, 5000);
+        socket.onclose = () => {
+          setConnected(false);
+          window.clearInterval(heartbeat);
+
+          if (!stopped) {
+            reconnectTimer = window.setTimeout(connect, 5000);
+          }
         };
-      } catch (e) {
-        console.error("Connection initialization error:", e);
+      } catch (error) {
+        console.error('Gold ticker connection error:', error);
+        setConnected(false);
       }
     };
 
-    connectWebSocket();
+    connect();
 
     return () => {
-      clearInterval(heartbeatTimer);
-      if (ws) ws.close();
+      stopped = true;
+      window.clearInterval(heartbeat);
+      window.clearTimeout(reconnectTimer);
+      socket?.close();
     };
   }, []);
 
+  const rates = useMemo(() => {
+    if (Number.isFinite(usdGold) && Number.isFinite(usdInr)) {
+      // XAUUSD = USD per troy ounce.
+      // Convert to INR per 10g and then to INR per gram.
+      const perGram24k = (usdGold * usdInr) / OUNCE_TO_GRAMS;
+      return {
+        gold24k: perGram24k,
+        gold22k: perGram24k * (22 / 24),
+        gold18k: perGram24k * (18 / 24),
+      };
+    }
+
+    return {
+      gold24k: last24k,
+      gold22k: last22k,
+      gold18k: last18k,
+    };
+  }, [usdGold, usdInr, last24k, last22k, last18k]);
+
+  useEffect(() => {
+    if (!Number.isFinite(rates.gold24k)) return;
+
+    if (rates.gold24k > previous24k.current) setDirection(1);
+    else if (rates.gold24k < previous24k.current) setDirection(-1);
+
+    previous24k.current = rates.gold24k;
+    setLast24k(rates.gold24k);
+    setLast22k(rates.gold22k);
+    setLast18k(rates.gold18k);
+  }, [rates.gold24k, rates.gold22k, rates.gold18k]);
+
+  const items = [
+    { label: '24K', value: rates.gold24k },
+    { label: '22K', value: rates.gold22k },
+    { label: '18K', value: rates.gold18k },
+  ];
+
   return (
-    <nav className="bg-stone-950 text-white border-b border-amber-500/30 sticky top-0 z-50 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        {/* ब्रांड लोगो और शीर्षक */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 p-0.5 shadow-lg">
-            <div className="w-full h-full bg-stone-900 rounded-[10px] flex items-center justify-center text-amber-400">
-              <Crown className="w-5 h-5" />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-sm font-serif font-bold tracking-widest text-amber-200 uppercase">
-              Rahul Jewellers
-            </h1>
-            <p className="text-[9px] text-stone-400 uppercase tracking-widest">Sheoganj Showroom</p>
-          </div>
+    <div className="gold-ticker-shell" role="status" aria-label="Live gold rates">
+      <div className="gold-ticker-track">
+        <div className="gold-ticker-brand">
+          <span className="gold-ticker-live-dot" />
+          <span>LIVE GOLD RATE</span>
         </div>
 
-        {/* लाइव वेब सॉकेट रेट्स टिकर (प्रति 10 ग्राम) */}
-        <div className="flex items-center gap-4 bg-stone-900/90 px-4 py-2 rounded-2xl border border-amber-500/20 text-xs shadow-inner">
-          <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase tracking-wider">
-            <TrendingUp className="w-4 h-4 animate-pulse" />
-            <span>Live WebSocket Gold Rates (Per 10 Gram):</span>
-          </div>
-
-          <div className="flex items-center gap-4 font-mono font-bold">
-            <div className="flex items-center gap-1">
-              <span className="text-stone-400 text-[10px]">24K:</span>
-              <span className="text-amber-300">₹{gold24k?.toLocaleString('en-IN')}</span>
+        {items.map((item) => (
+          <React.Fragment key={item.label}>
+            <span className="gold-ticker-divider" />
+            <div className="gold-ticker-rate">
+              <span className="gold-ticker-purity">{item.label}</span>
+              <strong>{money(item.value)}</strong>
+              <span className="gold-ticker-unit">/ g</span>
             </div>
-            <div className="w-px h-3 bg-stone-700" />
-            <div className="flex items-center gap-1">
-              <span className="text-stone-400 text-[10px]">22K:</span>
-              <span className="text-yellow-400">₹{gold22k?.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
+          </React.Fragment>
+        ))}
 
-          <span className={`text-[9px] hidden sm:inline ${isConnected ? 'text-emerald-400' : 'text-amber-400'}`}>
-            {isConnected ? `● Live WebSocket (${lastUpdated || 'Connected'})` : '○ Connecting...'}
-          </span>
+        <span className="gold-ticker-divider" />
+
+        <div className={`gold-ticker-move ${direction > 0 ? 'up' : direction < 0 ? 'down' : ''}`}>
+          {direction > 0 ? <ArrowUp size={13} /> : direction < 0 ? <ArrowDown size={13} /> : <Activity size={13} />}
+          <span>MARKET MOVING</span>
         </div>
 
-        {/* नेविगेशन एक्शन */}
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => alert("Redirecting to scheme dashboard...")}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition shadow-sm flex items-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" /> Savings Scheme
-          </button>
+        <span className="gold-ticker-divider" />
+
+        <div className={`gold-ticker-status ${connected ? 'online' : ''}`}>
+          {connected ? <Wifi size={13} /> : <WifiOff size={13} />}
+          <span>{connected ? 'LIVE FEED' : 'RECONNECTING'}</span>
         </div>
 
+        <span className="gold-ticker-divider" />
+
+        <div className="gold-ticker-time">
+          {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString('en-IN')}` : 'Connecting to market feed…'}
+        </div>
+
+        {/* Duplicate content creates a seamless marquee on wide screens. */}
+        <span className="gold-ticker-divider ticker-duplicate" />
+        <div className="gold-ticker-brand ticker-duplicate">
+          <CircleDollarSign size={14} />
+          <span>RAHUL JEWELLERS</span>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 }
