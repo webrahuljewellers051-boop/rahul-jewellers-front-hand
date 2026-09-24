@@ -1,305 +1,260 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Activity, ArrowUp, ArrowDown, Wifi, WifiOff } from 'lucide-react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
+
 import './LiveGoldNavbar.css';
 
-const API_KEY = import.meta.env.VITE_FCS_API_KEY;
-
-const WS_URL = 'wss://ws-v4.fcsapi.com/ws';
-
-const GOLD_SYMBOL = 'XAUUSD';
-const USD_INR_SYMBOL = 'USDINR';
+/*
+ * Gold API
+ *
+ * XAU/INR = Gold price in INR per troy ounce
+ *
+ * 1 troy ounce = 31.1034768 grams
+ */
+const GOLD_API =
+  'https://api.gold-api.com/price/XAU/INR';
 
 const TROY_OUNCE_GRAMS = 31.1034768;
 
+/*
+ * Convert INR price per troy ounce
+ * into INR price per gram.
+ */
+function convertToPerGram(value) {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  return value / TROY_OUNCE_GRAMS;
+}
+
+/*
+ * Format Indian Rupee price.
+ */
 function formatINR(value) {
   if (!Number.isFinite(value)) {
     return '—';
   }
 
-  return `₹${Math.round(value).toLocaleString('en-IN')}`;
+  return `₹${Math.round(value).toLocaleString(
+    'en-IN'
+  )}`;
 }
 
 export default function LiveGoldNavbar() {
-  const [goldPrice, setGoldPrice] = useState(null);
-  const [usdInr, setUsdInr] = useState(null);
+  const [price, setPrice] =
+    useState(null);
 
-  const [connected, setConnected] = useState(false);
+  const [previousPrice, setPreviousPrice] =
+    useState(null);
 
-  const [status, setStatus] = useState(
-    'Connecting to gold market...'
-  );
+  const [direction, setDirection] =
+    useState(0);
 
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [connected, setConnected] =
+    useState(false);
 
-  const [movement, setMovement] = useState(0);
+  const [status, setStatus] =
+    useState(
+      'Loading gold rate...'
+    );
 
-  const previousPrice = useRef(null);
-  const socketRef = useRef(null);
-  const reconnectTimer = useRef(null);
-  const stopped = useRef(false);
+  const [lastUpdated, setLastUpdated] =
+    useState(null);
 
-  useEffect(() => {
-    if (!API_KEY) {
-      console.error(
-        'VITE_FCS_API_KEY is missing'
-      );
+  const timerRef =
+    useRef(null);
 
-      setStatus('FCS KEY MISSING');
-
-      return;
-    }
-
-    function connect() {
-      if (stopped.current) {
-        return;
-      }
-
-      console.log(
-        'Connecting to FCS WebSocket...'
-      );
-
-      setStatus('Connecting...');
-
-      const socket = new WebSocket(
-        `${WS_URL}?access_key=${encodeURIComponent(
-          API_KEY
-        )}`
-      );
-
-      socketRef.current = socket;
-
-      socket.onopen = () => {
-        console.log(
-          'WebSocket connection opened'
+  const fetchGoldRate =
+    useCallback(async () => {
+      try {
+        setStatus(
+          'Updating gold rate...'
         );
 
-        setStatus('Authenticating...');
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          console.log(
-            'FCS:',
-            data
+        const response =
+          await fetch(
+            `${GOLD_API}?_=${Date.now()}`,
+            {
+              method: 'GET',
+              cache: 'no-store',
+            }
           );
 
-          /*
-           * Successful authentication
-           */
-          if (
-            data.type === 'welcome' ||
-            data.welcome?.type === 'welcome'
-          ) {
-            console.log(
-              'FCS authentication successful'
-            );
-
-            setConnected(true);
-
-            setStatus('LIVE GOLD FEED');
-
-            /*
-             * Subscribe to XAUUSD
-             */
-            socket.send(
-              JSON.stringify({
-                type: 'join_symbol',
-                symbol: GOLD_SYMBOL,
-                timeframe: '1'
-              })
-            );
-
-            /*
-             * Subscribe to USDINR
-             */
-            socket.send(
-              JSON.stringify({
-                type: 'join_symbol',
-                symbol: USD_INR_SYMBOL,
-                timeframe: '1'
-              })
-            );
-
-            return;
-          }
-
-          /*
-           * Server error
-           */
-          if (data.type === 'error') {
-            console.error(
-              'FCS ERROR:',
-              data.message
-            );
-
-            setConnected(false);
-
-            setStatus(
-              data.message ||
-                'FCS connection rejected'
-            );
-
-            return;
-          }
-
-          /*
-           * Price message
-           */
-          if (data.type === 'price') {
-            const symbol = String(
-              data.symbol || ''
-            ).toUpperCase();
-
-            const prices = data.prices || {};
-
-            const current =
-              Number(prices.c) ||
-              Number(prices.a) ||
-              Number(prices.b);
-
-            if (!current || current <= 0) {
-              return;
-            }
-
-            /*
-             * GOLD
-             */
-            if (
-              symbol.includes('XAUUSD')
-            ) {
-              console.log(
-                'XAUUSD:',
-                current
-              );
-
-              setGoldPrice(current);
-
-              setLastUpdated(
-                new Date()
-              );
-            }
-
-            /*
-             * USD / INR
-             */
-            if (
-              symbol.includes('USDINR')
-            ) {
-              console.log(
-                'USDINR:',
-                current
-              );
-
-              setUsdInr(current);
-
-              setLastUpdated(
-                new Date()
-              );
-            }
-          }
-        } catch (error) {
-          console.error(
-            'FCS JSON error:',
-            error
+        if (!response.ok) {
+          throw new Error(
+            `HTTP ${response.status}`
           );
         }
-      };
 
-      socket.onerror = (error) => {
+        const data =
+          await response.json();
+
+        console.log(
+          'Gold API response:',
+          data
+        );
+
+        /*
+         * Gold API normally returns
+         * the current price as "price".
+         *
+         * The additional fallbacks make
+         * the component more tolerant
+         * of response changes.
+         */
+        const rawPrice =
+          data?.price ??
+          data?.value ??
+          data?.data?.price;
+
+        const ouncePrice =
+          Number(rawPrice);
+
+        if (
+          !Number.isFinite(
+            ouncePrice
+          ) ||
+          ouncePrice <= 0
+        ) {
+          throw new Error(
+            'Invalid gold price received'
+          );
+        }
+
+        /*
+         * Convert:
+         *
+         * INR / troy ounce
+         *
+         * ↓
+         *
+         * INR / gram
+         */
+        const gramPrice =
+          convertToPerGram(
+            ouncePrice
+          );
+
+        if (
+          !Number.isFinite(
+            gramPrice
+          ) ||
+          gramPrice <= 0
+        ) {
+          throw new Error(
+            'Invalid per-gram gold price'
+          );
+        }
+
+        /*
+         * Detect movement.
+         */
+        setPreviousPrice(
+          (oldPrice) => {
+            if (
+              Number.isFinite(
+                oldPrice
+              )
+            ) {
+              if (
+                gramPrice >
+                oldPrice
+              ) {
+                setDirection(1);
+              } else if (
+                gramPrice <
+                oldPrice
+              ) {
+                setDirection(-1);
+              } else {
+                setDirection(0);
+              }
+            }
+
+            return gramPrice;
+          }
+        );
+
+        /*
+         * Save 24K price.
+         */
+        setPrice(
+          gramPrice
+        );
+
+        /*
+         * API is responding.
+         */
+        setConnected(
+          true
+        );
+
+        setStatus(
+          'LIVE GOLD FEED'
+        );
+
+        setLastUpdated(
+          new Date()
+        );
+
+        console.log(
+          '24K Gold:',
+          gramPrice,
+          'INR/gram'
+        );
+      } catch (error) {
         console.error(
-          'FCS WebSocket error:',
+          'Gold price error:',
           error
         );
 
-        setConnected(false);
+        setConnected(
+          false
+        );
 
         setStatus(
-          'Connection error'
+          'Gold feed unavailable'
         );
-      };
+      }
+    }, []);
 
-      socket.onclose = () => {
-        console.log(
-          'FCS WebSocket closed'
-        );
+  useEffect(() => {
+    /*
+     * Fetch immediately.
+     */
+    fetchGoldRate();
 
-        setConnected(false);
-
-        if (stopped.current) {
-          return;
-        }
-
-        setStatus(
-          'Reconnecting...'
-        );
-
-        reconnectTimer.current =
-          setTimeout(
-            connect,
-            5000
-          );
-      };
-    }
-
-    connect();
-
-    return () => {
-      stopped.current = true;
-
-      clearTimeout(
-        reconnectTimer.current
+    /*
+     * Refresh every 10 seconds.
+     *
+     * The API provides real-time prices
+     * and currently documents its real-time
+     * endpoint as having no request limit.
+     */
+    timerRef.current =
+      window.setInterval(
+        fetchGoldRate,
+        10000
       );
 
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
+    return () => {
+      window.clearInterval(
+        timerRef.current
+      );
     };
-  }, []);
-
-  /*
-   * Calculate 24K gold INR/gram
-   *
-   * XAUUSD = USD price per troy ounce
-   * USDINR = INR per USD
-   */
-  const gold24K =
-    Number.isFinite(goldPrice) &&
-    Number.isFinite(usdInr)
-      ? (goldPrice * usdInr) /
-        TROY_OUNCE_GRAMS
-      : null;
-
-  /*
-   * Detect price movement
-   */
-  useEffect(() => {
-    if (!Number.isFinite(gold24K)) {
-      return;
-    }
-
-    if (
-      previousPrice.current !== null
-    ) {
-      if (
-        gold24K >
-        previousPrice.current
-      ) {
-        setMovement(1);
-      } else if (
-        gold24K <
-        previousPrice.current
-      ) {
-        setMovement(-1);
-      } else {
-        setMovement(0);
-      }
-    }
-
-    previousPrice.current =
-      gold24K;
-  }, [gold24K]);
+  }, [fetchGoldRate]);
 
   return (
     <div
@@ -311,7 +266,10 @@ export default function LiveGoldNavbar() {
 
         <div className="gold-rate-content">
 
-          {/* LIVE GOLD */}
+          {/* =========================
+              LIVE GOLD RATE
+          ========================== */}
+
           <div className="gold-rate-brand">
 
             <span
@@ -330,7 +288,10 @@ export default function LiveGoldNavbar() {
 
           <span className="gold-separator" />
 
-          {/* ONLY 24K */}
+          {/* =========================
+              24K GOLD ONLY
+          ========================== */}
+
           <div className="gold-rate-item">
 
             <span className="gold-purity">
@@ -339,41 +300,50 @@ export default function LiveGoldNavbar() {
 
             <strong>
               {formatINR(
-                gold24K
+                price
               )}
             </strong>
 
             <span className="gold-unit">
-              / g
+              /g
             </span>
 
           </div>
 
           <span className="gold-separator" />
 
-          {/* MOVEMENT */}
+          {/* =========================
+              PRICE MOVEMENT
+          ========================== */}
+
           <div
             className={`gold-movement ${
-              movement > 0
+              direction > 0
                 ? 'up'
-                : movement < 0
+                : direction < 0
                 ? 'down'
                 : ''
             }`}
           >
 
-            {movement > 0 ? (
-              <ArrowUp size={14} />
-            ) : movement < 0 ? (
-              <ArrowDown size={14} />
+            {direction > 0 ? (
+              <ArrowUp
+                size={14}
+              />
+            ) : direction < 0 ? (
+              <ArrowDown
+                size={14}
+              />
             ) : (
-              <Activity size={14} />
+              <Activity
+                size={14}
+              />
             )}
 
             <span>
-              {movement > 0
+              {direction > 0
                 ? 'RISING'
-                : movement < 0
+                : direction < 0
                 ? 'FALLING'
                 : 'LIVE MARKET'}
             </span>
@@ -382,7 +352,10 @@ export default function LiveGoldNavbar() {
 
           <span className="gold-separator" />
 
-          {/* CONNECTION */}
+          {/* =========================
+              CONNECTION STATUS
+          ========================== */}
+
           <div
             className={`gold-connection ${
               connected
@@ -392,9 +365,13 @@ export default function LiveGoldNavbar() {
           >
 
             {connected ? (
-              <Wifi size={14} />
+              <Wifi
+                size={14}
+              />
             ) : (
-              <WifiOff size={14} />
+              <WifiOff
+                size={14}
+              />
             )}
 
             <span>
@@ -405,13 +382,18 @@ export default function LiveGoldNavbar() {
 
           </div>
 
-          {/* UPDATE */}
+          {/* =========================
+              LAST UPDATE
+          ========================== */}
+
           <span className="gold-update">
+
             {lastUpdated
               ? `Updated ${lastUpdated.toLocaleTimeString(
                   'en-IN'
                 )}`
               : status}
+
           </span>
 
         </div>
