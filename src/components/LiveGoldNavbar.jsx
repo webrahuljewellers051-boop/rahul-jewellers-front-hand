@@ -15,11 +15,40 @@ import {
 
 import './LiveGoldNavbar.css';
 
-const GOLD_API =
-  'https://api.gold-api.com/price/XAU/INR';
+/*
+|--------------------------------------------------------------------------
+| API CONFIGURATION
+|--------------------------------------------------------------------------
+*/
 
+/*
+ * Gold API
+ *
+ * Returns XAU gold price in USD per troy ounce.
+ */
+const GOLD_API =
+  'https://api.gold-api.com/price/XAU';
+
+/*
+ * Frankfurter
+ *
+ * Returns USD -> INR exchange rate.
+ */
+const USD_INR_API =
+  'https://api.frankfurter.dev/v2/rate/USD/INR';
+
+/*
+ * 1 troy ounce = 31.1034768 grams
+ */
 const TROY_OUNCE_GRAMS =
   31.1034768;
+
+
+/*
+|--------------------------------------------------------------------------
+| FORMAT PRICE
+|--------------------------------------------------------------------------
+*/
 
 function formatINR(value) {
   if (!Number.isFinite(value)) {
@@ -31,7 +60,23 @@ function formatINR(value) {
   ).toLocaleString('en-IN')}`;
 }
 
-function extractPrice(data) {
+
+/*
+|--------------------------------------------------------------------------
+| EXTRACT GOLD PRICE
+|--------------------------------------------------------------------------
+*/
+
+function getGoldPrice(data) {
+  /*
+   * Gold API normally returns:
+   *
+   * {
+   *   price: 4350.60,
+   *   symbol: "XAU"
+   * }
+   */
+
   const value =
     data?.price ??
     data?.value ??
@@ -50,7 +95,50 @@ function extractPrice(data) {
   return null;
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| EXTRACT USD/INR
+|--------------------------------------------------------------------------
+*/
+
+function getUsdInr(data) {
+  /*
+   * Frankfurter v2 response:
+   *
+   * {
+   *   date: "...",
+   *   base: "USD",
+   *   quote: "INR",
+   *   rate: 88.xx
+   * }
+   */
+
+  const value =
+    data?.rate;
+
+  const number =
+    Number(value);
+
+  if (
+    Number.isFinite(number) &&
+    number > 0
+  ) {
+    return number;
+  }
+
+  return null;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| COMPONENT
+|--------------------------------------------------------------------------
+*/
+
 export default function LiveGoldNavbar() {
+
   const [price, setPrice] =
     useState(null);
 
@@ -74,98 +162,226 @@ export default function LiveGoldNavbar() {
   const previousPriceRef =
     useRef(null);
 
+
+  /*
+  |--------------------------------------------------------------------------
+  | FETCH GOLD RATE
+  |--------------------------------------------------------------------------
+  */
+
   const fetchGoldRate =
     useCallback(async () => {
+
       try {
+
         setStatus(
           'Updating gold rate...'
         );
 
-        const response =
-          await fetch(
+
+        /*
+         * Fetch both:
+         *
+         * 1. XAU/USD
+         * 2. USD/INR
+         */
+
+        const [
+          goldResponse,
+          exchangeResponse,
+        ] = await Promise.all([
+
+          fetch(
             `${GOLD_API}?_=${Date.now()}`,
             {
               method: 'GET',
               cache: 'no-store',
             }
-          );
+          ),
 
-        if (!response.ok) {
+          fetch(
+            `${USD_INR_API}?_=${Date.now()}`,
+            {
+              method: 'GET',
+              cache: 'no-store',
+            }
+          ),
+
+        ]);
+
+
+        /*
+         * Check Gold API
+         */
+
+        if (
+          !goldResponse.ok
+        ) {
           throw new Error(
-            `HTTP ${response.status}`
+            `Gold API HTTP ${goldResponse.status}`
           );
         }
 
-        const data =
-          await response.json();
+
+        /*
+         * Check Exchange API
+         */
+
+        if (
+          !exchangeResponse.ok
+        ) {
+          throw new Error(
+            `Exchange API HTTP ${exchangeResponse.status}`
+          );
+        }
+
+
+        /*
+         * Convert responses to JSON
+         */
+
+        const goldData =
+          await goldResponse.json();
+
+        const exchangeData =
+          await exchangeResponse.json();
+
 
         console.log(
           'Gold API:',
-          data
+          goldData
         );
 
-        /*
-         * XAU/INR is INR per troy ounce.
-         */
-        const ouncePrice =
-          extractPrice(data);
+        console.log(
+          'USD/INR API:',
+          exchangeData
+        );
 
-        if (!ouncePrice) {
+
+        /*
+         * Get XAU/USD
+         */
+
+        const goldUsd =
+          getGoldPrice(
+            goldData
+          );
+
+
+        /*
+         * Get USD/INR
+         */
+
+        const usdInr =
+          getUsdInr(
+            exchangeData
+          );
+
+
+        if (!goldUsd) {
           throw new Error(
-            'Invalid gold price'
+            'Gold API returned an invalid price'
           );
         }
 
+
+        if (!usdInr) {
+          throw new Error(
+            'USD/INR API returned an invalid rate'
+          );
+        }
+
+
         /*
-         * Convert INR/troy-ounce
-         * to INR/gram.
-         */
-        const gramPrice =
-          ouncePrice /
+        |--------------------------------------------------------------------------
+        | CALCULATE 24K GOLD
+        |--------------------------------------------------------------------------
+        |
+        | XAU/USD
+        |       ↓
+        | USD per troy ounce
+        |
+        | × USD/INR
+        |       ↓
+        | INR per troy ounce
+        |
+        | ÷ 31.1034768
+        |       ↓
+        | INR per gram
+        |
+        */
+
+        const pricePerGram =
+          (
+            goldUsd *
+            usdInr
+          ) /
           TROY_OUNCE_GRAMS;
+
 
         if (
           !Number.isFinite(
-            gramPrice
+            pricePerGram
           ) ||
-          gramPrice <= 0
+          pricePerGram <= 0
         ) {
           throw new Error(
-            'Invalid gram price'
+            'Calculated gold price is invalid'
           );
         }
 
+
         /*
-         * Detect movement.
-         */
+        |--------------------------------------------------------------------------
+        | PRICE MOVEMENT
+        |--------------------------------------------------------------------------
+        */
+
         const previous =
           previousPriceRef.current;
+
 
         if (
           Number.isFinite(
             previous
           )
         ) {
+
           if (
-            gramPrice >
+            pricePerGram >
             previous
           ) {
+
             setDirection(1);
+
           } else if (
-            gramPrice <
+            pricePerGram <
             previous
           ) {
+
             setDirection(-1);
+
           } else {
+
             setDirection(0);
+
           }
+
         }
 
+
         previousPriceRef.current =
-          gramPrice;
+          pricePerGram;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE UI
+        |--------------------------------------------------------------------------
+        */
 
         setPrice(
-          gramPrice
+          pricePerGram
         );
 
         setConnected(
@@ -179,9 +395,39 @@ export default function LiveGoldNavbar() {
         setLastUpdated(
           new Date()
         );
+
+
+        console.log(
+          '--------------------------------'
+        );
+
+        console.log(
+          '24K GOLD'
+        );
+
+        console.log(
+          'XAU/USD:',
+          goldUsd
+        );
+
+        console.log(
+          'USD/INR:',
+          usdInr
+        );
+
+        console.log(
+          '24K INR/GRAM:',
+          pricePerGram
+        );
+
+        console.log(
+          '--------------------------------'
+        );
+
       } catch (error) {
+
         console.error(
-          'Gold API error:',
+          'Gold rate error:',
           error
         );
 
@@ -192,11 +438,33 @@ export default function LiveGoldNavbar() {
         setStatus(
           'Gold feed unavailable'
         );
+
       }
+
     }, []);
 
+
+  /*
+  |--------------------------------------------------------------------------
+  | START LIVE UPDATES
+  |--------------------------------------------------------------------------
+  */
+
   useEffect(() => {
+
+    /*
+     * Get rate immediately.
+     */
+
     fetchGoldRate();
+
+
+    /*
+     * Refresh every 10 seconds.
+     *
+     * Gold API documents its real-time
+     * price endpoint as free and CORS-enabled.
+     */
 
     timerRef.current =
       window.setInterval(
@@ -204,24 +472,44 @@ export default function LiveGoldNavbar() {
         10000
       );
 
+
+    /*
+     * Cleanup
+     */
+
     return () => {
+
       window.clearInterval(
         timerRef.current
       );
+
     };
+
   }, [fetchGoldRate]);
 
+
+  /*
+  |--------------------------------------------------------------------------
+  | UI
+  |--------------------------------------------------------------------------
+  */
+
   return (
+
     <div
       className="gold-rate-bar"
       role="status"
       aria-label="Live 24K gold rate"
     >
+
       <div className="gold-rate-marquee">
 
         <div className="gold-rate-content">
 
-          {/* LIVE GOLD RATE */}
+
+          {/* =========================================================
+              LIVE GOLD RATE
+          ========================================================== */}
 
           <div className="gold-rate-brand">
 
@@ -239,9 +527,13 @@ export default function LiveGoldNavbar() {
 
           </div>
 
+
           <span className="gold-separator" />
 
-          {/* 24K ONLY */}
+
+          {/* =========================================================
+              ONLY 24K
+          ========================================================== */}
 
           <div className="gold-rate-item">
 
@@ -261,9 +553,13 @@ export default function LiveGoldNavbar() {
 
           </div>
 
+
           <span className="gold-separator" />
 
-          {/* MOVEMENT */}
+
+          {/* =========================================================
+              MOVEMENT
+          ========================================================== */}
 
           <div
             className={`gold-movement ${
@@ -276,26 +572,44 @@ export default function LiveGoldNavbar() {
           >
 
             {direction > 0 ? (
-              <ArrowUp size={14} />
+
+              <ArrowUp
+                size={14}
+              />
+
             ) : direction < 0 ? (
-              <ArrowDown size={14} />
+
+              <ArrowDown
+                size={14}
+              />
+
             ) : (
-              <Activity size={14} />
+
+              <Activity
+                size={14}
+              />
+
             )}
 
             <span>
+
               {direction > 0
                 ? 'RISING'
                 : direction < 0
                 ? 'FALLING'
                 : 'LIVE MARKET'}
+
             </span>
 
           </div>
 
+
           <span className="gold-separator" />
 
-          {/* CONNECTION */}
+
+          {/* =========================================================
+              CONNECTION
+          ========================================================== */}
 
           <div
             className={`gold-connection ${
@@ -306,27 +620,42 @@ export default function LiveGoldNavbar() {
           >
 
             {connected ? (
-              <Wifi size={14} />
+
+              <Wifi
+                size={14}
+              />
+
             ) : (
-              <WifiOff size={14} />
+
+              <WifiOff
+                size={14}
+              />
+
             )}
 
             <span>
+
               {connected
                 ? 'LIVE'
                 : 'OFFLINE'}
+
             </span>
 
           </div>
 
-          {/* UPDATE */}
+
+          {/* =========================================================
+              LAST UPDATE
+          ========================================================== */}
 
           <span className="gold-update">
 
             {lastUpdated
+
               ? `Updated ${lastUpdated.toLocaleTimeString(
                   'en-IN'
                 )}`
+
               : status}
 
           </span>
@@ -334,6 +663,8 @@ export default function LiveGoldNavbar() {
         </div>
 
       </div>
+
     </div>
+
   );
 }
