@@ -1,50 +1,15 @@
 .gold-rate-bar {
   width: 100%;
   height: 38px;
-
   overflow: hidden;
-
-  background:
-    linear-gradient(
-      90deg,
-      #090909 0%,
-      #17120a 25%,
-      #090909 50%,
-      #17120a 75%,
-      #090909 100%
-    );
-
+  background: #0b0b0b;
   color: #f5d77a;
-
-  border-bottom: 1px solid
-    rgba(212, 175, 55, 0.35);
-
+  border-bottom: 1px solid rgba(212, 175, 55, 0.35);
   position: relative;
-
   z-index: 9999;
-
   display: flex;
   align-items: center;
-
   white-space: nowrap;
-}
-
-.gold-rate-bar::before {
-  content: '';
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(212, 175, 55, 0.08),
-      transparent
-    );
-
-  pointer-events: none;
 }
 
 .gold-rate-marquee {
@@ -54,146 +19,75 @@
 
 .gold-rate-content {
   display: inline-flex;
-
   align-items: center;
-
-  min-width: max-content;
-
   gap: 14px;
-
-  padding-left: 20px;
-  padding-right: 20px;
-
-  animation:
-    gold-marquee 35s linear infinite;
+  min-width: max-content;
+  padding: 0 20px;
 }
 
 .gold-rate-brand {
   display: inline-flex;
-
   align-items: center;
-
   gap: 8px;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: 1.5px;
-
   color: #f6d76b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
 }
 
 .gold-live-dot {
   width: 7px;
   height: 7px;
-
   border-radius: 50%;
-
   background: #777;
-
-  box-shadow:
-    0 0 0 2px
-      rgba(255, 255, 255, 0.08);
-
   flex-shrink: 0;
 }
 
 .gold-live-dot.is-live {
   background: #42e06f;
-
-  box-shadow:
-    0 0 0 2px
-      rgba(66, 224, 111, 0.15),
-    0 0 10px
-      rgba(66, 224, 111, 0.85);
-
-  animation:
-    gold-pulse 1.8s infinite;
+  box-shadow: 0 0 10px rgba(66, 224, 111, 0.8);
 }
 
 .gold-separator {
   width: 1px;
-
   height: 17px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      transparent,
-      rgba(212, 175, 55, 0.55),
-      transparent
-    );
-
+  background: rgba(212, 175, 55, 0.45);
   flex-shrink: 0;
 }
 
 .gold-rate-item {
   display: inline-flex;
-
   align-items: baseline;
-
-  gap: 5px;
-
-  font-size: 12px;
+  gap: 6px;
 }
 
 .gold-purity {
   font-size: 10px;
-
   font-weight: 800;
-
-  letter-spacing: 1px;
-
   color: #fff;
-
   padding: 2px 5px;
-
-  border: 1px solid
-    rgba(212, 175, 55, 0.35);
-
+  border: 1px solid rgba(212, 175, 55, 0.4);
   border-radius: 3px;
-
-  background:
-    rgba(212, 175, 55, 0.08);
 }
 
 .gold-rate-item strong {
   color: #f7d875;
-
-  font-size: 13px;
-
+  font-size: 14px;
   font-weight: 800;
-
-  letter-spacing: 0.2px;
-
-  text-shadow:
-    0 0 8px
-      rgba(212, 175, 55, 0.15);
 }
 
 .gold-unit {
   color: #aaa;
-
   font-size: 10px;
-
-  font-weight: 600;
 }
 
 .gold-movement {
   display: inline-flex;
-
   align-items: center;
-
   gap: 5px;
-
-  color: #cfcfcf;
-
+  color: #ccc;
   font-size: 10px;
-
   font-weight: 800;
-
-  letter-spacing: 0.8px;
 }
 
 .gold-movement.up {
@@ -206,16 +100,10 @@
 
 .gold-connection {
   display: inline-flex;
-
   align-items: center;
-
   gap: 5px;
-
   font-size: 10px;
-
   font-weight: 800;
-
-  letter-spacing: 0.8px;
 }
 
 .gold-connection.online {
@@ -227,38 +115,8 @@
 }
 
 .gold-update {
-  color: #8e8e8e;
-
+  color: #888;
   font-size: 10px;
-
-  font-weight: 500;
-
-  letter-spacing: 0.2px;
-}
-
-@keyframes gold-marquee {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-18%);
-  }
-}
-
-@keyframes gold-pulse {
-  0%,
-  100% {
-    opacity: 1;
-
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.45;
-
-    transform: scale(0.78);
-  }
 }
 
 @media (max-width: 768px) {
@@ -268,46 +126,14 @@
 
   .gold-rate-content {
     gap: 10px;
-
-    padding-left: 12px;
-    padding-right: 12px;
-
-    animation-duration: 28s;
+    padding: 0 12px;
   }
 
   .gold-rate-brand {
     font-size: 9px;
-
-    letter-spacing: 1px;
   }
 
   .gold-rate-item strong {
-    font-size: 11px;
-  }
-
-  .gold-purity {
-    font-size: 9px;
-
-    padding: 2px 4px;
-  }
-
-  .gold-movement,
-  .gold-connection,
-  .gold-update {
-    font-size: 9px;
-  }
-
-  .gold-separator {
-    height: 14px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gold-rate-content {
-    animation: none;
-  }
-
-  .gold-live-dot.is-live {
-    animation: none;
+    font-size: 12px;
   }
 }
