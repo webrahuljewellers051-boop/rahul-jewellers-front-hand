@@ -1,40 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
+import {
+  Crown, Gem, Search, UserRound, Heart, Menu, X, MapPin,
+  Phone, Instagram, MessageCircle, ShieldCheck, Award,
+  Truck, RefreshCw, ChevronDown, ChevronRight, ArrowRight,
+  CheckCircle2, Clock, Lock, Receipt, Download, LogOut,
+  Smartphone, Gift, Calculator, History, Sparkles
+} from 'lucide-react';
 
-import StoreNavbar from './components/StoreNavbar.jsx';
 import LiveGoldNavbar from './components/LiveGoldNavbar.jsx';
 import CustomerLoginModal from './components/loginmodal.jsx';
 import IntroSplash from './components/IntroSplash.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
 
-import { 
-  Crown, 
-  Sparkles, 
-  Gem, 
-  MessageCircle, 
-  SlidersHorizontal, 
-  Search, 
-  CheckCircle2, 
-  Clock, 
-  Receipt, 
-  History, 
-  X, 
-  Download, 
-  LogOut,
-  Smartphone,
-  Lock,
-  Calculator,
-  Gift,
-  User,
-  Award,
-  ShieldCheck
-} from 'lucide-react';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  'https://rahul-jewellers-backend-jlr0.onrender.com';
 
 const STORE_PHONE = '9950091024';
-const API_BASE_URL = 'https://rahul-jewellers-backend-jlr0.onrender.com';
-
 const requestConfig = {
   headers: {
     'Content-Type': 'application/json',
@@ -42,85 +27,146 @@ const requestConfig = {
   }
 };
 
+const collections = [
+  {
+    name: 'Gold',
+    subtitle: 'Timeless Gold Elegance',
+    image: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=85&w=900&auto=format&fit=crop'
+  },
+  {
+    name: 'Polki',
+    subtitle: 'Royal Heritage Craft',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=85&w=900&auto=format&fit=crop'
+  },
+  {
+    name: 'Kundan',
+    subtitle: 'Traditional Grandeur',
+    image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=85&w=900&auto=format&fit=crop'
+  },
+  {
+    name: 'Diamond',
+    subtitle: 'Brilliance That Lasts',
+    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=85&w=900&auto=format&fit=crop'
+  },
+  {
+    name: 'Silver',
+    subtitle: 'Grace in Every Detail',
+    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?q=85&w=900&auto=format&fit=crop'
+  }
+];
+
+const heroSlides = [
+  {
+    eyebrow: 'THE ROYAL',
+    title: 'Heritage\nCollection',
+    description: 'A timeless range of traditional and modern jewellery crafted for every occasion.',
+    image: 'https://images.unsplash.com/photo-1635767798638-3665a6b2b9b5?q=90&w=2000&auto=format&fit=crop',
+    category: 'Gold'
+  },
+  {
+    eyebrow: 'CELEBRATE EVERY MOMENT',
+    title: 'Bridal\nTreasures',
+    description: 'Discover exquisite designs that make your most special moments unforgettable.',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=90&w=2000&auto=format&fit=crop',
+    category: 'Kundan'
+  },
+  {
+    eyebrow: 'TIMELESS BEAUTY',
+    title: 'Modern\nElegance',
+    description: 'Exceptional craftsmanship, made to become a part of your story.',
+    image: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=90&w=2000&auto=format&fit=crop',
+    category: 'Diamond'
+  }
+];
+
+const money = value =>
+  Number(value || 0).toLocaleString('en-IN', {
+    maximumFractionDigits: 0
+  });
+
 export default function App() {
-  const [showIntro, setShowIntro] = useState(() => {
-    return !sessionStorage.getItem('rj_intro_played');
-  });
-
-  const [schemeUser, setSchemeUser] = useState(() => JSON.parse(localStorage.getItem('schemeUserInfo') || 'null'));
-
-  const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem('rj_customer_active_tab') || 'showroom';
-  });
+  const [showIntro, setShowIntro] = useState(
+    () => !sessionStorage.getItem('rj_intro_played')
+  );
+  const [schemeUser, setSchemeUser] = useState(
+    () => JSON.parse(localStorage.getItem('schemeUserInfo') || 'null')
+  );
 
   const [products, setProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('showroom');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [priceRange, setPriceRange] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
-  
+
   const [storeUpiId, setStoreUpiId] = useState('9950091024@okbizaxis');
   const [storeMerchantName, setStoreMerchantName] = useState('Rahul Jewellers');
   const [storeQrCodeUrl, setStoreQrCodeUrl] = useState('');
-  
   const [activePaymentMonth, setActivePaymentMonth] = useState(null);
   const [showInstructionModal, setShowInstructionModal] = useState(false);
+
+  const monthly = Number(schemeUser?.customInstallment || 10000);
+  const paidCount = Math.min(12, Math.max(0, Number(schemeUser?.paidMonths || 0)));
+  const progressPercent = (paidCount / 12) * 100;
+  const totalAccumulatedValue = paidCount * monthly;
+  const totalSchemeValue = 12 * monthly;
 
   const handleIntroFinish = () => {
     setShowIntro(false);
     sessionStorage.setItem('rj_intro_played', 'true');
   };
 
-  const handleTabChange = (tabName) => {
-    if (tabName === 'scheme' && !schemeUser) {
-      setShowLoginModal(true);
-      return;
-    }
-    setActiveTab(tabName);
-    sessionStorage.setItem('rj_customer_active_tab', tabName);
-  };
-
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/products`, requestConfig);
-      if (res.data.success) setProducts(res.data.products);
-    } catch (err) {
-      console.error("Failed to load showroom items");
+      if (res.data?.success && Array.isArray(res.data.products)) {
+        setProducts(res.data.products);
+      }
+    } catch (error) {
+      console.error('Unable to load jewellery products:', error);
     }
   };
 
   const fetchStoreSettings = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/store/settings`, requestConfig);
-      if (res.data.success && res.data.settings) {
-        if (res.data.settings.upiId) setStoreUpiId(res.data.settings.upiId);
-        if (res.data.settings.merchantName) setStoreMerchantName(res.data.settings.merchantName);
-        if (res.data.settings.qrCodeUrl) setStoreQrCodeUrl(res.data.settings.qrCodeUrl);
+      if (res.data?.success && res.data.settings) {
+        setStoreUpiId(res.data.settings.upiId || '9950091024@okbizaxis');
+        setStoreMerchantName(res.data.settings.merchantName || 'Rahul Jewellers');
+        setStoreQrCodeUrl(res.data.settings.qrCodeUrl || '');
       }
-    } catch (err) {
-      console.error("Failed to load store settings");
+    } catch (error) {
+      console.error('Unable to load store settings:', error);
     }
   };
 
   const syncCustomerData = async () => {
-    if (!schemeUser?._id) return;
+    const savedUser = JSON.parse(localStorage.getItem('schemeUserInfo') || 'null');
+    if (!savedUser?._id) return;
+
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/customer/profile/${schemeUser._id}`, requestConfig);
-      if (res.data.success) {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/customer/profile/${savedUser._id}`,
+        requestConfig
+      );
+
+      if (res.data?.success && res.data.customer) {
         if (res.data.customer.isActive === false) {
-          alert("Your scheme account has been deactivated by store admin.");
-          handleSchemeLogout();
+          localStorage.removeItem('schemeUserInfo');
+          setSchemeUser(null);
           return;
         }
         setSchemeUser(res.data.customer);
         localStorage.setItem('schemeUserInfo', JSON.stringify(res.data.customer));
       }
-    } catch (err) {
-      console.error("Failed to sync profile:", err);
+    } catch (error) {
+      console.error('Unable to sync customer profile:', error);
     }
   };
 
@@ -130,682 +176,487 @@ export default function App() {
     syncCustomerData();
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide(current => (current + 1) % heroSlides.length);
+    }, 6500);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const handleTabChange = tab => {
+    if (tab === 'scheme' && !schemeUser) {
+      setShowLoginModal(true);
+      return;
+    }
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSchemeLogout = () => {
     localStorage.removeItem('schemeUserInfo');
     setSchemeUser(null);
-    handleTabChange('showroom');
+    setActiveTab('showroom');
   };
 
-  const handleDownloadReceipt = (monthNum, amount) => {
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const category = String(product.category || '').toLowerCase();
+      const title = String(product.title || '').toLowerCase();
+      const query = searchQuery.toLowerCase();
+
+      const categoryMatch =
+        selectedCategory === 'All' ||
+        category.includes(selectedCategory.toLowerCase());
+
+      const searchMatch = !query || title.includes(query) || category.includes(query);
+      return categoryMatch && searchMatch;
+    });
+  }, [products, selectedCategory, searchQuery]);
+
+  const openCollection = category => {
+    setSelectedCategory(category);
+    setActiveTab('showroom');
+    setTimeout(() => {
+      document.getElementById('showroom-products')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 80);
+  };
+
+  const handleDownloadReceipt = monthNum => {
     const element = document.createElement('div');
     element.innerHTML = `
-      <div style="padding: 24px; font-family: sans-serif; border: 2px solid #18181b; border-radius: 12px; max-width: 400px; margin: auto;">
-        <h2 style="text-align: center; margin-bottom: 4px; font-family: serif; color: #18181b;">RAHUL JEWELLERS</h2>
-        <p style="text-align: center; font-size: 10px; color: #52525b; margin: 0; font-weight: bold; letter-spacing: 1px;">SHEOGANJ • OFFICIAL PAYMENT RECEIPT</p>
-        <hr style="margin: 16px 0; border: 0; border-top: 1px solid #e4e4e7;" />
-        <div style="font-size: 12px; line-height: 1.8;">
-          <p style="margin: 0;"><strong>Customer Name:</strong> ${schemeUser?.name}</p>
-          <p style="margin: 0;"><strong>Customer ID:</strong> ${schemeUser?.customerId}</p>
-          <p style="margin: 0;"><strong>Phone:</strong> ${schemeUser?.phone}</p>
-          <p style="margin: 0;"><strong>Installment Verified:</strong> Month #${monthNum}</p>
-          <p style="margin: 0;"><strong>Amount:</strong> ₹${amount.toLocaleString('en-IN')}</p>
-          <p style="margin: 0;"><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
-          <p style="margin: 0;"><strong>Status:</strong> <span style="color: #15803d; font-weight: bold;">PAID / VERIFIED</span></p>
-        </div>
-        <hr style="margin: 16px 0; border: 0; border-top: 1px solid #e4e4e7;" />
-        <p style="text-align: center; font-size: 10px; color: #71717a; margin: 0;">Support / Helpline: +91 ${STORE_PHONE}</p>
+      <div style="padding:30px;font-family:Arial;border:3px double #b88a3b;color:#2b160d">
+        <h1 style="text-align:center;font-family:Georgia;color:#b88a3b">RAHUL JEWELLERS</h1>
+        <p style="text-align:center">SHEOGANJ • PAYMENT RECEIPT</p>
+        <hr/>
+        <p>Customer: ${schemeUser?.name || ''}</p>
+        <p>Customer ID: ${schemeUser?.customerId || ''}</p>
+        <p>Phone: ${schemeUser?.phone || ''}</p>
+        <p>Installment: Month #${monthNum}</p>
+        <p>Amount: ₹${money(monthly)}</p>
+        <p>Date: ${new Date().toLocaleDateString('en-IN')}</p>
+        <p>Status: PAID (as recorded in customer account)</p>
+        <hr/>
+        <p style="text-align:center">Support: +91 ${STORE_PHONE}</p>
       </div>
     `;
 
-    const opt = {
+    html2pdf().set({
       margin: 0.5,
-      filename: `Receipt_Month_${monthNum}_${schemeUser?.customerId}.pdf`,
+      filename: `Rahul_Jewellers_Receipt_Month_${monthNum}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
+    }).from(element).save();
   };
 
   const handleDownloadMaturityCertificate = () => {
     const element = document.createElement('div');
     element.innerHTML = `
-      <div style="padding: 40px; font-family: serif; border: 8px double #b45309; border-radius: 16px; max-width: 600px; margin: auto; background: #fffdf9; color: #1c1917; text-align: center;">
-        <h1 style="font-size: 26px; margin: 0; color: #b45309; letter-spacing: 2px;">RAHUL JEWELLERS</h1>
-        <p style="font-size: 11px; font-sans: sans-serif; letter-spacing: 3px; font-weight: bold; color: #78716c; margin-top: 4px;">MAIN MARKET, SHEOGANJ • CERTIFICATE OF COMPLETION</p>
-        
-        <div style="margin: 30px 0;">
-          <p style="font-size: 14px; font-style: italic; color: #57534e;">This prestigious certificate is proudly presented to</p>
-          <h2 style="font-size: 28px; margin: 10px 0; color: #1c1917; border-bottom: 2px solid #e7e5e4; display: inline-block; padding-bottom: 5px;">${schemeUser?.name}</h2>
-          <p style="font-size: 12px; font-sans: sans-serif; color: #78716c;">Customer ID: <strong>${schemeUser?.customerId}</strong></p>
-        </div>
-
-        <p style="font-size: 13px; line-height: 1.6; color: #292524; padding: 0 20px;">
-          For successfully completing all <strong>12 monthly installments</strong> under the 12-Month Savings Scheme. You are now fully eligible for <strong>100% OFF on Making Charges / Labor Cost</strong> on your final jewelry redemption.
-        </p>
-
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 30px; font-size: 12px; font-sans: sans-serif;">
-          <div>
-            <p style="margin: 0; font-weight: bold;">Date: ${new Date().toLocaleDateString('en-IN')}</p>
-            <p style="margin: 0; color: #78716c;">Issue Date</p>
-          </div>
-          <div>
-            <p style="margin: 0; font-weight: bold;">Rahul Jewellers</p>
-            <p style="margin: 0; color: #78716c;">Authorized Signatory</p>
-          </div>
-        </div>
+      <div style="padding:45px;border:8px double #b88a3b;text-align:center;font-family:Georgia;color:#321b10">
+        <h1 style="color:#b88a3b">RAHUL JEWELLERS</h1>
+        <p>MAIN MARKET, SHEOGANJ</p>
+        <h2>Certificate of Scheme Completion</h2>
+        <p>Presented to</p>
+        <h2>${schemeUser?.name || 'Customer'}</h2>
+        <p>Customer ID: ${schemeUser?.customerId || ''}</p>
+        <p>For completing all 12 monthly installments under the Rahul Jewellers Savings Scheme.</p>
+        <h3>100% OFF on Making Charges / Labour Cost</h3>
+        <p>Date: ${new Date().toLocaleDateString('en-IN')}</p>
       </div>
     `;
 
-    const opt = {
+    html2pdf().set({
       margin: 0.5,
-      filename: `Maturity_Certificate_${schemeUser?.customerId}.pdf`,
+      filename: `Rahul_Jewellers_Certificate_${schemeUser?.customerId || 'customer'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-
-    html2pdf().set(opt).from(element).save();
+    }).from(element).save();
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory = selectedCategory === 'All' || p.category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    let matchesPrice = true;
-    if (priceRange === 'under_50k') matchesPrice = p.price <= 50000;
-    else if (priceRange === '50k_100k') matchesPrice = p.price > 50000 && p.price <= 100000;
-    else if (priceRange === 'above_100k') matchesPrice = p.price > 100000;
+  const handleLoginSuccess = user => {
+    setSchemeUser(user);
+    localStorage.setItem('schemeUserInfo', JSON.stringify(user));
+    setShowLoginModal(false);
+    setActiveTab('scheme');
+    setTimeout(syncCustomerData, 300);
+  };
 
-    return matchesCategory && matchesSearch && matchesPrice;
-  });
-
-  const monthly = schemeUser?.customInstallment || 10000;
-  const paidCount = schemeUser?.paidMonths || 0;
-  const progressPercent = Math.min(100, (paidCount / 12) * 100);
-
-  const totalAccumulatedValue = 12 * monthly;
+  const currentSlide = heroSlides[activeSlide];
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-zinc-900 pb-12 relative overflow-x-hidden">
+    <div className="rj-site min-h-screen">
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
       <SupportChatWidget />
 
-      {/* Live Gold Rates Ticker Bar */}
-      <LiveGoldNavbar />
-
-      <StoreNavbar />
-
-      <header className="bg-stone-900 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-800 p-0.5 shadow-lg shrink-0">
-                <div className="w-full h-full bg-stone-950 rounded-[14px] flex items-center justify-center text-amber-400">
-                  <Crown className="w-5 h-5" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-sm sm:text-base font-serif font-bold tracking-widest bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-100 bg-clip-text text-transparent uppercase">
-                  RAHUL JEWELLERS
-                </h1>
-                <p className="text-[9px] text-amber-500/80 font-bold tracking-widest uppercase">SHEOGANJ SHOWROOM</p>
-              </div>
-            </div>
+      {/* Top trust and contact strip */}
+      <div className="rj-topbar">
+        <div className="rj-topbar-inner">
+          <span><MapPin size={14}/> Sheoganj, Rajasthan</span>
+          <div className="rj-topbar-trust">
+            <span><Award size={14}/> 100 Years of Trust</span>
+            <i />
+            <span><ShieldCheck size={14}/> BIS Certified</span>
+            <i />
+            <span><Gem size={14}/> HUID Hallmark Jewellery</span>
           </div>
-
-          <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none flex justify-start sm:justify-end">
-            <div className="bg-stone-950/80 p-1.5 rounded-full border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={() => handleTabChange('showroom')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                  activeTab === 'showroom' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <Gem className="w-3.5 h-3.5" /> Showroom
-              </button>
-
-              <button
-                onClick={() => handleTabChange('scheme')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                  activeTab === 'scheme' && schemeUser
-                    ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-stone-950 border border-amber-300'
-                    : 'bg-stone-900 text-amber-300 border border-amber-500/50 hover:bg-stone-800'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span className="uppercase font-extrabold">Scheme</span>
-              </button>
-
-              {schemeUser && (
-                <>
-                  <button
-                    onClick={() => setShowProfileModal(true)}
-                    className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1 transition border border-amber-500/30 cursor-pointer bg-stone-900 whitespace-nowrap"
-                  >
-                    <User className="w-3.5 h-3.5" /> Profile
-                  </button>
-                  <button
-                    onClick={handleSchemeLogout}
-                    className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 transition border border-red-500/30 cursor-pointer whitespace-nowrap"
-                  >
-                    <LogOut className="w-3.5 h-3.5" /> Logout
-                  </button>
-                </>
-              )}
-            </div>
+          <div className="rj-topbar-contact">
+            <a href={`tel:+91${STORE_PHONE}`}><Phone size={14}/> +91 9950091024</a>
+            <a href="https://www.instagram.com/rahuljewellers9/" target="_blank" rel="noreferrer"><Instagram size={16}/></a>
+            <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle size={16}/></a>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-4 pt-6">
-        {activeTab === 'showroom' && (
-          <div className="space-y-6">
-            <div className="relative rounded-3xl overflow-hidden bg-stone-900 text-white p-6 sm:p-10 border border-stone-800 shadow-xl flex flex-col justify-end min-h-[220px]">
-              <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-900/70 to-transparent z-10" />
-              <img 
-                src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=1200&auto=format&fit=crop" 
-                alt="Rahul Jewellers Luxury Collection" 
-                className="absolute inset-0 w-full h-full object-cover opacity-50"
-              />
-              <div className="relative z-20 space-y-2 max-w-xl">
-                <span className="text-[10px] font-bold text-amber-400 tracking-widest uppercase bg-amber-950/80 px-3 py-1 rounded-full border border-amber-700/50">
-                  SHEOGANJ EXCLUSIVE SAVINGS SCHEME
-                </span>
-                <h2 className="text-xl sm:text-2xl font-serif font-bold text-stone-100 leading-snug">
-                  Pay 12 monthly installments, get 100% OFF on Making Charges / Labor Cost on your final jewelry purchase!
-                </h2>
-                <p className="text-xs text-stone-300 font-medium">
-                  Invest securely in pure 916 hallmarked gold & silver. All 12 monthly payments apply fully toward your gold value.
-                </p>
-              </div>
-            </div>
+      {/* Main premium navigation */}
+      <header className="rj-header">
+        <div className="rj-header-inner">
+          <button className="rj-mobile-menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu">
+            {mobileMenuOpen ? <X/> : <Menu/>}
+          </button>
 
-            <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
-                <div className="relative w-full sm:w-72">
-                  <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    placeholder="Search kadas, necklaces, rings..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium outline-none focus:bg-white focus:border-amber-600 transition"
-                  />
-                </div>
+          <button className="rj-brand" onClick={() => handleTabChange('showroom')}>
+            <span className="rj-brand-mark">R<span>J</span><Gem size={15}/></span>
+            <span className="rj-brand-copy">
+              <strong>RAHUL JEWELLERS</strong>
+              <small>S H E O G A N J&nbsp; S H O W R O O M</small>
+            </span>
+          </button>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <SlidersHorizontal className="w-4 h-4 text-stone-500" />
-                  <span className="text-xs font-bold text-stone-700 shrink-0">Price Filter:</span>
-                  <select
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(e.target.value)}
-                    className="w-full sm:w-auto px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-800 outline-none cursor-pointer"
-                  >
-                    <option value="All">All Price Ranges</option>
-                    <option value="under_50k">Under ₹50,000</option>
-                    <option value="50k_100k">₹50,001 - ₹1,00,000</option>
-                    <option value="above_100k">Above ₹1,00,000</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-stone-100 overflow-x-auto pb-1 text-xs font-bold">
-                {['All', 'Gold', 'Silver', 'Bridal Wear', 'Antique'].map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-1.5 rounded-full transition shrink-0 cursor-pointer ${
-                      selectedCategory === category 
-                        ? 'bg-amber-900 text-white shadow-sm' 
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                    }`}
-                  >
-                    {category === 'All' ? 'All Collections' : `${category} Collection`}
-                  </button>
+          <nav className={`rj-nav ${mobileMenuOpen ? 'is-open' : ''}`}>
+            <button className={activeTab === 'showroom' ? 'active' : ''} onClick={() => handleTabChange('showroom')}>Home</button>
+            <div className="rj-nav-dropdown">
+              <button onClick={() => openCollection('All')}>Collections <ChevronDown size={13}/></button>
+              <div className="rj-dropdown-menu">
+                {collections.map(item => (
+                  <button key={item.name} onClick={() => openCollection(item.name)}>{item.name} Collection</button>
                 ))}
               </div>
             </div>
+            <button onClick={() => handleTabChange('scheme')}>Schemes <ChevronDown size={13}/></button>
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact</a>
+          </nav>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.length === 0 ? (
-                <div className="col-span-full py-16 text-center space-y-2 bg-white rounded-3xl border border-stone-200">
-                  <Gem className="w-8 h-8 text-stone-300 mx-auto" />
-                  <p className="text-xs font-bold text-stone-500">No matching jewelry items found.</p>
-                </div>
-              ) : (
-                filteredProducts.map((p) => {
-                  const whatsappMessage = `Namaste Rahul Jewellers (Sheoganj), I am interested in this item:\n\n*Title:* ${p.title}\n*Category:* ${p.category}\n*Net Weight:* ${p.weight}\n*Price:* ${p.price > 0 ? `₹${p.price.toLocaleString('en-IN')}` : 'Price on Request'}\n*Image:* ${p.imageUrl}\n\nPlease share further details.`;
-                  const whatsappUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(whatsappMessage)}`;
+          <div className="rj-header-actions">
+            <button aria-label="Search" onClick={() => {
+              setSearchOpen(!searchOpen);
+              setTimeout(() => document.getElementById('rj-search-input')?.focus(), 50);
+            }}><Search/></button>
+            <button aria-label="Customer profile" onClick={() => schemeUser ? setShowProfileModal(true) : setShowLoginModal(true)}><UserRound/></button>
+            <a aria-label="WhatsApp enquiry" href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle/></a>
+          </div>
+        </div>
 
-                  return (
-                    <div 
-                      key={p._id}
-                      className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
-                    >
-                      <div 
-                        onClick={() => setPreviewImage(p.imageUrl)}
-                        className="relative aspect-square bg-stone-100 overflow-hidden cursor-pointer group/img"
-                      >
-                        <img 
-                          src={p.imageUrl} 
-                          alt={p.title} 
-                          className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
-                        />
-                        <span className="absolute top-2 left-2 bg-stone-900/80 backdrop-blur-sm text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                          {p.category}
-                        </span>
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1">
-                          <span>🔍 Click to View Large</span>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
-                        <div className="space-y-1">
-                          <h3 className="text-xs font-bold text-stone-900 line-clamp-2 leading-snug">{p.title}</h3>
-                          <p className="text-[10px] text-stone-500 font-semibold">Net Weight: <span className="text-stone-900 font-bold">{p.weight}</span></p>
-                        </div>
-
-                        {/* HIDE STORE PRICE ENTIRELY IF 0 OR BLANK */}
-                        {p.price > 0 && (
-                          <div className="pt-2 border-t border-stone-100">
-                            <p className="text-[9px] font-bold text-stone-400 uppercase">STORE PRICE</p>
-                            <p className="text-sm font-black text-amber-900 font-serif">₹{p.price.toLocaleString('en-IN')}</p>
-                          </div>
-                        )}
-
-                        <div className="pt-1">
-                          <button
-                            type="button"
-                            onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}
-                            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
-                          >
-                            <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+        {searchOpen && (
+          <div className="rj-search-panel">
+            <Search size={18}/>
+            <input
+              id="rj-search-input"
+              value={searchQuery}
+              onChange={event => setSearchQuery(event.target.value)}
+              placeholder="Search necklaces, rings, bangles..."
+            />
+            <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }}><X size={18}/></button>
           </div>
         )}
+      </header>
 
-        {activeTab === 'scheme' && schemeUser && (
-          <div className="max-w-md mx-auto space-y-4">
-            <div className="bg-white p-6 rounded-3xl border-2 border-zinc-900 shadow-xl space-y-4">
-              <div className="flex justify-between items-start border-b border-stone-200 pb-3">
-                <div>
-                  <h2 className="text-lg font-bold text-stone-900">{schemeUser.name}</h2>
-                  <p className="text-xs text-stone-500 font-medium">Ph: {schemeUser.phone}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-xs font-mono font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                    ID: {schemeUser.customerId}
-                  </span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      onClick={() => setShowProfileModal(true)}
-                      className="text-[10px] font-bold text-amber-700 hover:underline flex items-center gap-0.5 cursor-pointer"
-                    >
-                      <User className="w-3 h-3" /> Profile
-                    </button>
-                    <button
-                      onClick={handleSchemeLogout}
-                      className="text-[10px] font-bold text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer"
-                    >
-                      <LogOut className="w-3 h-3" /> Logout
-                    </button>
-                  </div>
-                </div>
-              </div>
+      {/* Live rates */}
+      <LiveGoldNavbar />
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-stone-700 uppercase">12-Month Scheme Progress</span>
-                  <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    {paidCount}/12 Paid
-                  </span>
-                </div>
-
-                <div className="w-full bg-stone-100 h-3.5 rounded-full border border-stone-300 overflow-hidden p-0.5">
-                  <div className="bg-amber-800 h-full rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
-                </div>
-
-                <div className="flex justify-between text-[11px] font-medium text-stone-500 pt-1">
-                  <span>Total Accumulated: ₹{(paidCount * monthly).toLocaleString('en-IN')}</span>
-                  <span>Target: ₹{(12 * monthly).toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowHistoryModal(true)}
-                className="w-full py-2.5 bg-stone-100 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
-              >
-                <History className="w-4 h-4" /> View Downloadable Receipts
+      {activeTab === 'showroom' && (
+        <>
+          {/* Hero slider */}
+          <section className="rj-hero" style={{ backgroundImage: `url("${currentSlide.image}")` }}>
+            <div className="rj-hero-shade"/>
+            <button className="rj-hero-arrow left" onClick={() => setActiveSlide((activeSlide + heroSlides.length - 1) % heroSlides.length)} aria-label="Previous slide">‹</button>
+            <div className="rj-hero-content">
+              <p className="rj-eyebrow">{currentSlide.eyebrow}</p>
+              <h1>{currentSlide.title.split('\n').map((line, index) => <React.Fragment key={line}>{line}{index === 0 && <br/>}</React.Fragment>)}</h1>
+              <p className="rj-hero-description">{currentSlide.description}</p>
+              <button className="rj-outline-button" onClick={() => openCollection(currentSlide.category)}>
+                Explore Collection <ArrowRight size={18}/>
               </button>
+            </div>
+            <button className="rj-hero-arrow right" onClick={() => setActiveSlide((activeSlide + 1) % heroSlides.length)} aria-label="Next slide">›</button>
+            <div className="rj-hero-dots">
+              {heroSlides.map((slide, index) => (
+                <button key={slide.title} className={activeSlide === index ? 'active' : ''} onClick={() => setActiveSlide(index)} aria-label={`Show slide ${index + 1}`}/>
+              ))}
+            </div>
+          </section>
 
-              {paidCount >= 12 && (
-                <button
-                  onClick={handleDownloadMaturityCertificate}
-                  className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md transition cursor-pointer uppercase tracking-wider"
-                >
-                  <Award className="w-4 h-4" /> Download Maturity Certificate
+          {/* Trust strip */}
+          <section className="rj-trust-strip">
+            <div><Gem/><span><b>BIS Certified</b><small>Jewellery</small></span></div>
+            <div><ShieldCheck/><span><b>HUID</b><small>Hallmark</small></span></div>
+            <div><Award/><span><b>Jewellery</b><small>Craftsmanship</small></span></div>
+            <div><MessageCircle/><span><b>Personal</b><small>Assistance</small></span></div>
+            <div><RefreshCw/><span><b>Trusted</b><small>Showroom</small></span></div>
+          </section>
+
+          {/* Collections */}
+          <section className="rj-section rj-collections">
+            <div className="rj-section-heading">
+              <span/>
+              <h2>Explore Our Collections</h2>
+              <span/>
+            </div>
+            <div className="rj-collection-grid">
+              {collections.map(item => (
+                <button className="rj-collection-card" key={item.name} onClick={() => openCollection(item.name)}>
+                  <img src={item.image} alt={`${item.name} jewellery collection`} loading="lazy"/>
+                  <span className="rj-collection-overlay"/>
+                  <span className="rj-collection-caption">
+                    <strong>{item.name}</strong>
+                    <small>{item.subtitle}</small>
+                    <em>Explore <ArrowRight size={15}/></em>
+                  </span>
                 </button>
-              )}
+              ))}
+            </div>
+          </section>
 
-              {/* REWARD MILESTONE BADGE / BANNER */}
-              <div className={`p-3.5 rounded-2xl border flex items-center gap-3 text-xs font-medium transition ${
-                paidCount >= 12 
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950' 
-                  : 'bg-amber-50 border-amber-200 text-amber-950'
-              }`}>
-                <ShieldCheck className={`w-5 h-5 shrink-0 ${paidCount >= 12 ? 'text-emerald-700' : 'text-amber-700'}`} />
-                <div>
-                  <p className="font-bold uppercase tracking-wide text-[10px]">
-                    {paidCount >= 12 ? 'Benefit Unlocked!' : 'Milestone Reward'}
-                  </p>
-                  <p className="font-semibold">
-                    {paidCount >= 12 
-                      ? 'Benefit Earned: Zero Making Charges (Free Labor) on your final redemption.' 
-                      : 'Complete all 12 installments to earn 100% OFF on Making Charges / Labor Cost.'}
-                  </p>
-                </div>
+          {/* Savings scheme banner */}
+          <section className="rj-scheme-banner">
+            <div className="rj-scheme-art">
+              <div className="rj-gold-stack"><span/><span/><span/><span/></div>
+              <div className="rj-calendar"><b>12</b><small>Months</small></div>
+            </div>
+            <div className="rj-scheme-copy">
+              <p className="rj-eyebrow">SHEOGANJ EXCLUSIVE SAVINGS SCHEME</p>
+              <h2>Pay in 12 Monthly Installments &amp; Get<br/><strong>100% OFF on Making Charges!</strong></h2>
+              <p>Invest securely in pure 916 hallmarked gold &amp; silver.</p>
+            </div>
+            <button className="rj-gold-button" onClick={() => handleTabChange('scheme')}>
+              Join Scheme <ArrowRight size={17}/>
+            </button>
+          </section>
+
+          {/* Product catalogue */}
+          <section className="rj-section rj-products" id="showroom-products">
+            <div className="rj-products-heading">
+              <div>
+                <p className="rj-eyebrow">MADE TO BE TREASURED</p>
+                <h2>Discover Our Jewellery</h2>
+              </div>
+              <div className="rj-product-search">
+                <Search size={16}/>
+                <input value={searchQuery} onChange={event => setSearchQuery(event.target.value)} placeholder="Search jewellery"/>
               </div>
             </div>
 
-            {/* REDEMPTION SUMMARY CARD */}
-            <div className="bg-[#FFFDF9] border-2 border-amber-400 p-5 rounded-3xl relative space-y-3 shadow-sm font-sans text-stone-900 my-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs uppercase tracking-wider">
-                  <Calculator className="w-4 h-4 text-[#E65C00]" />
-                  Redemption Summary Card
-                </div>
-                <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
-                  Scheme Value
-                </span>
-              </div>
-
-              <div className="space-y-2 text-xs pt-2 border-t border-amber-200">
-                <div className="flex justify-between font-medium text-stone-700">
-                  <span>Total Accumulated Installment Value:</span>
-                  <span className="font-bold font-mono">₹{(paidCount * monthly).toLocaleString('en-IN')}</span>
-                </div>
-
-                <div className="flex justify-between font-bold text-emerald-700 items-center">
-                  <span className="flex items-center gap-1">
-                    <Gift className="w-3.5 h-3.5" /> Making Charges / Labor Cost:
-                  </span>
-                  <span className="font-mono font-black">
-                    {paidCount >= 12 ? '₹0 (100% Scheme Benefit Applied)' : 'Standard Charges Apply'}
-                  </span>
-                </div>
-
-                <div className="pt-2 border-t border-amber-200 flex justify-between items-center font-black text-sm text-[#E65C00]">
-                  <span>Total Target Value (12 Months):</span>
-                  <span className="font-mono text-base">₹{totalAccumulatedValue.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
+            <div className="rj-category-pills">
+              {['All', 'Gold', 'Polki', 'Kundan', 'Diamond', 'Silver'].map(category => (
+                <button key={category} className={selectedCategory === category ? 'active' : ''} onClick={() => setSelectedCategory(category)}>
+                  {category === 'All' ? 'All Collections' : category}
+                </button>
+              ))}
             </div>
 
-            {/* PASSBOOK CHECKLIST - ALL 12 MONTHS PAYABLE */}
-            <div className="bg-white p-6 rounded-3xl border-2 border-zinc-900 shadow-xl space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Receipt className="w-4 h-4 text-amber-800" /> Plan Tracker & Payment Schedule
-              </h3>
-              <p className="text-[11px] text-stone-500 font-medium">
-                All 12 monthly installments must be paid in full to unlock free labor/making charges on redemption.
-              </p>
+            <div className="rj-product-grid">
+              {filteredProducts.length === 0 ? (
+                <div className="rj-empty-products">
+                  <Gem size={35}/>
+                  <h3>{products.length ? 'No matching jewellery found' : 'Our collection is being updated'}</h3>
+                  <p>Please contact our showroom for personalised assistance.</p>
+                  <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer">Enquire on WhatsApp <ArrowRight size={15}/></a>
+                </div>
+              ) : filteredProducts.map(product => {
+                const message = `Namaste Rahul Jewellers, I am interested in:\n${product.title}\nCategory: ${product.category}\nWeight: ${product.weight || 'Please share'}\nPlease share further details.`;
+                const whatsappUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(message)}`;
 
-              <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-                {Array.from({ length: 12 }).map((_, index) => {
-                  const monthNum = index + 1;
-                  const isPaid = monthNum <= paidCount;
-                  const isNextDue = monthNum === paidCount + 1;
-
-                  return (
-                    <div
-                      key={monthNum}
-                      className={`p-3.5 rounded-2xl border-2 flex items-center justify-between text-xs transition ${
-                        isPaid ? 'bg-emerald-50 border-emerald-600' : isNextDue ? 'bg-amber-50/50 border-amber-400' : 'bg-stone-50 border-stone-200 opacity-60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {isPaid ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        ) : isNextDue ? (
-                          <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-                        ) : (
-                          <Lock className="w-4 h-4 text-stone-400 shrink-0" />
-                        )}
-                        <div>
-                          <p className="font-bold text-stone-900">Month #{monthNum} Installment</p>
-                          <p className="text-[11px] text-stone-500 font-medium">
-                            ₹{monthly.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-
-                      {isPaid ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-xl border border-emerald-300 shadow-sm">
-                          Paid / Verified
-                        </span>
-                      ) : isNextDue ? (
-                        <button
-                          onClick={() => setActivePaymentMonth(monthNum)}
-                          className="px-3.5 py-1.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs uppercase animate-bounce cursor-pointer"
-                        >
-                          <Smartphone className="w-3.5 h-3.5" /> Pay
-                        </button>
-                      ) : (
-                        <span className="text-[10px] font-bold text-stone-500 bg-stone-200 px-2.5 py-1 rounded-lg">
-                          Locked (Pay #{paidCount + 1} First)
-                        </span>
-                      )}
+                return (
+                  <article className="rj-product-card" key={product._id}>
+                    <button className="rj-product-image" onClick={() => setPreviewImage(product.imageUrl)}>
+                      <img src={product.imageUrl} alt={product.title} loading="lazy"/>
+                      <span>{product.category}</span>
+                    </button>
+                    <div className="rj-product-info">
+                      <h3>{product.title}</h3>
+                      <p>Net Weight: {product.weight || 'Ask in showroom'}</p>
+                      {Number(product.price) > 0 && <strong>₹{money(product.price)}</strong>}
+                      <a href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={15}/> Enquire on WhatsApp</a>
                     </div>
-                  );
-                })}
-              </div>
+                  </article>
+                );
+              })}
             </div>
+          </section>
 
-            {/* TERMS & FAQS / TOOLTIPS */}
-            <div className="bg-stone-900 text-stone-200 p-5 rounded-3xl space-y-2 text-xs">
-              <h4 className="font-bold uppercase text-amber-400 tracking-wider">Scheme Terms & FAQs</h4>
-              <p className="text-stone-300 leading-relaxed">
-                <strong>Q: Is any installment free?</strong><br />
-                A: No. All 12 monthly installments must be paid in full by the customer. Upon successful completion of all 12 payments, you receive a 100% waiver on making charges / labor costs during final jewelry redemption.
-              </p>
-            </div>
+          <section className="rj-about" id="about">
+            <p className="rj-eyebrow">A LEGACY OF TRUST</p>
+            <h2>100 Years of Trust. A Lifetime of Elegance.</h2>
+            <p>Discover thoughtfully selected jewellery and personal service at Rahul Jewellers, Sheoganj.</p>
+          </section>
+        </>
+      )}
+
+      {/* Savings scheme customer dashboard */}
+      {activeTab === 'scheme' && schemeUser && (
+        <main className="rj-scheme-dashboard">
+          <div className="rj-dashboard-heading">
+            <p className="rj-eyebrow">CUSTOMER SAVINGS ACCOUNT</p>
+            <h1>Welcome, {schemeUser.name}</h1>
+            <p>Customer ID: {schemeUser.customerId || '—'} · {schemeUser.phone || ''}</p>
           </div>
-        )}
-      </main>
 
-      <CustomerLoginModal 
-        isOpen={showLoginModal} 
-        onClose={() => {
-          setShowLoginModal(false);
-          if (!schemeUser) handleTabChange('showroom');
-        }}
-        onLoginSuccess={(user) => {
-          setSchemeUser(user);
-          localStorage.setItem('schemeUserInfo', JSON.stringify(user));
-          syncCustomerData();
-          setShowLoginModal(false);
-          handleTabChange('scheme');
-        }}
+          <section className="rj-progress-card">
+            <div className="rj-progress-top">
+              <div><small>12-MONTH SAVINGS SCHEME</small><h2>Your Scheme Progress</h2></div>
+              <span>{paidCount}/12 Paid</span>
+            </div>
+            <div className="rj-progress-track"><span style={{ width: `${progressPercent}%` }}/></div>
+            <div className="rj-progress-numbers">
+              <div><small>Amount Paid</small><strong>₹{money(totalAccumulatedValue)}</strong></div>
+              <div><small>Scheme Target</small><strong>₹{money(totalSchemeValue)}</strong></div>
+              <div><small>Remaining</small><strong>₹{money(Math.max(0, totalSchemeValue - totalAccumulatedValue))}</strong></div>
+            </div>
+            <div className="rj-dashboard-actions">
+              <button onClick={() => setShowHistoryModal(true)}><History size={16}/> Payment Receipts</button>
+              <button onClick={() => setShowProfileModal(true)}><UserRound size={16}/> My Profile</button>
+              <button onClick={handleSchemeLogout}><LogOut size={16}/> Logout</button>
+            </div>
+          </section>
+
+          <section className="rj-installments">
+            <div className="rj-dashboard-section-title">
+              <div><p className="rj-eyebrow">YOUR PASSBOOK</p><h2>Monthly Installments</h2></div>
+              <Receipt size={25}/>
+            </div>
+            {Array.from({ length: 12 }).map((_, index) => {
+              const month = index + 1;
+              const paid = month <= paidCount;
+              const next = month === paidCount + 1;
+              return (
+                <div className={`rj-installment-row ${paid ? 'paid' : next ? 'next' : ''}`} key={month}>
+                  <div className="rj-installment-icon">
+                    {paid ? <CheckCircle2/> : next ? <Clock/> : <Lock/>}
+                  </div>
+                  <div className="rj-installment-name"><strong>Month #{month}</strong><small>₹{money(monthly)}</small></div>
+                  {paid ? <span className="rj-paid-label">Paid / Recorded</span> : next ? (
+                    <button className="rj-pay-button" onClick={() => setActivePaymentMonth(month)}><Smartphone size={15}/> Pay</button>
+                  ) : <span className="rj-locked-label">Locked</span>}
+                </div>
+              );
+            })}
+          </section>
+
+          <section className="rj-benefit-card">
+            <Gift size={27}/>
+            <div>
+              <h3>{paidCount >= 12 ? 'Scheme Benefit Unlocked' : 'Your Scheme Benefit'}</h3>
+              <p>{paidCount >= 12
+                ? 'Your account shows all 12 installments completed. Contact the showroom for redemption.'
+                : 'Complete all 12 installments to become eligible for 100% OFF on Making Charges, subject to scheme terms.'}</p>
+            </div>
+            {paidCount >= 12 && <button onClick={handleDownloadMaturityCertificate}><Download size={15}/> Certificate</button>}
+          </section>
+        </main>
+      )}
+
+      {/* Footer */}
+      <footer className="rj-footer" id="contact">
+        <div className="rj-footer-brand">
+          <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
+          <div><strong>RAHUL JEWELLERS</strong><small>SHEOGANJ SHOWROOM</small></div>
+        </div>
+        <div className="rj-footer-contact">
+          <span><MapPin size={15}/> Main Market, Sheoganj, Rajasthan</span>
+          <a href={`tel:+91${STORE_PHONE}`}><Phone size={15}/> +91 9950091024</a>
+          <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle size={15}/> WhatsApp Enquiry</a>
+        </div>
+        <p>© {new Date().getFullYear()} Rahul Jewellers. All rights reserved.</p>
+      </footer>
+
+      {/* Login modal */}
+      <CustomerLoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
 
+      {/* Profile modal */}
       <CustomerProfileModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         user={schemeUser}
-        onUpdateUser={(updatedUser) => {
+        onUpdateUser={updatedUser => {
           setSchemeUser(updatedUser);
           localStorage.setItem('schemeUserInfo', JSON.stringify(updatedUser));
         }}
       />
 
-      {/* FULL-SIZE IMAGE LIGHTBOX PREVIEW MODAL */}
+      {/* Product image preview */}
       {previewImage && (
-        <div 
-          onClick={() => setPreviewImage(null)}
-          className="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-[999] flex items-center justify-center p-4 cursor-zoom-out"
-        >
-          <div className="relative max-w-2xl w-full bg-stone-900 rounded-3xl overflow-hidden border-2 border-amber-500/40 p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => setPreviewImage(null)}
-              className="absolute top-4 right-4 z-10 w-9 h-9 bg-stone-950/80 text-white rounded-full flex items-center justify-center border border-amber-500/40 hover:bg-stone-900 transition cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="aspect-square bg-black rounded-2xl overflow-hidden flex items-center justify-center">
-              <img src={previewImage} alt="Expanded Jewelry Preview" className="w-full h-full object-contain" />
-            </div>
+        <div className="rj-lightbox" onClick={() => setPreviewImage(null)}>
+          <button onClick={() => setPreviewImage(null)}><X/></button>
+          <img src={previewImage} alt="Jewellery preview" onClick={event => event.stopPropagation()}/>
+        </div>
+      )}
+
+      {/* UPI payment modal */}
+      {activePaymentMonth !== null && (
+        <div className="rj-modal-backdrop">
+          <div className="rj-payment-modal">
+            <button className="rj-modal-close" onClick={() => setActivePaymentMonth(null)}><X/></button>
+            <Smartphone size={32}/>
+            <p className="rj-eyebrow">SAVINGS SCHEME PAYMENT</p>
+            <h2>Month #{activePaymentMonth}</h2>
+            <strong className="rj-payment-amount">₹{money(monthly)}</strong>
+            <p>Pay to {storeMerchantName}</p>
+            <p className="rj-upi-id">{storeUpiId}</p>
+            {storeQrCodeUrl && <img className="rj-payment-qr" src={storeQrCodeUrl} alt="Store UPI QR code"/>}
+            <button className="rj-gold-button rj-pay-full" onClick={() => {
+              const note = encodeURIComponent(`Month ${activePaymentMonth} ${schemeUser?.customerId || ''}`);
+              const uri = `upi://pay?pa=${encodeURIComponent(storeUpiId)}&pn=${encodeURIComponent(storeMerchantName)}&am=${monthly}&cu=INR&tn=${note}`;
+              window.location.href = uri;
+              setShowInstructionModal(true);
+            }}>Open UPI App & Pay <ArrowRight size={16}/></button>
+            <button className="rj-secondary-button" onClick={() => setActivePaymentMonth(null)}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* UPI INTENT MODAL WITH DYNAMIC STORE QR CODE DISPLAY */}
-      {activePaymentMonth !== null && (() => {
-        const note = encodeURIComponent(`Month ${activePaymentMonth} ${schemeUser?.customerId || ''}`);
-        const upiIntentUri = `upi://pay?pa=${encodeURIComponent(storeUpiId)}&pn=${encodeURIComponent(storeMerchantName)}&am=${monthly}&cu=INR&tn=${note}`;
-
-        return (
-          <div className="fixed inset-0 bg-stone-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white max-w-sm w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-center">
-              <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 mx-auto">
-                <Smartphone className="w-6 h-6 text-[#E65C00]" />
-              </div>
-
-              <div className="space-y-1">
-                <h3 className="text-sm font-black uppercase text-stone-900">
-                  Pay Month #{activePaymentMonth} Installment
-                </h3>
-                <p className="text-xs text-stone-600 font-medium">
-                  Amount: <strong className="text-[#E65C00]">₹{monthly.toLocaleString('en-IN')}</strong> to <span className="font-mono">{storeUpiId}</span>
-                </p>
-              </div>
-
-              {storeQrCodeUrl ? (
-                <div className="p-3 bg-stone-50 rounded-2xl border-2 border-stone-200 flex flex-col items-center gap-2">
-                  <p className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Scan QR Code via UPI App</p>
-                  <img src={storeQrCodeUrl} alt="Store UPI QR Code" className="w-40 h-40 object-contain rounded-xl border border-stone-300 bg-white p-1" />
-                </div>
-              ) : (
-                <div className="p-3 bg-amber-50 rounded-xl text-[11px] text-amber-800 font-medium border border-amber-200">
-                  Tip: Admin can upload a custom Store QR code in Folders & UPI section.
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  window.location.href = upiIntentUri;
-                  setShowInstructionModal(true);
-                }}
-                className="w-full py-3.5 bg-[#E65C00] hover:bg-[#CC5200] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Smartphone className="w-4 h-4" /> Open UPI App & Pay
-              </button>
-
-              <button
-                onClick={() => setActivePaymentMonth(null)}
-                className="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs uppercase rounded-xl transition cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* POST-PAYMENT INSTRUCTION MODAL */}
+      {/* Payment screenshot instructions */}
       {showInstructionModal && (
-        <div className="fixed inset-0 bg-stone-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-center">
-            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 mx-auto">
-              <Smartphone className="w-6 h-6 text-[#E65C00]" />
-            </div>
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-black uppercase text-stone-900">Payment Redirected</h3>
-              <p className="text-xs text-stone-600 leading-relaxed font-medium">
-                Your UPI app has been opened to process the payment.
-              </p>
-            </div>
-
-            <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-stone-900 text-xs space-y-2 font-medium text-left">
-              <p className="font-bold text-amber-900 uppercase text-[10px]">Important Next Step:</p>
-              <p>
-                1. Complete the payment in your UPI app.<br />
-                2. Take a screenshot of the payment receipt.<br />
-                3. Send the screenshot on WhatsApp to store number: <strong className="text-[#E65C00] select-all">9950091024</strong>.
-              </p>
-            </div>
-
-            <div className="p-2 bg-stone-100 rounded-xl text-[11px] text-stone-500 font-bold">
-              The admin will verify your screenshot and update your passbook status manually.
-            </div>
-
-            <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => window.open(`https://wa.me/919950091024?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have paid ₹${monthly} for Month #${activePaymentMonth} of Scheme ID${schemeUser?.customerId}. Here is my payment screenshot:`)}`, '_blank', 'noopener,noreferrer')}
-                className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <MessageCircle className="w-4 h-4" /> Send Screenshot
-              </button>
-              <button
-                onClick={() => {
-                  setShowInstructionModal(false);
-                  setActivePaymentMonth(null);
-                }}
-                className="px-4 py-3 bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
+        <div className="rj-modal-backdrop">
+          <div className="rj-payment-modal">
+            <button className="rj-modal-close" onClick={() => setShowInstructionModal(false)}><X/></button>
+            <CheckCircle2 size={34}/>
+            <h2>Next Step</h2>
+            <p>Complete payment in your UPI app, take a screenshot of the receipt and send it to the showroom for manual verification.</p>
+            <a className="rj-gold-button rj-pay-full" href={`https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have made my Month #${activePaymentMonth} scheme payment. Please find my payment screenshot.`)}`} target="_blank" rel="noreferrer">
+              <MessageCircle size={16}/> Send Screenshot on WhatsApp
+            </a>
+            <button className="rj-secondary-button" onClick={() => {
+              setShowInstructionModal(false);
+              setActivePaymentMonth(null);
+            }}>Close</button>
           </div>
         </div>
       )}
 
+      {/* Payment history */}
       {showHistoryModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800">
-            <div className="flex justify-between items-center border-b border-stone-200 pb-2">
-              <h3 className="text-xs font-bold text-stone-900 uppercase flex items-center gap-1.5">
-                <History className="w-4 h-4 text-amber-800" /> Payment Receipts
-              </h3>
-              <button onClick={() => setShowHistoryModal(false)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-              {paidCount === 0 ? (
-                <p className="text-xs text-stone-500 py-6 text-center font-medium">No completed transactions yet.</p>
-              ) : (
-                Array.from({ length: paidCount }).map((_, index) => {
-                  const monthNum = index + 1;
-                  return (
-                    <div key={monthNum} className="p-3 bg-stone-50 rounded-2xl border border-stone-200 flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-stone-900">Installment #{monthNum}</p>
-                        <p className="text-[10px] text-stone-500 font-mono">₹{monthly.toLocaleString('en-IN')} • Paid</p>
-                      </div>
-                      <button
-                        onClick={() => handleDownloadReceipt(monthNum, monthly)}
-                        className="px-2.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-bold text-[10px] flex items-center gap-1 shadow-sm transition cursor-pointer"
-                      >
-                        <Download className="w-3 h-3" /> Receipt PDF
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+        <div className="rj-modal-backdrop">
+          <div className="rj-history-modal">
+            <button className="rj-modal-close" onClick={() => setShowHistoryModal(false)}><X/></button>
+            <p className="rj-eyebrow">CUSTOMER PASSBOOK</p>
+            <h2>Payment Receipts</h2>
+            {paidCount === 0 ? <p className="rj-no-history">No completed installments are recorded yet.</p> :
+              Array.from({ length: paidCount }).map((_, index) => (
+                <div className="rj-history-row" key={index}>
+                  <span>Month #{index + 1} · ₹{money(monthly)}</span>
+                  <button onClick={() => handleDownloadReceipt(index + 1)}><Download size={14}/> PDF</button>
+                </div>
+              ))
+            }
           </div>
         </div>
       )}
