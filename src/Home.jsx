@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
@@ -20,6 +21,7 @@ const API_BASE_URL =
   'https://rahul-jewellers-backend-jlr0.onrender.com';
 
 const STORE_PHONE = '9950091024';
+
 const requestConfig = {
   headers: {
     'Content-Type': 'application/json',
@@ -88,6 +90,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(
     () => !sessionStorage.getItem('rj_intro_played')
   );
+
   const [schemeUser, setSchemeUser] = useState(
     () => JSON.parse(localStorage.getItem('schemeUserInfo') || 'null')
   );
@@ -112,7 +115,11 @@ export default function App() {
   const [showInstructionModal, setShowInstructionModal] = useState(false);
 
   const monthly = Number(schemeUser?.customInstallment || 10000);
-  const paidCount = Math.min(12, Math.max(0, Number(schemeUser?.paidMonths || 0)));
+  const paidCount = Math.min(
+    12,
+    Math.max(0, Number(schemeUser?.paidMonths || 0))
+  );
+
   const progressPercent = (paidCount / 12) * 100;
   const totalAccumulatedValue = paidCount * monthly;
   const totalSchemeValue = 12 * monthly;
@@ -124,7 +131,11 @@ export default function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/products`, requestConfig);
+      const res = await axios.get(
+        `${API_BASE_URL}/api/products`,
+        requestConfig
+      );
+
       if (res.data?.success && Array.isArray(res.data.products)) {
         setProducts(res.data.products);
       }
@@ -135,10 +146,20 @@ export default function App() {
 
   const fetchStoreSettings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/store/settings`, requestConfig);
+      const res = await axios.get(
+        `${API_BASE_URL}/api/store/settings`,
+        requestConfig
+      );
+
       if (res.data?.success && res.data.settings) {
-        setStoreUpiId(res.data.settings.upiId || '9950091024@okbizaxis');
-        setStoreMerchantName(res.data.settings.merchantName || 'Rahul Jewellers');
+        setStoreUpiId(
+          res.data.settings.upiId || '9950091024@okbizaxis'
+        );
+
+        setStoreMerchantName(
+          res.data.settings.merchantName || 'Rahul Jewellers'
+        );
+
         setStoreQrCodeUrl(res.data.settings.qrCodeUrl || '');
       }
     } catch (error) {
@@ -147,7 +168,10 @@ export default function App() {
   };
 
   const syncCustomerData = async () => {
-    const savedUser = JSON.parse(localStorage.getItem('schemeUserInfo') || 'null');
+    const savedUser = JSON.parse(
+      localStorage.getItem('schemeUserInfo') || 'null'
+    );
+
     if (!savedUser?._id) return;
 
     try {
@@ -162,8 +186,13 @@ export default function App() {
           setSchemeUser(null);
           return;
         }
+
         setSchemeUser(res.data.customer);
-        localStorage.setItem('schemeUserInfo', JSON.stringify(res.data.customer));
+
+        localStorage.setItem(
+          'schemeUserInfo',
+          JSON.stringify(res.data.customer)
+        );
       }
     } catch (error) {
       console.error('Unable to sync customer profile:', error);
@@ -180,6 +209,7 @@ export default function App() {
     const timer = window.setInterval(() => {
       setActiveSlide(current => (current + 1) % heroSlides.length);
     }, 6500);
+
     return () => window.clearInterval(timer);
   }, []);
 
@@ -188,9 +218,14 @@ export default function App() {
       setShowLoginModal(true);
       return;
     }
+
     setActiveTab(tab);
     setMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleSchemeLogout = () => {
@@ -209,7 +244,9 @@ export default function App() {
         selectedCategory === 'All' ||
         category.includes(selectedCategory.toLowerCase());
 
-      const searchMatch = !query || title.includes(query) || category.includes(query);
+      const searchMatch =
+        !query || title.includes(query) || category.includes(query);
+
       return categoryMatch && searchMatch;
     });
   }, [products, selectedCategory, searchQuery]);
@@ -217,6 +254,7 @@ export default function App() {
   const openCollection = category => {
     setSelectedCategory(category);
     setActiveTab('showroom');
+
     setTimeout(() => {
       document.getElementById('showroom-products')?.scrollIntoView({
         behavior: 'smooth',
@@ -227,6 +265,7 @@ export default function App() {
 
   const handleDownloadReceipt = monthNum => {
     const element = document.createElement('div');
+
     element.innerHTML = `
       <div style="padding:30px;font-family:Arial;border:3px double #b88a3b;color:#2b160d">
         <h1 style="text-align:center;font-family:Georgia;color:#b88a3b">RAHUL JEWELLERS</h1>
@@ -244,17 +283,25 @@ export default function App() {
       </div>
     `;
 
-    html2pdf().set({
-      margin: 0.5,
-      filename: `Rahul_Jewellers_Receipt_Month_${monthNum}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    }).from(element).save();
+    html2pdf()
+      .set({
+        margin: 0.5,
+        filename: `Rahul_Jewellers_Receipt_Month_${monthNum}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: {
+          unit: 'in',
+          format: 'letter',
+          orientation: 'portrait'
+        }
+      })
+      .from(element)
+      .save();
   };
 
   const handleDownloadMaturityCertificate = () => {
     const element = document.createElement('div');
+
     element.innerHTML = `
       <div style="padding:45px;border:8px double #b88a3b;text-align:center;font-family:Georgia;color:#321b10">
         <h1 style="color:#b88a3b">RAHUL JEWELLERS</h1>
@@ -269,20 +316,33 @@ export default function App() {
       </div>
     `;
 
-    html2pdf().set({
-      margin: 0.5,
-      filename: `Rahul_Jewellers_Certificate_${schemeUser?.customerId || 'customer'}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-    }).from(element).save();
+    html2pdf()
+      .set({
+        margin: 0.5,
+        filename: `Rahul_Jewellers_Certificate_${schemeUser?.customerId || 'customer'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: {
+          unit: 'in',
+          format: 'letter',
+          orientation: 'landscape'
+        }
+      })
+      .from(element)
+      .save();
   };
 
   const handleLoginSuccess = user => {
     setSchemeUser(user);
-    localStorage.setItem('schemeUserInfo', JSON.stringify(user));
+
+    localStorage.setItem(
+      'schemeUserInfo',
+      JSON.stringify(user)
+    );
+
     setShowLoginModal(false);
     setActiveTab('scheme');
+
     setTimeout(syncCustomerData, 300);
   };
 
@@ -291,23 +351,59 @@ export default function App() {
   return (
     <div className="rj-site min-h-screen">
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
+
       <SupportChatWidget />
 
       {/* Top trust and contact strip */}
       <div className="rj-topbar">
         <div className="rj-topbar-inner">
-          <span><MapPin size={14}/> Sheoganj, Rajasthan</span>
+          <span>
+            <MapPin size={14} />
+            Sheoganj, Rajasthan
+          </span>
+
           <div className="rj-topbar-trust">
-            <span><Award size={14}/> 100 Years of Trust</span>
+            <span>
+              <Award size={14} />
+              100 Years of Trust
+            </span>
+
             <i />
-            <span><ShieldCheck size={14}/> BIS Certified</span>
+
+            <span>
+              <ShieldCheck size={14} />
+              BIS Certified
+            </span>
+
             <i />
-            <span><Gem size={14}/> HUID Hallmark Jewellery</span>
+
+            <span>
+              <Gem size={14} />
+              HUID Hallmark Jewellery
+            </span>
           </div>
+
           <div className="rj-topbar-contact">
-            <a href={`tel:+91${STORE_PHONE}`}><Phone size={14}/> +91 9950091024</a>
-            <a href="https://www.instagram.com/rahuljewellers9/" target="_blank" rel="noreferrer"><Instagram size={16}/></a>
-            <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle size={16}/></a>
+            <a href={`tel:+91${STORE_PHONE}`}>
+              <Phone size={14} />
+              +91 9950091024
+            </a>
+
+            <a
+              href="https://www.instagram.com/rahuljewellers9/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Instagram size={16} />
+            </a>
+
+            <a
+              href={`https://wa.me/91${STORE_PHONE}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle size={16} />
+            </a>
           </div>
         </div>
       </div>
@@ -315,12 +411,23 @@ export default function App() {
       {/* Main premium navigation */}
       <header className="rj-header">
         <div className="rj-header-inner">
-          <button className="rj-mobile-menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu">
-            {mobileMenuOpen ? <X/> : <Menu/>}
+          <button
+            className="rj-mobile-menu"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Open menu"
+          >
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
 
-          <button className="rj-brand" onClick={() => handleTabChange('showroom')}>
-            <span className="rj-brand-mark">R<span>J</span><Gem size={15}/></span>
+          <button
+            className="rj-brand"
+            onClick={() => handleTabChange('showroom')}
+          >
+            <span className="rj-brand-mark">
+              R<span>J</span>
+              <Gem size={15} />
+            </span>
+
             <span className="rj-brand-copy">
               <strong>RAHUL JEWELLERS</strong>
               <small>S H E O G A N J&nbsp; S H O W R O O M</small>
@@ -328,40 +435,94 @@ export default function App() {
           </button>
 
           <nav className={`rj-nav ${mobileMenuOpen ? 'is-open' : ''}`}>
-            <button className={activeTab === 'showroom' ? 'active' : ''} onClick={() => handleTabChange('showroom')}>Home</button>
+            <button
+              className={activeTab === 'showroom' ? 'active' : ''}
+              onClick={() => handleTabChange('showroom')}
+            >
+              Home
+            </button>
+
             <div className="rj-nav-dropdown">
-              <button onClick={() => openCollection('All')}>Collections <ChevronDown size={13}/></button>
+              <button onClick={() => openCollection('All')}>
+                Collections <ChevronDown size={13} />
+              </button>
+
               <div className="rj-dropdown-menu">
                 {collections.map(item => (
-                  <button key={item.name} onClick={() => openCollection(item.name)}>{item.name} Collection</button>
+                  <button
+                    key={item.name}
+                    onClick={() => openCollection(item.name)}
+                  >
+                    {item.name} Collection
+                  </button>
                 ))}
               </div>
             </div>
-            <button onClick={() => handleTabChange('scheme')}>Schemes <ChevronDown size={13}/></button>
+
+            <button onClick={() => handleTabChange('scheme')}>
+              Schemes <ChevronDown size={13} />
+            </button>
+
             <a href="#about">About Us</a>
             <a href="#contact">Contact</a>
           </nav>
 
           <div className="rj-header-actions">
-            <button aria-label="Search" onClick={() => {
-              setSearchOpen(!searchOpen);
-              setTimeout(() => document.getElementById('rj-search-input')?.focus(), 50);
-            }}><Search/></button>
-            <button aria-label="Customer profile" onClick={() => schemeUser ? setShowProfileModal(true) : setShowLoginModal(true)}><UserRound/></button>
-            <a aria-label="WhatsApp enquiry" href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle/></a>
+            <button
+              aria-label="Search"
+              onClick={() => {
+                setSearchOpen(!searchOpen);
+
+                setTimeout(
+                  () => document.getElementById('rj-search-input')?.focus(),
+                  50
+                );
+              }}
+            >
+              <Search />
+            </button>
+
+            <button
+              aria-label="Customer profile"
+              onClick={() =>
+                schemeUser
+                  ? setShowProfileModal(true)
+                  : setShowLoginModal(true)
+              }
+            >
+              <UserRound />
+            </button>
+
+            <a
+              aria-label="WhatsApp enquiry"
+              href={`https://wa.me/91${STORE_PHONE}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle />
+            </a>
           </div>
         </div>
 
         {searchOpen && (
           <div className="rj-search-panel">
-            <Search size={18}/>
+            <Search size={18} />
+
             <input
               id="rj-search-input"
               value={searchQuery}
               onChange={event => setSearchQuery(event.target.value)}
               placeholder="Search necklaces, rings, bangles..."
             />
-            <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }}><X size={18}/></button>
+
+            <button
+              onClick={() => {
+                setSearchOpen(false);
+                setSearchQuery('');
+              }}
+            >
+              <X size={18} />
+            </button>
           </div>
         )}
       </header>
@@ -375,7 +536,7 @@ export default function App() {
           <section className="rj-hero rj-hero-with-model">
             <div className="rj-hero-shade" />
 
-            {/* Bridal model image on the right */}
+            {/* Bridal model image - original asset preserved */}
             <div className="rj-hero-model">
               <img
                 src="/heritage-bride.png"
@@ -384,7 +545,6 @@ export default function App() {
               />
             </div>
 
-            {/* Previous slide */}
             <button
               className="rj-hero-arrow left"
               onClick={() =>
@@ -397,7 +557,6 @@ export default function App() {
               ‹
             </button>
 
-            {/* Hero text on the left */}
             <div className="rj-hero-content">
               <p className="rj-eyebrow">{currentSlide.eyebrow}</p>
 
@@ -422,7 +581,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Next slide */}
             <button
               className="rj-hero-arrow right"
               onClick={() =>
@@ -435,7 +593,6 @@ export default function App() {
               ›
             </button>
 
-            {/* Slider navigation dots */}
             <div className="rj-hero-dots">
               {heroSlides.map((slide, index) => (
                 <button
@@ -452,29 +609,76 @@ export default function App() {
 
           {/* Trust strip */}
           <section className="rj-trust-strip">
-            <div><Gem/><span><b>BIS Certified</b><small>Jewellery</small></span></div>
-            <div><ShieldCheck/><span><b>HUID</b><small>Hallmark</small></span></div>
-            <div><Award/><span><b>Jewellery</b><small>Craftsmanship</small></span></div>
-            <div><MessageCircle/><span><b>Personal</b><small>Assistance</small></span></div>
-            <div><RefreshCw/><span><b>Trusted</b><small>Showroom</small></span></div>
+            <div>
+              <Gem />
+              <span>
+                <b>BIS Certified</b>
+                <small>Jewellery</small>
+              </span>
+            </div>
+
+            <div>
+              <ShieldCheck />
+              <span>
+                <b>HUID</b>
+                <small>Hallmark</small>
+              </span>
+            </div>
+
+            <div>
+              <Award />
+              <span>
+                <b>Jewellery</b>
+                <small>Craftsmanship</small>
+              </span>
+            </div>
+
+            <div>
+              <MessageCircle />
+              <span>
+                <b>Personal</b>
+                <small>Assistance</small>
+              </span>
+            </div>
+
+            <div>
+              <RefreshCw />
+              <span>
+                <b>Trusted</b>
+                <small>Showroom</small>
+              </span>
+            </div>
           </section>
 
           {/* Collections */}
           <section className="rj-section rj-collections">
             <div className="rj-section-heading">
-              <span/>
+              <span />
               <h2>Explore Our Collections</h2>
-              <span/>
+              <span />
             </div>
+
             <div className="rj-collection-grid">
               {collections.map(item => (
-                <button className="rj-collection-card" key={item.name} onClick={() => openCollection(item.name)}>
-                  <img src={item.image} alt={`${item.name} jewellery collection`} loading="lazy"/>
-                  <span className="rj-collection-overlay"/>
+                <button
+                  className="rj-collection-card"
+                  key={item.name}
+                  onClick={() => openCollection(item.name)}
+                >
+                  <img
+                    src={item.image}
+                    alt={`${item.name} jewellery collection`}
+                    loading="lazy"
+                  />
+
+                  <span className="rj-collection-overlay" />
+
                   <span className="rj-collection-caption">
                     <strong>{item.name}</strong>
                     <small>{item.subtitle}</small>
-                    <em>Explore <ArrowRight size={15}/></em>
+                    <em>
+                      Explore <ArrowRight size={15} />
+                    </em>
                   </span>
                 </button>
               ))}
@@ -484,16 +688,38 @@ export default function App() {
           {/* Savings scheme banner */}
           <section className="rj-scheme-banner">
             <div className="rj-scheme-art">
-              <div className="rj-gold-stack"><span/><span/><span/><span/></div>
-              <div className="rj-calendar"><b>12</b><small>Months</small></div>
+              <div className="rj-gold-stack">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <div className="rj-calendar">
+                <b>12</b>
+                <small>Months</small>
+              </div>
             </div>
+
             <div className="rj-scheme-copy">
-              <p className="rj-eyebrow">SHEOGANJ EXCLUSIVE SAVINGS SCHEME</p>
-              <h2>Pay in 12 Monthly Installments &amp; Get<br/><strong>100% OFF on Making Charges!</strong></h2>
+              <p className="rj-eyebrow">
+                SHEOGANJ EXCLUSIVE SAVINGS SCHEME
+              </p>
+
+              <h2>
+                Pay in 12 Monthly Installments &amp; Get
+                <br />
+                <strong>100% OFF on Making Charges!</strong>
+              </h2>
+
               <p>Invest securely in pure 916 hallmarked gold &amp; silver.</p>
             </div>
-            <button className="rj-gold-button" onClick={() => handleTabChange('scheme')}>
-              Join Scheme <ArrowRight size={17}/>
+
+            <button
+              className="rj-gold-button"
+              onClick={() => handleTabChange('scheme')}
+            >
+              Join Scheme <ArrowRight size={17} />
             </button>
           </section>
 
@@ -504,54 +730,119 @@ export default function App() {
                 <p className="rj-eyebrow">MADE TO BE TREASURED</p>
                 <h2>Discover Our Jewellery</h2>
               </div>
+
               <div className="rj-product-search">
-                <Search size={16}/>
-                <input value={searchQuery} onChange={event => setSearchQuery(event.target.value)} placeholder="Search jewellery"/>
+                <Search size={16} />
+
+                <input
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder="Search jewellery"
+                />
               </div>
             </div>
 
             <div className="rj-category-pills">
-              {['All', 'Gold', 'Polki', 'Kundan', 'Diamond', 'Silver'].map(category => (
-                <button key={category} className={selectedCategory === category ? 'active' : ''} onClick={() => setSelectedCategory(category)}>
-                  {category === 'All' ? 'All Collections' : category}
-                </button>
-              ))}
+              {['All', 'Gold', 'Polki', 'Kundan', 'Diamond', 'Silver'].map(
+                category => (
+                  <button
+                    key={category}
+                    className={
+                      selectedCategory === category ? 'active' : ''
+                    }
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category === 'All' ? 'All Collections' : category}
+                  </button>
+                )
+              )}
             </div>
 
             <div className="rj-product-grid">
               {filteredProducts.length === 0 ? (
                 <div className="rj-empty-products">
-                  <Gem size={35}/>
-                  <h3>{products.length ? 'No matching jewellery found' : 'Our collection is being updated'}</h3>
-                  <p>Please contact our showroom for personalised assistance.</p>
-                  <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer">Enquire on WhatsApp <ArrowRight size={15}/></a>
-                </div>
-              ) : filteredProducts.map(product => {
-                const message = `Namaste Rahul Jewellers, I am interested in:\n${product.title}\nCategory: ${product.category}\nWeight: ${product.weight || 'Please share'}\nPlease share further details.`;
-                const whatsappUrl = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(message)}`;
+                  <Gem size={35} />
 
-                return (
-                  <article className="rj-product-card" key={product._id}>
-                    <button className="rj-product-image" onClick={() => setPreviewImage(product.imageUrl)}>
-                      <img src={product.imageUrl} alt={product.title} loading="lazy"/>
-                      <span>{product.category}</span>
-                    </button>
-                    <div className="rj-product-info">
-                      <h3>{product.title}</h3>
-                      <p>Net Weight: {product.weight || 'Ask in showroom'}</p>
-                      {Number(product.price) > 0 && <strong>₹{money(product.price)}</strong>}
-                      <a href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={15}/> Enquire on WhatsApp</a>
-                    </div>
-                  </article>
-                );
-              })}
+                  <h3>
+                    {products.length
+                      ? 'No matching jewellery found'
+                      : 'Our collection is being updated'}
+                  </h3>
+
+                  <p>
+                    Please contact our showroom for personalised assistance.
+                  </p>
+
+                  <a
+                    href={`https://wa.me/91${STORE_PHONE}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Enquire on WhatsApp <ArrowRight size={15} />
+                  </a>
+                </div>
+              ) : (
+                filteredProducts.map(product => {
+                  const message = `Namaste Rahul Jewellers, I am interested in:\n${product.title}\nCategory: ${product.category}\nWeight: ${product.weight || 'Please share'}\nPlease share further details.`;
+
+                  const whatsappUrl =
+                    `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(message)}`;
+
+                  return (
+                    <article
+                      className="rj-product-card"
+                      key={product._id}
+                    >
+                      <button
+                        className="rj-product-image"
+                        onClick={() => setPreviewImage(product.imageUrl)}
+                      >
+                        <img
+                          src={product.imageUrl}
+                          alt={product.title}
+                          loading="lazy"
+                        />
+
+                        <span>{product.category}</span>
+                      </button>
+
+                      <div className="rj-product-info">
+                        <h3>{product.title}</h3>
+
+                        <p>
+                          Net Weight: {product.weight || 'Ask in showroom'}
+                        </p>
+
+                        {Number(product.price) > 0 && (
+                          <strong>₹{money(product.price)}</strong>
+                        )}
+
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle size={15} />
+                          Enquire on WhatsApp
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })
+              )}
             </div>
           </section>
 
+          {/* About */}
           <section className="rj-about" id="about">
             <p className="rj-eyebrow">A LEGACY OF TRUST</p>
+
             <h2>100 Years of Trust. A Lifetime of Elegance.</h2>
-            <p>Discover thoughtfully selected jewellery and personal service at Rahul Jewellers, Sheoganj.</p>
+
+            <p>
+              Discover thoughtfully selected jewellery and personal service
+              at Rahul Jewellers, Sheoganj.
+            </p>
           </section>
         </>
       )}
@@ -561,60 +852,141 @@ export default function App() {
         <main className="rj-scheme-dashboard">
           <div className="rj-dashboard-heading">
             <p className="rj-eyebrow">CUSTOMER SAVINGS ACCOUNT</p>
+
             <h1>Welcome, {schemeUser.name}</h1>
-            <p>Customer ID: {schemeUser.customerId || '—'} · {schemeUser.phone || ''}</p>
+
+            <p>
+              Customer ID: {schemeUser.customerId || '—'} ·{' '}
+              {schemeUser.phone || ''}
+            </p>
           </div>
 
           <section className="rj-progress-card">
             <div className="rj-progress-top">
-              <div><small>12-MONTH SAVINGS SCHEME</small><h2>Your Scheme Progress</h2></div>
+              <div>
+                <small>12-MONTH SAVINGS SCHEME</small>
+                <h2>Your Scheme Progress</h2>
+              </div>
+
               <span>{paidCount}/12 Paid</span>
             </div>
-            <div className="rj-progress-track"><span style={{ width: `${progressPercent}%` }}/></div>
-            <div className="rj-progress-numbers">
-              <div><small>Amount Paid</small><strong>₹{money(totalAccumulatedValue)}</strong></div>
-              <div><small>Scheme Target</small><strong>₹{money(totalSchemeValue)}</strong></div>
-              <div><small>Remaining</small><strong>₹{money(Math.max(0, totalSchemeValue - totalAccumulatedValue))}</strong></div>
+
+            <div className="rj-progress-track">
+              <span style={{ width: `${progressPercent}%` }} />
             </div>
+
+            <div className="rj-progress-numbers">
+              <div>
+                <small>Amount Paid</small>
+                <strong>₹{money(totalAccumulatedValue)}</strong>
+              </div>
+
+              <div>
+                <small>Scheme Target</small>
+                <strong>₹{money(totalSchemeValue)}</strong>
+              </div>
+
+              <div>
+                <small>Remaining</small>
+                <strong>
+                  ₹{money(
+                    Math.max(0, totalSchemeValue - totalAccumulatedValue)
+                  )}
+                </strong>
+              </div>
+            </div>
+
             <div className="rj-dashboard-actions">
-              <button onClick={() => setShowHistoryModal(true)}><History size={16}/> Payment Receipts</button>
-              <button onClick={() => setShowProfileModal(true)}><UserRound size={16}/> My Profile</button>
-              <button onClick={handleSchemeLogout}><LogOut size={16}/> Logout</button>
+              <button onClick={() => setShowHistoryModal(true)}>
+                <History size={16} /> Payment Receipts
+              </button>
+
+              <button onClick={() => setShowProfileModal(true)}>
+                <UserRound size={16} /> My Profile
+              </button>
+
+              <button onClick={handleSchemeLogout}>
+                <LogOut size={16} /> Logout
+              </button>
             </div>
           </section>
 
           <section className="rj-installments">
             <div className="rj-dashboard-section-title">
-              <div><p className="rj-eyebrow">YOUR PASSBOOK</p><h2>Monthly Installments</h2></div>
-              <Receipt size={25}/>
+              <div>
+                <p className="rj-eyebrow">YOUR PASSBOOK</p>
+                <h2>Monthly Installments</h2>
+              </div>
+
+              <Receipt size={25} />
             </div>
+
             {Array.from({ length: 12 }).map((_, index) => {
               const month = index + 1;
               const paid = month <= paidCount;
               const next = month === paidCount + 1;
+
               return (
-                <div className={`rj-installment-row ${paid ? 'paid' : next ? 'next' : ''}`} key={month}>
+                <div
+                  className={`rj-installment-row ${
+                    paid ? 'paid' : next ? 'next' : ''
+                  }`}
+                  key={month}
+                >
                   <div className="rj-installment-icon">
-                    {paid ? <CheckCircle2/> : next ? <Clock/> : <Lock/>}
+                    {paid ? (
+                      <CheckCircle2 />
+                    ) : next ? (
+                      <Clock />
+                    ) : (
+                      <Lock />
+                    )}
                   </div>
-                  <div className="rj-installment-name"><strong>Month #{month}</strong><small>₹{money(monthly)}</small></div>
-                  {paid ? <span className="rj-paid-label">Paid / Recorded</span> : next ? (
-                    <button className="rj-pay-button" onClick={() => setActivePaymentMonth(month)}><Smartphone size={15}/> Pay</button>
-                  ) : <span className="rj-locked-label">Locked</span>}
+
+                  <div className="rj-installment-name">
+                    <strong>Month #{month}</strong>
+                    <small>₹{money(monthly)}</small>
+                  </div>
+
+                  {paid ? (
+                    <span className="rj-paid-label">Paid / Recorded</span>
+                  ) : next ? (
+                    <button
+                      className="rj-pay-button"
+                      onClick={() => setActivePaymentMonth(month)}
+                    >
+                      <Smartphone size={15} /> Pay
+                    </button>
+                  ) : (
+                    <span className="rj-locked-label">Locked</span>
+                  )}
                 </div>
               );
             })}
           </section>
 
           <section className="rj-benefit-card">
-            <Gift size={27}/>
+            <Gift size={27} />
+
             <div>
-              <h3>{paidCount >= 12 ? 'Scheme Benefit Unlocked' : 'Your Scheme Benefit'}</h3>
-              <p>{paidCount >= 12
-                ? 'Your account shows all 12 installments completed. Contact the showroom for redemption.'
-                : 'Complete all 12 installments to become eligible for 100% OFF on Making Charges, subject to scheme terms.'}</p>
+              <h3>
+                {paidCount >= 12
+                  ? 'Scheme Benefit Unlocked'
+                  : 'Your Scheme Benefit'}
+              </h3>
+
+              <p>
+                {paidCount >= 12
+                  ? 'Your account shows all 12 installments completed. Contact the showroom for redemption.'
+                  : 'Complete all 12 installments to become eligible for 100% OFF on Making Charges, subject to scheme terms.'}
+              </p>
             </div>
-            {paidCount >= 12 && <button onClick={handleDownloadMaturityCertificate}><Download size={15}/> Certificate</button>}
+
+            {paidCount >= 12 && (
+              <button onClick={handleDownloadMaturityCertificate}>
+                <Download size={15} /> Certificate
+              </button>
+            )}
           </section>
         </main>
       )}
@@ -622,15 +994,41 @@ export default function App() {
       {/* Footer */}
       <footer className="rj-footer" id="contact">
         <div className="rj-footer-brand">
-          <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
-          <div><strong>RAHUL JEWELLERS</strong><small>SHEOGANJ SHOWROOM</small></div>
+          <span className="rj-brand-mark">
+            R<span>J</span>
+            <Gem size={14} />
+          </span>
+
+          <div>
+            <strong>RAHUL JEWELLERS</strong>
+            <small>SHEOGANJ SHOWROOM</small>
+          </div>
         </div>
+
         <div className="rj-footer-contact">
-          <span><MapPin size={15}/> Main Market, Sheoganj, Rajasthan</span>
-          <a href={`tel:+91${STORE_PHONE}`}><Phone size={15}/> +91 9950091024</a>
-          <a href={`https://wa.me/91${STORE_PHONE}`} target="_blank" rel="noreferrer"><MessageCircle size={15}/> WhatsApp Enquiry</a>
+          <span>
+            <MapPin size={15} />
+            Main Market, Sheoganj, Rajasthan
+          </span>
+
+          <a href={`tel:+91${STORE_PHONE}`}>
+            <Phone size={15} />
+            +91 9950091024
+          </a>
+
+          <a
+            href={`https://wa.me/91${STORE_PHONE}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MessageCircle size={15} />
+            WhatsApp Enquiry
+          </a>
         </div>
-        <p>© {new Date().getFullYear()} Rahul Jewellers. All rights reserved.</p>
+
+        <p>
+          © {new Date().getFullYear()} Rahul Jewellers. All rights reserved.
+        </p>
       </footer>
 
       {/* Login modal */}
@@ -647,15 +1045,29 @@ export default function App() {
         user={schemeUser}
         onUpdateUser={updatedUser => {
           setSchemeUser(updatedUser);
-          localStorage.setItem('schemeUserInfo', JSON.stringify(updatedUser));
+
+          localStorage.setItem(
+            'schemeUserInfo',
+            JSON.stringify(updatedUser)
+          );
         }}
       />
 
       {/* Product image preview */}
       {previewImage && (
-        <div className="rj-lightbox" onClick={() => setPreviewImage(null)}>
-          <button onClick={() => setPreviewImage(null)}><X/></button>
-          <img src={previewImage} alt="Jewellery preview" onClick={event => event.stopPropagation()}/>
+        <div
+          className="rj-lightbox"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button onClick={() => setPreviewImage(null)}>
+            <X />
+          </button>
+
+          <img
+            src={previewImage}
+            alt="Jewellery preview"
+            onClick={event => event.stopPropagation()}
+          />
         </div>
       )}
 
@@ -663,21 +1075,60 @@ export default function App() {
       {activePaymentMonth !== null && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
-            <button className="rj-modal-close" onClick={() => setActivePaymentMonth(null)}><X/></button>
-            <Smartphone size={32}/>
+            <button
+              className="rj-modal-close"
+              onClick={() => setActivePaymentMonth(null)}
+            >
+              <X />
+            </button>
+
+            <Smartphone size={32} />
+
             <p className="rj-eyebrow">SAVINGS SCHEME PAYMENT</p>
+
             <h2>Month #{activePaymentMonth}</h2>
-            <strong className="rj-payment-amount">₹{money(monthly)}</strong>
+
+            <strong className="rj-payment-amount">
+              ₹{money(monthly)}
+            </strong>
+
             <p>Pay to {storeMerchantName}</p>
+
             <p className="rj-upi-id">{storeUpiId}</p>
-            {storeQrCodeUrl && <img className="rj-payment-qr" src={storeQrCodeUrl} alt="Store UPI QR code"/>}
-            <button className="rj-gold-button rj-pay-full" onClick={() => {
-              const note = encodeURIComponent(`Month ${activePaymentMonth} ${schemeUser?.customerId || ''}`);
-              const uri = `upi://pay?pa=${encodeURIComponent(storeUpiId)}&pn=${encodeURIComponent(storeMerchantName)}&am=${monthly}&cu=INR&tn=${note}`;
-              window.location.href = uri;
-              setShowInstructionModal(true);
-            }}>Open UPI App & Pay <ArrowRight size={16}/></button>
-            <button className="rj-secondary-button" onClick={() => setActivePaymentMonth(null)}>Cancel</button>
+
+            {storeQrCodeUrl && (
+              <img
+                className="rj-payment-qr"
+                src={storeQrCodeUrl}
+                alt="Store UPI QR code"
+              />
+            )}
+
+            <button
+              className="rj-gold-button rj-pay-full"
+              onClick={() => {
+                const note = encodeURIComponent(
+                  `Month ${activePaymentMonth} ${schemeUser?.customerId || ''}`
+                );
+
+                const uri =
+                  `upi://pay?pa=${encodeURIComponent(storeUpiId)}` +
+                  `&pn=${encodeURIComponent(storeMerchantName)}` +
+                  `&am=${monthly}&cu=INR&tn=${note}`;
+
+                window.location.href = uri;
+                setShowInstructionModal(true);
+              }}
+            >
+              Open UPI App &amp; Pay <ArrowRight size={16} />
+            </button>
+
+            <button
+              className="rj-secondary-button"
+              onClick={() => setActivePaymentMonth(null)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -686,17 +1137,43 @@ export default function App() {
       {showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
-            <button className="rj-modal-close" onClick={() => setShowInstructionModal(false)}><X/></button>
-            <CheckCircle2 size={34}/>
+            <button
+              className="rj-modal-close"
+              onClick={() => setShowInstructionModal(false)}
+            >
+              <X />
+            </button>
+
+            <CheckCircle2 size={34} />
+
             <h2>Next Step</h2>
-            <p>Complete payment in your UPI app, take a screenshot of the receipt and send it to the showroom for manual verification.</p>
-            <a className="rj-gold-button rj-pay-full" href={`https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(`Namaste Rahul Jewellers, I have made my Month #${activePaymentMonth} scheme payment. Please find my payment screenshot.`)}`} target="_blank" rel="noreferrer">
-              <MessageCircle size={16}/> Send Screenshot on WhatsApp
+
+            <p>
+              Complete payment in your UPI app, take a screenshot of the
+              receipt and send it to the showroom for manual verification.
+            </p>
+
+            <a
+              className="rj-gold-button rj-pay-full"
+              href={`https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(
+                `Namaste Rahul Jewellers, I have made my Month #${activePaymentMonth} scheme payment. Please find my payment screenshot.`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle size={16} />
+              Send Screenshot on WhatsApp
             </a>
-            <button className="rj-secondary-button" onClick={() => {
-              setShowInstructionModal(false);
-              setActivePaymentMonth(null);
-            }}>Close</button>
+
+            <button
+              className="rj-secondary-button"
+              onClick={() => {
+                setShowInstructionModal(false);
+                setActivePaymentMonth(null);
+              }}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -705,17 +1182,34 @@ export default function App() {
       {showHistoryModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-history-modal">
-            <button className="rj-modal-close" onClick={() => setShowHistoryModal(false)}><X/></button>
+            <button
+              className="rj-modal-close"
+              onClick={() => setShowHistoryModal(false)}
+            >
+              <X />
+            </button>
+
             <p className="rj-eyebrow">CUSTOMER PASSBOOK</p>
+
             <h2>Payment Receipts</h2>
-            {paidCount === 0 ? <p className="rj-no-history">No completed installments are recorded yet.</p> :
+
+            {paidCount === 0 ? (
+              <p className="rj-no-history">
+                No completed installments are recorded yet.
+              </p>
+            ) : (
               Array.from({ length: paidCount }).map((_, index) => (
                 <div className="rj-history-row" key={index}>
-                  <span>Month #{index + 1} · ₹{money(monthly)}</span>
-                  <button onClick={() => handleDownloadReceipt(index + 1)}><Download size={14}/> PDF</button>
+                  <span>
+                    Month #{index + 1} · ₹{money(monthly)}
+                  </span>
+
+                  <button onClick={() => handleDownloadReceipt(index + 1)}>
+                    <Download size={14} /> PDF
+                  </button>
                 </div>
               ))
-            }
+            )}
           </div>
         </div>
       )}
