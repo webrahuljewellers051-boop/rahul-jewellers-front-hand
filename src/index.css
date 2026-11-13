@@ -925,3 +925,26 @@ a { color: inherit; text-decoration: none; }
   .rj-collection-card { height: 180px; }
   .rj-collection-caption small { font-size: 9px; }
 }
+/* =========================================================
+   LAYERING FIX: navigation, dropdowns and modal overlays
+   Keep the live gold ticker behind interactive UI.
+   ========================================================= */
+.gold-rate-bar {
+  position: relative;
+  z-index: 10 !important;
+}
+
+.rj-header {
+  position: relative;
+  z-index: 100 !important;
+}
+
+.rj-dropdown-menu {
+  z-index: 110 !important;
+}
+
+.rj-modal-backdrop,
+.rj-lightbox {
+  position: fixed;
+  z-index: 99999 !important;
+}
