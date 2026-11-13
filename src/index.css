@@ -1456,3 +1456,212 @@ a { color: inherit; text-decoration: none; }
     color: #514536 !important;
   }
 }
+
+/* =========================================
+   RAHUL JEWELLERS - HERITAGE BRIDAL HERO
+========================================= */
+
+.rj-hero-with-model {
+  position: relative;
+  min-height: clamp(450px, 40vw, 590px);
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(
+      100deg,
+      #5b5148 0%,
+      #8b7d6e 35%,
+      #c9b9a4 67%,
+      #ead8bd 100%
+    );
+  border-bottom: 1px solid rgba(196, 154, 69, 0.25);
+}
+
+/* Background overlay */
+.rj-hero-with-model .rj-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(48, 38, 30, 0.30) 0%,
+    rgba(70, 56, 43, 0.12) 43%,
+    rgba(255, 245, 226, 0.02) 100%
+  );
+  pointer-events: none;
+}
+
+/* Bridal image on right */
+.rj-hero-model {
+  position: absolute;
+  z-index: 1;
+  right: 5%;
+  bottom: 0;
+  width: min(46%, 650px);
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.rj-hero-model img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 590px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 12px 22px rgba(45, 28, 15, 0.12));
+}
+
+/* Left side text */
+.rj-hero-with-model .rj-hero-content {
+  position: relative;
+  z-index: 2;
+  width: min(48%, 600px);
+  margin-left: max(8%, calc((100vw - 1300px) / 2));
+  padding: 55px 0 75px;
+}
+
+.rj-hero-with-model .rj-eyebrow {
+  color: #f0c879;
+}
+
+.rj-hero-with-model .rj-hero-content h1 {
+  color: #fffaf1;
+  text-shadow: 0 3px 16px rgba(40, 28, 18, 0.16);
+}
+
+.rj-hero-with-model .rj-hero-description {
+  color: #fff7eb;
+  max-width: 390px;
+  text-shadow: 0 2px 8px rgba(40, 28, 18, 0.15);
+}
+
+/* Gold CTA */
+.rj-hero-with-model .rj-outline-button {
+  color: #fff;
+  background: linear-gradient(135deg, #c99a48, #a9782e);
+  border: 1px solid #f2d69d;
+  box-shadow: 0 7px 20px rgba(75, 48, 18, 0.18);
+}
+
+.rj-hero-with-model .rj-outline-button:hover {
+  background: linear-gradient(135deg, #d9ad60, #b98739);
+  transform: translateY(-2px);
+}
+
+/* Arrows and dots */
+.rj-hero-with-model .rj-hero-arrow {
+  z-index: 4;
+  color: #8b632b;
+  background: rgba(255, 250, 240, 0.85);
+  border: 1px solid rgba(183, 135, 58, 0.7);
+}
+
+.rj-hero-with-model .rj-hero-arrow:hover {
+  color: #fff;
+  background: #b98739;
+}
+
+.rj-hero-with-model .rj-hero-dots {
+  z-index: 4;
+}
+
+.rj-hero-with-model .rj-hero-dots button {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.rj-hero-with-model .rj-hero-dots button.active {
+  background: #bd8d42;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .rj-hero-with-model {
+    min-height: 470px;
+  }
+
+  .rj-hero-model {
+    right: 1%;
+    width: 49%;
+  }
+
+  .rj-hero-with-model .rj-hero-content {
+    width: 49%;
+    margin-left: 7%;
+  }
+
+  .rj-hero-with-model .rj-hero-content h1 {
+    font-size: clamp(45px, 6vw, 65px);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .rj-hero-with-model {
+    min-height: 650px;
+    align-items: flex-start;
+    background: linear-gradient(
+      180deg,
+      #746457 0%,
+      #b6a18a 48%,
+      #e9d8c1 100%
+    );
+  }
+
+  .rj-hero-with-model .rj-hero-content {
+    width: 88%;
+    margin: 0 auto;
+    padding: 35px 0 0;
+    text-align: center;
+  }
+
+  .rj-hero-with-model .rj-hero-content h1 {
+    font-size: clamp(43px, 12vw, 59px);
+    line-height: 0.9;
+  }
+
+  .rj-hero-with-model .rj-hero-description {
+    max-width: 330px;
+    margin: 15px auto;
+    font-size: 16px;
+  }
+
+  .rj-hero-model {
+    width: 100%;
+    height: 330px;
+    right: 0;
+    bottom: 0;
+    justify-content: center;
+  }
+
+  .rj-hero-model img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+
+  .rj-hero-with-model .rj-hero-arrow {
+    top: 48%;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+  }
+
+  .rj-hero-with-model .rj-hero-arrow.left {
+    left: 8px;
+  }
+
+  .rj-hero-with-model .rj-hero-arrow.right {
+    right: 8px;
+  }
+
+  .rj-hero-with-model .rj-hero-dots {
+    bottom: 12px;
+  }
+}

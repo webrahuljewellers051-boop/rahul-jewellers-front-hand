@@ -371,22 +371,81 @@ export default function App() {
 
       {activeTab === 'showroom' && (
         <>
-          {/* Hero slider */}
-          <section className="rj-hero" style={{ backgroundImage: `url("${currentSlide.image}")` }}>
-            <div className="rj-hero-shade"/>
-            <button className="rj-hero-arrow left" onClick={() => setActiveSlide((activeSlide + heroSlides.length - 1) % heroSlides.length)} aria-label="Previous slide">‹</button>
+          {/* Hero slider with bridal model */}
+          <section className="rj-hero rj-hero-with-model">
+            <div className="rj-hero-shade" />
+
+            {/* Bridal model image on the right */}
+            <div className="rj-hero-model">
+              <img
+                src="/heritage-bride.png"
+                alt="Rahul Jewellers Bridal Heritage Collection"
+                fetchPriority="high"
+              />
+            </div>
+
+            {/* Previous slide */}
+            <button
+              className="rj-hero-arrow left"
+              onClick={() =>
+                setActiveSlide(current =>
+                  (current + heroSlides.length - 1) % heroSlides.length
+                )
+              }
+              aria-label="Previous slide"
+            >
+              ‹
+            </button>
+
+            {/* Hero text on the left */}
             <div className="rj-hero-content">
               <p className="rj-eyebrow">{currentSlide.eyebrow}</p>
-              <h1>{currentSlide.title.split('\n').map((line, index) => <React.Fragment key={line}>{line}{index === 0 && <br/>}</React.Fragment>)}</h1>
-              <p className="rj-hero-description">{currentSlide.description}</p>
-              <button className="rj-outline-button" onClick={() => openCollection(currentSlide.category)}>
-                Explore Collection <ArrowRight size={18}/>
+
+              <h1>
+                {currentSlide.title.split('\n').map((line, index) => (
+                  <React.Fragment key={`${line}-${index}`}>
+                    {line}
+                    {index === 0 && <br />}
+                  </React.Fragment>
+                ))}
+              </h1>
+
+              <p className="rj-hero-description">
+                {currentSlide.description}
+              </p>
+
+              <button
+                className="rj-outline-button"
+                onClick={() => openCollection(currentSlide.category)}
+              >
+                Explore Collection <ArrowRight size={18} />
               </button>
             </div>
-            <button className="rj-hero-arrow right" onClick={() => setActiveSlide((activeSlide + 1) % heroSlides.length)} aria-label="Next slide">›</button>
+
+            {/* Next slide */}
+            <button
+              className="rj-hero-arrow right"
+              onClick={() =>
+                setActiveSlide(current =>
+                  (current + 1) % heroSlides.length
+                )
+              }
+              aria-label="Next slide"
+            >
+              ›
+            </button>
+
+            {/* Slider navigation dots */}
             <div className="rj-hero-dots">
               {heroSlides.map((slide, index) => (
-                <button key={slide.title} className={activeSlide === index ? 'active' : ''} onClick={() => setActiveSlide(index)} aria-label={`Show slide ${index + 1}`}/>
+                <button
+                  key={slide.title}
+                  type="button"
+                  className={activeSlide === index ? 'active' : ''}
+                  onClick={() => setActiveSlide(index)}
+                  aria-label={`Show slide ${index + 1}`}
+                  aria-current={activeSlide === index ? 'true' : undefined}
+                />
               ))}
             </div>
           </section>
