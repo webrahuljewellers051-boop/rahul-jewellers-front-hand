@@ -3,15 +3,15 @@
   width: 100%;
   min-height: 40px;
   overflow: hidden;
-  background: linear-gradient(90deg, #090707 0%, #19100f 50%, #090707 100%);
-  color: #e8c982;
-  border-bottom: 1px solid rgba(201, 164, 92, 0.35);
+  background: linear-gradient(90deg, #fffdf9, #f8f1e5, #fffdf9);
+  color: #6b5230;
+  border-bottom: 1px solid #e4d2ad;
   position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
   white-space: nowrap;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 3px 12px rgba(90, 65, 25, .06);
 }
 
 .gold-rate-marquee {
@@ -38,7 +38,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  color: #e8c982;
+  color: #8b672e;
   font-family: "Inter", sans-serif;
   font-size: 10px;
   font-weight: 800;
@@ -49,38 +49,27 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #777;
+  background: #999;
   flex-shrink: 0;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition: background .3s ease, box-shadow .3s ease;
 }
 
 .gold-live-dot.is-live {
-  background: #55d98b;
-  box-shadow: 0 0 10px rgba(85, 217, 139, 0.8);
+  background: #22a568;
+  box-shadow: 0 0 10px rgba(34, 165, 104, .45);
   animation: gold-pulse 2s infinite;
 }
 
 @keyframes gold-pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(85, 217, 139, 0.65);
-  }
-
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 6px rgba(85, 217, 139, 0);
-  }
-
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(85, 217, 139, 0);
-  }
+  0% { transform: scale(.95); box-shadow: 0 0 0 0 rgba(34, 165, 104, .4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 165, 104, 0); }
+  100% { transform: scale(.95); box-shadow: 0 0 0 0 rgba(34, 165, 104, 0); }
 }
 
 .gold-separator {
   width: 1px;
   height: 18px;
-  background: rgba(201, 164, 92, 0.38);
+  background: #dfcfb3;
   flex-shrink: 0;
 }
 
@@ -94,25 +83,24 @@
   font-family: "Inter", sans-serif;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.8px;
-  color: #17100a;
+  letter-spacing: .8px;
+  color: #fff;
   padding: 3px 7px;
   border-radius: 3px;
-  background: linear-gradient(135deg, #f5dfa6, #c49a52);
-  box-shadow: 0 1px 5px rgba(201, 164, 92, 0.2);
+  background: linear-gradient(135deg, #c9a45e, #a77a35);
 }
 
 .gold-rate-item strong {
-  color: #f3d99b;
+  color: #3c3022;
   font-size: 14px;
   font-weight: 800;
   font-family: "Inter", sans-serif;
-  letter-spacing: 0.3px;
+  letter-spacing: .3px;
   font-variant-numeric: tabular-nums;
 }
 
 .gold-unit {
-  color: #a99b83;
+  color: #8b8174;
   font-size: 10px;
 }
 
@@ -120,18 +108,20 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #c9bda8;
+  color: #776b5b;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.8px;
+  letter-spacing: .8px;
 }
 
-.gold-movement.up {
-  color: #55d98b;
+.gold-movement.up,
+.gold-connection.online {
+  color: #198653;
 }
 
-.gold-movement.down {
-  color: #ff7777;
+.gold-movement.down,
+.gold-connection.offline {
+  color: #c34b4b;
 }
 
 .gold-connection {
@@ -140,50 +130,24 @@
   gap: 5px;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.8px;
-}
-
-.gold-connection.online {
-  color: #55d98b;
-}
-
-.gold-connection.offline {
-  color: #ff7777;
+  letter-spacing: .8px;
 }
 
 .gold-update {
-  color: #a99b83;
+  color: #8b8174;
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.2px;
+  letter-spacing: .2px;
 }
 
 @media (max-width: 768px) {
-  .gold-rate-bar {
-    min-height: 36px;
-  }
-
-  .gold-rate-content {
-    gap: 13px;
-    padding: 0 13px;
-  }
-
-  .gold-rate-brand {
-    font-size: 9px;
-    letter-spacing: 1.2px;
-  }
-
-  .gold-rate-item strong {
-    font-size: 12px;
-  }
-
-  .gold-update {
-    font-size: 9px;
-  }
+  .gold-rate-bar { min-height: 36px; }
+  .gold-rate-content { gap: 13px; padding: 0 13px; }
+  .gold-rate-brand { font-size: 9px; letter-spacing: 1.2px; }
+  .gold-rate-item strong { font-size: 12px; }
+  .gold-update { font-size: 9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gold-live-dot.is-live {
-    animation: none;
-  }
+  .gold-live-dot.is-live { animation: none; }
 }

@@ -948,3 +948,511 @@ a { color: inherit; text-decoration: none; }
   position: fixed;
   z-index: 99999 !important;
 }
+
+/* =====================================================
+   RAHUL JEWELLERS — PREMIUM IVORY & CHAMPAGNE THEME
+   Theme-only overrides. Existing functionality preserved.
+===================================================== */
+
+:root {
+  --rj-gold: #b58a43;
+  --rj-gold-light: #d8bd83;
+  --rj-border: #e8dfd0;
+  --rj-cream: #fffdf9;
+  --rj-text: #332b23;
+  --rj-muted: #82796e;
+}
+
+.rj-site {
+  background: #fffdf9 !important;
+  color: #332b23 !important;
+}
+
+.rj-site button,
+.rj-site input {
+  font-family: inherit;
+}
+
+/* Top information bar */
+.rj-topbar {
+  background: #faf7f1 !important;
+  color: #65594a !important;
+  border-bottom: 1px solid #e9dfcf !important;
+}
+
+.rj-topbar a,
+.rj-topbar span {
+  color: #65594a !important;
+}
+
+.rj-topbar svg {
+  color: #b58a43 !important;
+}
+
+/* Main navigation */
+.rj-header {
+  background: rgba(255, 255, 255, .97) !important;
+  border-bottom: 1px solid #e9dfcf !important;
+  box-shadow: 0 4px 20px rgba(80, 60, 30, .045);
+}
+
+.rj-brand-copy strong {
+  color: #30271e !important;
+}
+
+.rj-brand-copy small {
+  color: #8a7962 !important;
+}
+
+.rj-brand-mark {
+  color: #b58a43 !important;
+}
+
+.rj-nav > button,
+.rj-nav > a,
+.rj-nav-dropdown > button {
+  color: #4b4034 !important;
+}
+
+.rj-nav > button:hover,
+.rj-nav > a:hover,
+.rj-nav > button.active {
+  color: #b58a43 !important;
+}
+
+.rj-header-actions button,
+.rj-header-actions a,
+.rj-mobile-menu {
+  color: #514536 !important;
+}
+
+.rj-header-actions button:hover,
+.rj-header-actions a:hover {
+  color: #b58a43 !important;
+}
+
+.rj-dropdown-menu {
+  background: #fff !important;
+  border: 1px solid #e9dfcf !important;
+  box-shadow: 0 15px 35px rgba(50, 35, 15, .12) !important;
+}
+
+.rj-dropdown-menu button {
+  color: #514536 !important;
+}
+
+.rj-dropdown-menu button:hover {
+  background: #faf5eb !important;
+  color: #a77b36 !important;
+}
+
+/* Search */
+.rj-search-panel {
+  background: #fff !important;
+  border-top: 1px solid #eee5d8 !important;
+  color: #4b4034 !important;
+}
+
+.rj-search-panel input {
+  color: #332b23 !important;
+}
+
+.rj-search-panel input::placeholder {
+  color: #a49a8d !important;
+}
+
+/* Gold rate ticker */
+.gold-rate-bar {
+  background: linear-gradient(90deg, #fffdf9, #f8f1e5, #fffdf9) !important;
+  color: #6b5230 !important;
+  border-bottom: 1px solid #e4d2ad !important;
+  box-shadow: 0 3px 12px rgba(90, 65, 25, .06) !important;
+}
+
+.gold-rate-brand {
+  color: #8b672e !important;
+}
+
+.gold-purity {
+  color: #fff !important;
+  background: linear-gradient(135deg, #c9a45e, #a77a35) !important;
+}
+
+.gold-rate-item strong {
+  color: #3c3022 !important;
+}
+
+.gold-unit,
+.gold-update {
+  color: #8b8174 !important;
+}
+
+.gold-separator {
+  background: #dfcfb3 !important;
+}
+
+.gold-movement {
+  color: #776b5b !important;
+}
+
+.gold-connection.online,
+.gold-movement.up {
+  color: #198653 !important;
+}
+
+.gold-connection.offline,
+.gold-movement.down {
+  color: #c34b4b !important;
+}
+
+.gold-live-dot.is-live {
+  background: #22a568 !important;
+}
+
+/* Hero: keep original images and slider intact */
+.rj-hero {
+  background-color: #e9dfd0;
+}
+
+.rj-hero-shade {
+  background: linear-gradient(
+    90deg,
+    rgba(25, 17, 11, .76),
+    rgba(25, 17, 11, .34) 60%,
+    rgba(25, 17, 11, .08)
+  ) !important;
+}
+
+.rj-hero h1 {
+  color: #fffaf1 !important;
+}
+
+.rj-hero-description {
+  color: #f5ead8 !important;
+}
+
+.rj-eyebrow {
+  color: #b58a43 !important;
+}
+
+.rj-outline-button {
+  color: #fff !important;
+  border-color: #d8bd83 !important;
+  background: rgba(181, 138, 67, .85) !important;
+}
+
+/* Trust strip */
+.rj-trust-strip {
+  background: linear-gradient(110deg, #fff, #faf5eb, #fff) !important;
+  border: 1px solid #e5d6bc !important;
+  box-shadow: 0 12px 30px rgba(70, 50, 20, .08) !important;
+}
+
+.rj-trust-strip b {
+  color: #44372a !important;
+}
+
+.rj-trust-strip small {
+  color: #887b69 !important;
+}
+
+.rj-trust-strip svg {
+  color: #b58a43 !important;
+}
+
+.rj-trust-strip > div {
+  border-color: #eadfce !important;
+}
+
+/* Section headings */
+.rj-section-heading h2,
+.rj-products-heading h2,
+.rj-about h2 {
+  color: #33271c !important;
+}
+
+.rj-section-heading span {
+  background: linear-gradient(90deg, transparent, #c5a16a) !important;
+}
+
+/* Collection cards */
+.rj-collection-card {
+  border-color: #ddc69e !important;
+  box-shadow: 0 7px 20px rgba(60, 40, 15, .07);
+}
+
+.rj-collection-overlay {
+  background: linear-gradient(
+    0deg,
+    rgba(20, 13, 8, .78),
+    rgba(20, 13, 8, .03) 75%
+  ) !important;
+}
+
+/* Savings scheme banner */
+.rj-scheme-banner {
+  background:
+    radial-gradient(ellipse at 15% 50%, #f0dfbd, transparent 34%),
+    linear-gradient(100deg, #fffaf1, #f5ead7 62%, #ead5b3) !important;
+  border: 1px solid #ddc69e !important;
+  box-shadow: 0 10px 28px rgba(80, 55, 20, .07) !important;
+}
+
+.rj-scheme-copy h2 {
+  color: #443326 !important;
+}
+
+.rj-scheme-copy h2 strong {
+  color: #a77a35 !important;
+}
+
+.rj-scheme-copy > p:last-child {
+  color: #776858 !important;
+}
+
+.rj-gold-button {
+  color: #fff !important;
+  background: linear-gradient(110deg, #c6a064, #a77a35) !important;
+  border-color: #d7bd8e !important;
+}
+
+/* Product catalogue */
+.rj-product-search {
+  background: #fff !important;
+  border-color: #e7ddce !important;
+}
+
+.rj-product-search input {
+  color: #332b23 !important;
+}
+
+.rj-product-search input::placeholder {
+  color: #a49a8d !important;
+}
+
+.rj-category-pills button {
+  color: #625443 !important;
+  background: #fff !important;
+  border-color: #e6dac7 !important;
+}
+
+.rj-category-pills button.active,
+.rj-category-pills button:hover {
+  color: #fff !important;
+  background: #b58a43 !important;
+  border-color: #b58a43 !important;
+}
+
+.rj-product-card {
+  background: #fff !important;
+  border-color: #e9dfd0 !important;
+  box-shadow: 0 5px 18px rgba(60, 40, 15, .055);
+}
+
+.rj-product-info h3 {
+  color: #3b3025 !important;
+}
+
+.rj-product-info p {
+  color: #887b6b !important;
+}
+
+.rj-product-info > strong {
+  color: #a77a35 !important;
+}
+
+.rj-product-image span {
+  color: #fff !important;
+  background: rgba(90, 62, 27, .88) !important;
+  border-color: #d8bd83 !important;
+}
+
+.rj-empty-products {
+  background: #fff !important;
+  color: #a77a35 !important;
+  border-color: #e9dfd0 !important;
+}
+
+.rj-empty-products h3 {
+  color: #3b3025 !important;
+}
+
+.rj-empty-products p {
+  color: #887b6b !important;
+}
+
+/* About and footer */
+.rj-about {
+  background: linear-gradient(90deg, #fffaf2, #f5ead8, #fffaf2) !important;
+  border-color: #e9dfd0 !important;
+}
+
+.rj-about > p:last-child {
+  color: #786b5b !important;
+}
+
+.rj-footer {
+  background: #f8f4ec !important;
+  border-color: #e7ddce !important;
+}
+
+.rj-footer-brand strong {
+  color: #9e7437 !important;
+}
+
+.rj-footer-brand small,
+.rj-footer > p {
+  color: #847766 !important;
+}
+
+.rj-footer-contact {
+  color: #625443 !important;
+}
+
+.rj-footer-contact svg {
+  color: #b58a43 !important;
+}
+
+/* Customer scheme dashboard */
+.rj-scheme-dashboard {
+  color: #403529 !important;
+}
+
+.rj-dashboard-heading h1 {
+  color: #9f773c !important;
+}
+
+.rj-dashboard-heading > p:last-child {
+  color: #827666 !important;
+}
+
+.rj-progress-card,
+.rj-installments,
+.rj-benefit-card {
+  background: #fff !important;
+  border-color: #e8dece !important;
+  box-shadow: 0 6px 20px rgba(60, 40, 15, .045);
+}
+
+.rj-progress-top h2,
+.rj-dashboard-section-title h2 {
+  color: #433528 !important;
+}
+
+.rj-progress-top small {
+  color: #a77a35 !important;
+}
+
+.rj-progress-top > span {
+  color: #a77a35 !important;
+  border-color: #ddc69e !important;
+  background: #fffaf1 !important;
+}
+
+.rj-progress-track {
+  background: #eee7dc !important;
+}
+
+.rj-progress-track span {
+  background: linear-gradient(90deg, #a77a35, #dfc18a) !important;
+}
+
+.rj-progress-numbers small {
+  color: #827666 !important;
+}
+
+.rj-progress-numbers strong {
+  color: #9f773c !important;
+}
+
+.rj-dashboard-actions button,
+.rj-benefit-card button {
+  color: #8e682f !important;
+  background: #fffaf1 !important;
+  border-color: #e5d5b9 !important;
+}
+
+.rj-installment-row {
+  background: #fffdf9 !important;
+  border-color: #e8dece !important;
+}
+
+.rj-installment-name strong {
+  color: #44372a !important;
+}
+
+.rj-installment-name small {
+  color: #827666 !important;
+}
+
+.rj-installment-row.next {
+  background: #fff9ed !important;
+}
+
+.rj-benefit-card h3 {
+  color: #9f773c !important;
+}
+
+.rj-benefit-card p {
+  color: #786b5b !important;
+}
+
+/* Payment/history modals */
+.rj-payment-modal,
+.rj-history-modal {
+  color: #403529 !important;
+  background: #fffdf9 !important;
+  border-color: #ddc69e !important;
+  box-shadow: 0 25px 70px rgba(40, 25, 10, .2) !important;
+}
+
+.rj-payment-modal h2,
+.rj-history-modal h2 {
+  color: #403529 !important;
+}
+
+.rj-payment-modal > p:not(.rj-eyebrow) {
+  color: #786b5b !important;
+}
+
+.rj-payment-amount {
+  color: #a77a35 !important;
+}
+
+.rj-upi-id {
+  color: #554735 !important;
+  border-color: #ddc69e !important;
+  background: #fffaf1 !important;
+}
+
+.rj-secondary-button {
+  color: #8e682f !important;
+  background: #fffaf1 !important;
+  border-color: #ddc69e !important;
+}
+
+.rj-modal-close {
+  color: #786b5b !important;
+  background: #fff !important;
+  border-color: #e5d5b9 !important;
+}
+
+.rj-history-row {
+  border-color: #e8dece !important;
+  color: #554735 !important;
+}
+
+/* Mobile navigation */
+@media (max-width: 760px) {
+  .rj-nav {
+    background: #fff !important;
+    border-color: #e9dfd0 !important;
+    box-shadow: 0 12px 22px rgba(50, 35, 15, .08);
+  }
+
+  .rj-nav > button,
+  .rj-nav > a,
+  .rj-nav-dropdown > button {
+    color: #514536 !important;
+  }
+}
