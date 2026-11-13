@@ -1,191 +1,251 @@
+
 import React, { useState } from 'react';
-import { Crown, Phone, Info, HelpCircle, X, MapPin, Clock, ShieldCheck, MessageCircle, Instagram } from 'lucide-react';
+import {
+  Crown, Phone, Info, HelpCircle, X, MapPin, Clock,
+  ShieldCheck, MessageCircle, Instagram, Gem, Sparkles
+} from 'lucide-react';
+
+const GOLD = '#D6B875';
 
 export default function StoreNavbar() {
   const [activeModal, setActiveModal] = useState(null);
 
+  const closeModal = () => setActiveModal(null);
+
+  const modalContent = {
+    about: {
+      icon: Info,
+      title: 'About Rahul Jewellers',
+    },
+    contact: {
+      icon: Phone,
+      title: 'Contact Showroom',
+    },
+    support: {
+      icon: HelpCircle,
+      title: 'Customer Support',
+    },
+  };
+
+  const current = activeModal ? modalContent[activeModal] : null;
+  const ModalIcon = current?.icon;
+
   return (
     <>
-      <div className="bg-stone-900 text-amber-400 text-xs py-2 px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-2 font-mono tracking-wider border-b border-amber-500/35 relative z-30">
-        <div className="flex items-center gap-2">
-          <Crown className="w-4 h-4 text-amber-500 shrink-0" />
-          <span className="font-bold text-white uppercase tracking-widest text-[11px] sm:text-xs">RAHUL JEWELLERS (SHEOGANJ)</span>
-        </div>
-        
-        <div className="flex items-center gap-3 sm:gap-5 text-[11px] font-sans">
-          <button 
-            type="button"
-            onClick={() => setActiveModal('about')}
-            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
-          >
-            <Info className="w-3.5 h-3.5 text-amber-500 shrink-0" /> About Us
-          </button>
-          <button 
-            type="button"
-            onClick={() => setActiveModal('contact')}
-            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
-          >
-            <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Contact
-          </button>
-          <button 
-            type="button"
-            onClick={() => setActiveModal('support')}
-            className="hover:text-white transition flex items-center gap-1 text-stone-300 cursor-pointer py-1 px-1 rounded active:bg-stone-800"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Support
-          </button>
-          <a 
-            href="https://instagram.com/rahuljewellers9" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-white transition flex items-center gap-1 text-pink-400 cursor-pointer py-1 px-1 rounded active:bg-stone-800 font-bold"
-          >
-            <Instagram className="w-3.5 h-3.5 shrink-0" /> Insta
-          </a>
+      <div className="relative z-50 bg-[#100b0d] border-b border-[#c6a15b]/25">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 min-h-[43px] flex flex-wrap items-center justify-between gap-2 py-2">
+          <div className="flex items-center gap-2">
+            <Crown className="w-4 h-4" style={{ color: GOLD }} />
+            <span className="text-[10px] sm:text-xs font-semibold tracking-[0.19em] text-[#e8d5ad] uppercase">
+              Rahul Jewellers
+            </span>
+            <span className="hidden sm:inline text-[#806c4a] text-[10px]">|</span>
+            <span className="hidden sm:inline text-[9px] tracking-[0.2em] text-[#a9977d] uppercase">
+              Sheoganj
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-xs">
+            <button
+              onClick={() => setActiveModal('about')}
+              className="flex items-center gap-1.5 text-[#c9bda9] hover:text-[#f1d99e] transition"
+            >
+              <Info size={13} /> About
+            </button>
+
+            <button
+              onClick={() => setActiveModal('contact')}
+              className="flex items-center gap-1.5 text-[#c9bda9] hover:text-[#f1d99e] transition"
+            >
+              <Phone size={13} /> Contact
+            </button>
+
+            <button
+              onClick={() => setActiveModal('support')}
+              className="flex items-center gap-1.5 text-[#c9bda9] hover:text-[#f1d99e] transition"
+            >
+              <HelpCircle size={13} /> Support
+            </button>
+
+            <a
+              href="https://instagram.com/rahuljewellers9"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[#d6a0b5] hover:text-white transition"
+            >
+              <Instagram size={13} /> Instagram
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* About Us Modal */}
-      {activeModal === 'about' && (
-        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
-            <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <div className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-amber-700" />
-                <h3 className="font-serif font-bold text-base uppercase text-stone-900">About Rahul Jewellers</h3>
-              </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-3 text-xs leading-relaxed text-stone-600">
-              <p>
-                Nestled in the vibrant heart of the <strong>Main Market, Sheoganj</strong>, Rahul Jewellers has stood for decades as a beacon of trust, royal elegance, and uncompromised purity. 
-              </p>
-              <p>
-                Founded with a passion for preserving traditional Indian craftsmanship, our showroom is a cherished destination for families celebrating life's most precious milestones. We specialize in 100% BIS hallmarked gold jewelry, majestic Kundan sets, intricate bridal collections, silver articles, and antique kadas.
-              </p>
-              <p>
-                Every ornament we craft carries a promise of authenticity, transparent pricing, and timeless beauty designed to become your family's treasured heirloom for generations.
-              </p>
-            </div>
-            <button 
-              type="button"
-              onClick={() => setActiveModal(null)}
-              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {activeModal && current && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={closeModal}
+        >
+          <div
+            className="relative w-full max-w-md bg-[#171012] border border-[#c6a15b]/40 rounded-3xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="h-1 bg-gradient-to-r from-[#76552f] via-[#e6cc91] to-[#76552f]" />
 
-      {/* Contact Modal */}
-      {activeModal === 'contact' && (
-        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
-            <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <div className="flex items-center gap-2">
-                <Phone className="w-5 h-5 text-amber-700" />
-                <h3 className="font-serif font-bold text-base uppercase text-stone-900">Contact Showroom</h3>
-              </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-xl text-stone-500 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-3 text-xs text-stone-700">
-              <div className="flex items-start gap-3 p-3 bg-stone-50 rounded-2xl border border-stone-200">
-                <MapPin className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-stone-900 uppercase">Showroom Address</p>
-                  <p className="text-stone-600 font-medium">Main Market, Sheoganj, Rajasthan</p>
+            <div className="p-6 sm:p-7 space-y-5">
+              <div className="flex items-center justify-between border-b border-[#c6a15b]/20 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#c6a15b]/10 border border-[#c6a15b]/30 flex items-center justify-center">
+                    <ModalIcon size={19} color={GOLD} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#a58b5b]">
+                      Rahul Jewellers
+                    </p>
+                    <h3 className="font-serif-luxury text-xl text-[#f0dba9]">
+                      {current.title}
+                    </h3>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-3 p-3 bg-stone-50 rounded-2xl border border-stone-200">
-                <Phone className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold text-stone-900 uppercase">Helpline Numbers</p>
-                  <p className="font-mono font-bold text-amber-900">+91 9950091024</p>
-                  <p className="font-mono font-bold text-amber-900">+91 9461452322</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-pink-50 rounded-2xl border border-pink-200">
-                <div className="flex items-center gap-2">
-                  <Instagram className="w-4 h-4 text-pink-600" />
-                  <span className="font-bold text-stone-900">Instagram Handle</span>
-                </div>
-                <a 
-                  href="https://instagram.com/rahuljewellers9" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="font-mono font-bold text-pink-600 hover:underline"
+                <button
+                  onClick={closeModal}
+                  className="w-9 h-9 rounded-full border border-[#c6a15b]/25 text-[#cbbd9f] hover:bg-[#c6a15b]/10 flex items-center justify-center"
+                  aria-label="Close dialog"
                 >
-                  @rahuljewellers9
-                </a>
+                  <X size={18} />
+                </button>
               </div>
+
+              {activeModal === 'about' && (
+                <div className="space-y-4 text-sm leading-7 text-[#c9bca9]">
+                  <div className="text-center py-3">
+                    <Gem size={32} className="mx-auto mb-3" color={GOLD} />
+                    <h4 className="font-serif-luxury text-2xl text-[#e8d19b]">
+                      Timeless Elegance
+                    </h4>
+                    <p className="text-[9px] uppercase tracking-[0.3em] text-[#9d8761] mt-1">
+                      Trust • Purity • Craftsmanship
+                    </p>
+                  </div>
+
+                  <p>
+                    Located in the heart of Main Market, Sheoganj,
+                    Rahul Jewellers is dedicated to bringing beautiful
+                    jewellery and traditional Indian craftsmanship
+                    to every special occasion.
+                  </p>
+
+                  <p>
+                    Our collections include Gold, Polki, Kundan,
+                    Diamond and Silver jewellery, with a focus on
+                    timeless designs, quality and customer trust.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Gold Jewellery', 'Polki Designs', 'Kundan Collection', 'Diamond & Silver'].map((item) => (
+                      <div
+                        key={item}
+                        className="p-3 text-center rounded-xl bg-[#24191a] border border-[#c6a15b]/20 text-[#e5d1a7] text-xs"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'contact' && (
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#24191a] border border-[#c6a15b]/20">
+                    <MapPin size={18} color={GOLD} className="shrink-0 mt-1" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#b69b69]">
+                        Showroom Address
+                      </p>
+                      <p className="text-[#eee0c5] mt-1">
+                        Main Market, Sheoganj, Rajasthan
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#24191a] border border-[#c6a15b]/20">
+                    <Phone size={18} color={GOLD} className="shrink-0 mt-1" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#b69b69]">
+                        Contact Numbers
+                      </p>
+                      <a href="tel:+919950091024" className="block text-[#eee0c5] mt-2">
+                        +91 9950091024
+                      </a>
+                      <a href="tel:+919461452322" className="block text-[#eee0c5] mt-1">
+                        +91 9461452322
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-[#24191a] border border-[#c6a15b]/20">
+                    <div className="flex items-center gap-2 text-[#eee0c5]">
+                      <Instagram size={17} color="#d6a0b5" />
+                      Instagram
+                    </div>
+                    <a
+                      href="https://instagram.com/rahuljewellers9"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#d6a0b5] text-xs"
+                    >
+                      @rahuljewellers9
+                    </a>
+                  </div>
+
+                  <a
+                    href="https://wa.me/919950091024?text=Namaste%20Rahul%20Jewellers,%20I%20have%20an%20inquiry."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3.5 rounded-xl bg-[#176b45] hover:bg-[#208456] text-white font-semibold text-xs flex items-center justify-center gap-2 transition"
+                  >
+                    <MessageCircle size={17} />
+                    Chat on WhatsApp
+                  </a>
+                </div>
+              )}
+
+              {activeModal === 'support' && (
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#24191a] border border-[#c6a15b]/20">
+                    <Clock size={20} color={GOLD} />
+                    <div>
+                      <p className="text-[9px] uppercase tracking-widest text-[#b69b69]">
+                        Customer Helping Hours
+                      </p>
+                      <p className="text-[#eee0c5] font-semibold mt-1">
+                        10:00 AM – 6:00 PM
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#24191a] border border-[#c6a15b]/20 space-y-3">
+                    <div className="flex items-center gap-2 text-[#e8d19b] font-semibold text-xs">
+                      <ShieldCheck size={17} />
+                      Scheme & Payment Guidelines
+                    </div>
+
+                    <ul className="list-disc pl-5 space-y-2 text-xs leading-relaxed text-[#c9bca9]">
+                      <li>Complete your monthly installment through your UPI app.</li>
+                      <li>Keep your payment receipt screenshot safe.</li>
+                      <li>Share your screenshot with your Customer ID and Month Number on WhatsApp.</li>
+                      <li>Payment verification and passbook updates are handled by the store team.</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               <button
-                type="button"
-                onClick={() => window.open('https://wa.me/919950091024?text=Namaste%20Rahul%20Jewellers,%20I%20have%20an%20inquiry.', '_blank')}
-                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+                onClick={closeModal}
+                className="w-full py-3 rounded-xl border border-[#c6a15b]/40 text-[#e6cc91] hover:bg-[#c6a15b]/10 text-xs font-semibold tracking-widest uppercase transition"
               >
-                <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
+                Close
               </button>
             </div>
-            <button 
-              type="button"
-              onClick={() => setActiveModal(null)}
-              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Support Modal */}
-      {activeModal === 'support' && (
-        <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-md w-full p-6 rounded-3xl border-2 border-zinc-900 shadow-2xl space-y-4 text-stone-800 relative my-auto">
-            <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-amber-700" />
-                <h3 className="font-serif font-bold text-base uppercase text-stone-900">Customer Support & Guidelines</h3>
-              </div>
-              <button onClick={() => setActiveModal(null)} className="p-1 hover:bg-stone-100 rounded-lg text-stone-500 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-3 text-xs text-stone-700">
-              <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-200">
-                <Clock className="w-4 h-4 text-amber-800 shrink-0" />
-                <div>
-                  <p className="font-bold text-amber-950 uppercase text-[10px]">Customer Helping Hours</p>
-                  <p className="font-bold text-stone-900 text-sm font-mono">10:00 AM to 6:00 PM</p>
-                </div>
-              </div>
-
-              <div className="space-y-2 p-3.5 bg-stone-50 rounded-2xl border border-stone-200 font-medium">
-                <p className="font-bold text-stone-900 uppercase text-[10px] flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" /> Scheme & Payment Guidelines:
-                </p>
-                <ul className="list-disc pl-4 space-y-1.5 text-stone-600">
-                  <li>For monthly gold savings scheme payments, complete your transaction via UPI and save the receipt screenshot.</li>
-                  <li>Send your payment screenshot immediately on WhatsApp along with your Customer ID and Month Number for passbook updates.</li>
-                  <li>Verification and digital passbook updates are completed within regular helping hours.</li>
-                  <li>For any discrepancies or support queries, reach out directly to our helpline numbers.</li>
-                </ul>
-              </div>
-            </div>
-            <button 
-              type="button"
-              onClick={() => setActiveModal(null)}
-              className="w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase transition cursor-pointer"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

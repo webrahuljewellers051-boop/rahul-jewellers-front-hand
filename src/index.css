@@ -1,59 +1,176 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Set white background and forced high-contrast dark text */
-html, 
-body, 
+:root {
+  font-family: 'Inter', sans-serif;
+  color: #f5eee3;
+  background: #100d0c;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --luxury-bg: #100d0c;
+  --luxury-card: #191310;
+  --luxury-maroon: #421b25;
+  --luxury-gold: #c6a15b;
+  --luxury-gold-light: #e6cc91;
+  --luxury-text: #f5eee3;
+  --luxury-muted: #aa9b8b;
+  --luxury-border: rgba(198, 161, 91, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
 #root {
-  min-height: 100vh;
-  height: auto !important;
-  overflow-y: auto !important;
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
   overflow-x: hidden;
-  background-color: #ffffff !important;
-  color: #09090b !important; /* Pure Dark Slate / Black Text */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Custom Typography */
+html {
+  scroll-behavior: smooth;
+  background: var(--luxury-bg);
+}
+
+body {
+  background: var(--luxury-bg);
+  color: var(--luxury-text);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--luxury-gold);
+  color: #17110c;
+}
+
 .font-serif-luxury {
-  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
-/* Rich Gold/Dark Bronze Text Gradient */
 .gold-gradient-text {
-  background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #451a03 100%);
+  background: linear-gradient(
+    120deg,
+    #8f6a32 0%,
+    #e6cc91 35%,
+    #c6a15b 65%,
+    #f3dfae 100%
+  );
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* White Card with Solid Dark Borders */
 .glass-card {
-  background: #ffffff;
-  border: 1.5px solid #18181b !important; /* Crisp Dark Zinc-900 Border */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(
+    145deg,
+    rgba(37, 27, 23, 0.96),
+    rgba(20, 15, 14, 0.98)
+  );
+  border: 1px solid var(--luxury-border);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
 }
 
 .glass-card:hover {
-  border-color: #000000 !important;
+  border-color: rgba(230, 204, 145, 0.55);
+  transition: border-color 0.3s ease;
 }
 
-/* High-Contrast Action Button with Solid Dark Border */
 .btn-gold {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  color: #ffffff !important;
-  font-weight: 800;
-  border: 1.5px solid #78350f;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+  background: linear-gradient(
+    135deg,
+    #a77b37,
+    #e3c887,
+    #b18a49
+  );
+  color: #1a120b !important;
+  font-weight: 700;
+  border: 1px solid #e6cc91;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(198, 161, 91, 0.16);
 }
 
 .btn-gold:hover {
-  background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
-  box-shadow: 0 6px 16px rgba(180, 83, 9, 0.35);
-  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    #e6cc91,
+    #f4e3b8,
+    #c6a15b
+  );
+  box-shadow: 0 8px 28px rgba(198, 161, 91, 0.28);
+  transform: translateY(-2px);
 }
 
 .btn-gold:active {
-  transform: translateY(1px);
+  transform: translateY(0);
+}
+
+.luxury-border {
+  border: 1px solid var(--luxury-border);
+}
+
+.luxury-section {
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(100, 48, 49, 0.18),
+      transparent 65%
+    ),
+    var(--luxury-bg);
+}
+
+.luxury-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--luxury-gold-light);
+  letter-spacing: 0.04em;
+}
+
+.luxury-muted {
+  color: var(--luxury-muted);
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #100d0c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #76552f;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c6a15b;
+}
+
+@media (max-width: 640px) {
+  .font-serif-luxury {
+    letter-spacing: 0.01em;
+  }
 }
