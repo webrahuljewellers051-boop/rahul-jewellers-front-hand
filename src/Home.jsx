@@ -950,7 +950,7 @@ export default function App() {
           <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
           <div>
             <strong>RAHUL JEWELLERS</strong>
-            <small>SHEOGANJ</small>
+            <small>SHEOGANJ SHOWROOM</small>
           </div>
         </div>
 
