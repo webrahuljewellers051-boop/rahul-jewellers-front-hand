@@ -182,6 +182,7 @@ export default function App() {
     syncCustomerData();
   }, []);
 
+  // Automatic horizontal slider
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveSlide(current => (current + 1) % heroSlides.length);
@@ -303,6 +304,142 @@ export default function App() {
 
   return (
     <div className="rj-site min-h-screen">
+
+      {/* Slider styling */}
+      <style>{`
+        .rj-hero-slider-viewport {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          isolation: isolate;
+        }
+
+        .rj-hero-slider-track {
+          display: flex;
+          width: 300%;
+          height: 100%;
+          transform: translateX(calc(var(--slide-index) * -33.333333%));
+          transition: transform 1100ms cubic-bezier(0.77, 0, 0.175, 1);
+          will-change: transform;
+        }
+
+        .rj-hero-slide {
+          position: relative;
+          flex: 0 0 33.333333%;
+          width: 33.333333%;
+          height: 100%;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        .rj-hero-slide-image {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          transform: scale(1.025);
+          transition: transform 7000ms ease;
+        }
+
+        .rj-hero-slide.is-active .rj-hero-slide-image {
+          transform: scale(1);
+        }
+
+        .rj-hero-slide-content {
+          position: relative;
+          z-index: 2;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .rj-hero-slide-content .rj-eyebrow,
+        .rj-hero-slide-content h1,
+        .rj-hero-slide-content .rj-hero-description,
+        .rj-hero-slide-content .rj-outline-button {
+          animation: rjSlideTextIn 850ms both;
+        }
+
+        .rj-hero-slide-content h1 {
+          animation-delay: 100ms;
+        }
+
+        .rj-hero-slide-content .rj-hero-description {
+          animation-delay: 180ms;
+        }
+
+        .rj-hero-slide-content .rj-outline-button {
+          animation-delay: 260ms;
+        }
+
+        @keyframes rjSlideTextIn {
+          from {
+            opacity: 0;
+            transform: translateX(35px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .rj-hero-slider-viewport .rj-hero-arrow,
+        .rj-hero-slider-viewport .rj-hero-dots {
+          position: absolute;
+          z-index: 5;
+        }
+
+        .rj-hero-slider-viewport .rj-hero-arrow {
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .rj-hero-slider-viewport .rj-hero-arrow.left {
+          left: 22px;
+        }
+
+        .rj-hero-slider-viewport .rj-hero-arrow.right {
+          right: 22px;
+        }
+
+        .rj-hero-slider-viewport .rj-hero-dots {
+          left: 50%;
+          bottom: 25px;
+          transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .rj-hero-slider-viewport .rj-hero-dots button {
+          width: 9px;
+          height: 9px;
+          border-radius: 20px;
+          border: 0;
+          padding: 0;
+          cursor: pointer;
+          transition: width 350ms ease, background 350ms ease;
+        }
+
+        .rj-hero-slider-viewport .rj-hero-dots button.active {
+          width: 30px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .rj-hero-slider-track,
+          .rj-hero-slide-image {
+            transition-duration: 0.01ms;
+          }
+
+          .rj-hero-slide-content * {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
       <SupportChatWidget />
 
@@ -434,48 +571,74 @@ export default function App() {
 
       {activeTab === 'showroom' && (
         <>
-          {/* Hero slider - working background images */}
+          {/* Premium horizontal sliding hero carousel */}
           <section
-            className="rj-hero rj-hero-with-model"
+            className="rj-hero rj-hero-with-model rj-hero-slider-viewport"
             style={{
               position: 'relative',
               overflow: 'hidden',
               isolation: 'isolate'
             }}
           >
-            {/* Actual slider image */}
-            <img
-              key={currentSlide.image}
-              className="rj-hero-background"
-              src={currentSlide.image}
-              alt={`${currentSlide.category} jewellery collection`}
-              fetchPriority="high"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
-                zIndex: 0
-              }}
-            />
-
-            {/* Dark gradient overlay for readable text */}
             <div
-              className="rj-hero-shade"
+              className="rj-hero-slider-track"
               style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 1,
-                background: 'linear-gradient(90deg, rgba(20,13,9,0.82) 0%, rgba(20,13,9,0.55) 48%, rgba(20,13,9,0.12) 100%)'
+                '--slide-index': activeSlide
               }}
-            />
+            >
+              {heroSlides.map((slide, index) => (
+                <div
+                  className={`rj-hero-slide ${activeSlide === index ? 'is-active' : ''}`}
+                  key={slide.title}
+                  aria-hidden={activeSlide !== index}
+                >
+                  <img
+                    className="rj-hero-slide-image"
+                    src={slide.image}
+                    alt={`${slide.category} jewellery collection`}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+
+                  <div
+                    className="rj-hero-shade"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 1,
+                      background: 'linear-gradient(90deg, rgba(20,13,9,0.82) 0%, rgba(20,13,9,0.55) 48%, rgba(20,13,9,0.12) 100%)'
+                    }}
+                  />
+
+                  <div className="rj-hero-content rj-hero-slide-content">
+                    <p className="rj-eyebrow">{slide.eyebrow}</p>
+
+                    <h1>
+                      {slide.title.split('\n').map((line, lineIndex) => (
+                        <React.Fragment key={`${line}-${lineIndex}`}>
+                          {line}
+                          {lineIndex === 0 && <br />}
+                        </React.Fragment>
+                      ))}
+                    </h1>
+
+                    <p className="rj-hero-description">
+                      {slide.description}
+                    </p>
+
+                    <button
+                      className="rj-outline-button"
+                      onClick={() => openCollection(slide.category)}
+                    >
+                      Explore Collection <ArrowRight size={18}/>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* Previous slide */}
             <button
               className="rj-hero-arrow left"
-              style={{ zIndex: 3 }}
               onClick={() =>
                 setActiveSlide(current =>
                   (current + heroSlides.length - 1) % heroSlides.length
@@ -486,38 +649,9 @@ export default function App() {
               ‹
             </button>
 
-            {/* Hero text */}
-            <div
-              className="rj-hero-content"
-              style={{ position: 'relative', zIndex: 2 }}
-            >
-              <p className="rj-eyebrow">{currentSlide.eyebrow}</p>
-
-              <h1>
-                {currentSlide.title.split('\n').map((line, index) => (
-                  <React.Fragment key={`${line}-${index}`}>
-                    {line}
-                    {index === 0 && <br />}
-                  </React.Fragment>
-                ))}
-              </h1>
-
-              <p className="rj-hero-description">
-                {currentSlide.description}
-              </p>
-
-              <button
-                className="rj-outline-button"
-                onClick={() => openCollection(currentSlide.category)}
-              >
-                Explore Collection <ArrowRight size={18}/>
-              </button>
-            </div>
-
             {/* Next slide */}
             <button
               className="rj-hero-arrow right"
-              style={{ zIndex: 3 }}
               onClick={() =>
                 setActiveSlide(current =>
                   (current + 1) % heroSlides.length
@@ -529,7 +663,7 @@ export default function App() {
             </button>
 
             {/* Slider navigation dots */}
-            <div className="rj-hero-dots" style={{ zIndex: 3 }}>
+            <div className="rj-hero-dots">
               {heroSlides.map((slide, index) => (
                 <button
                   key={slide.title}
@@ -816,7 +950,7 @@ export default function App() {
           <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
           <div>
             <strong>RAHUL JEWELLERS</strong>
-            <small>SHEOGANJ SHOWROOM</small>
+            <small>SHEOGANJ</small>
           </div>
         </div>
 
