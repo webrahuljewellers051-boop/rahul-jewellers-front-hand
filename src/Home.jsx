@@ -1,37 +1,13 @@
 
-import React, {
-  useEffect,
-  useMemo,
-  useState
-} from 'react';
-
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
-
 import {
-  Gem,
-  Search,
-  UserRound,
-  Menu,
-  X,
-  MapPin,
-  Phone,
-  Instagram,
-  MessageCircle,
-  ShieldCheck,
-  Award,
-  RefreshCw,
-  ChevronDown,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Lock,
-  Receipt,
-  Download,
-  LogOut,
-  Smartphone,
-  Gift,
-  History
+  Crown, Gem, Search, UserRound, Heart, Menu, X, MapPin,
+  Phone, Instagram, MessageCircle, ShieldCheck, Award,
+  Truck, RefreshCw, ChevronDown, ChevronRight, ArrowRight,
+  CheckCircle2, Clock, Lock, Receipt, Download, LogOut,
+  Smartphone, Gift, Calculator, History, Sparkles
 } from 'lucide-react';
 
 import LiveGoldNavbar from './components/LiveGoldNavbar.jsx';
@@ -40,89 +16,41 @@ import IntroSplash from './components/IntroSplash.jsx';
 import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
 
-const API_BASE_URL =
+const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://rahul-jewellers-backend-jlr0.onrender.com';
+  'https://rahul-jewellers-backend-jlr0.onrender.com'
+).replace(/\/$/, '');
 
 const STORE_PHONE = '9950091024';
 
-const publicRequestConfig = {
+const getCustomerConfig = () => ({
+  headers: {
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
+    Authorization: `Bearer ${
+      localStorage.getItem('customer_token') || ''
+    }`
+  },
+  timeout: 30000
+});
+
+const requestConfig = {
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
-  }
+  },
+  timeout: 30000
 };
 
-function getCustomerToken() {
-  return localStorage.getItem('customer_token');
-}
-
-function getAuthConfig() {
-  const token = getCustomerToken();
-
-  return {
-    headers: {
-      ...publicRequestConfig.headers,
-      ...(token
-        ? { Authorization: `Bearer ${token}` }
-        : {})
-    },
-    timeout: 20000
-  };
-}
-
-function getSavedCustomer() {
-  try {
-    const token = getCustomerToken();
-
-    if (!token) return null;
-
-    const raw = localStorage.getItem('schemeUserInfo');
-
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveCustomer(customer) {
-  localStorage.setItem(
-    'schemeUserInfo',
-    JSON.stringify(customer)
-  );
-}
-
-function clearCustomerSession() {
-  localStorage.removeItem('customer_token');
-  localStorage.removeItem('schemeUserInfo');
-}
-
-function apiError(error, fallback) {
-  return (
-    error.response?.data?.message ||
-    error.response?.data?.error ||
-    fallback
-  );
-}
-
-const money = value =>
-  Number(value || 0).toLocaleString('en-IN', {
-    maximumFractionDigits: 0
-  });
-
-function escapeHtml(value) {
-  return String(value ?? '').replace(
-    /[&<>"']/g,
-    char => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[char])
-  );
-}
+const apiErrorText = error =>
+  error?.response?.data?.message ||
+  (
+    error?.code === 'ERR_NETWORK'
+      ? 'Backend connection failed. Check Render service and CORS_ORIGINS.'
+      : error?.message
+  ) ||
+  'Request failed.';
 
 const collections = [
   {
@@ -141,7 +69,7 @@ const collections = [
     name: 'Kundan',
     subtitle: 'Traditional Grandeur',
     image:
-      'https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=85&w=900&auto=format&fit=crop'
+      'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=85&w=900&auto=format&fit=crop'
   },
   {
     name: 'Diamond',
@@ -187,42 +115,36 @@ const heroSlides = [
   }
 ];
 
-function getBenefitDate(customer) {
-  const supplied = customer?.benefitAvailableFrom;
+const money = value =>
+  Number(value || 0).toLocaleString('en-IN', {
+    maximumFractionDigits: 0
+  });
 
-  if (supplied) {
-    const date = new Date(supplied);
-
-    if (!Number.isNaN(date.getTime())) {
-      return date;
-    }
-  }
-
-  if (!customer?.startDate) return null;
-
-  const start = new Date(
-    `${customer.startDate.slice(0, 10)}T00:00:00Z`
+const escapeHtml = value =>
+  String(value ?? '').replace(
+    /[&<>"']/g,
+    char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]
   );
 
-  if (Number.isNaN(start.getTime())) {
+const readSavedCustomer = () => {
+  if (!localStorage.getItem('customer_token')) {
     return null;
   }
 
-  const day = start.getUTCDate();
-
-  start.setUTCDate(1);
-  start.setUTCMonth(start.getUTCMonth() + 12);
-
-  const lastDay = new Date(Date.UTC(
-    start.getUTCFullYear(),
-    start.getUTCMonth() + 1,
-    0
-  )).getUTCDate();
-
-  start.setUTCDate(Math.min(day, lastDay));
-
-  return start;
-}
+  try {
+    return JSON.parse(
+      localStorage.getItem('schemeUserInfo') || 'null'
+    );
+  } catch {
+    return null;
+  }
+};
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(
@@ -230,96 +152,40 @@ export default function App() {
   );
 
   const [schemeUser, setSchemeUser] = useState(
-    getSavedCustomer
+    readSavedCustomer
   );
 
   const [products, setProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('showroom');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  const [activeTab, setActiveTab] = useState(
-    () => {
-      const saved = sessionStorage.getItem(
-        'rj_customer_active_tab'
-      );
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
-      return ['showroom', 'scheme'].includes(saved)
-        ? saved
-        : 'showroom';
-    }
+  const [storeUpiId, setStoreUpiId] = useState('');
+  const [storeMerchantName, setStoreMerchantName] = useState(
+    'Rahul Jewellers'
   );
+  const [storeQrCodeUrl, setStoreQrCodeUrl] = useState('');
 
-  const [selectedCategory, setSelectedCategory] =
-    useState('All');
+  const [activePaymentMonth, setActivePaymentMonth] = useState(null);
+  const [showInstructionModal, setShowInstructionModal] = useState(false);
 
-  const [searchQuery, setSearchQuery] =
-    useState('');
+  const [joinAmount, setJoinAmount] = useState('5000');
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState('');
 
-  const [searchOpen, setSearchOpen] =
-    useState(false);
-
-  const [mobileMenuOpen, setMobileMenuOpen] =
-    useState(false);
-
-  const [activeSlide, setActiveSlide] =
-    useState(0);
-
-  const [showLoginModal, setShowLoginModal] =
-    useState(false);
-
-  const [showProfileModal, setShowProfileModal] =
-    useState(false);
-
-  const [showHistoryModal, setShowHistoryModal] =
-    useState(false);
-
-  const [previewImage, setPreviewImage] =
-    useState(null);
-
-  const [storeUpiId, setStoreUpiId] = useState(
-    '9950091024@okbizaxis'
-  );
-
-  const [
-    storeMerchantName,
-    setStoreMerchantName
-  ] = useState('Rahul Jewellers');
-
-  const [storeQrCodeUrl, setStoreQrCodeUrl] =
-    useState('');
-
-  const [
-    activePaymentMonth,
-    setActivePaymentMonth
-  ] = useState(null);
-
-  const [
-    showInstructionModal,
-    setShowInstructionModal
-  ] = useState(false);
-
-  const [paymentUtr, setPaymentUtr] =
-    useState('');
-
-  const [paymentSubmitting, setPaymentSubmitting] =
-    useState(false);
-
-  const [paymentRequests, setPaymentRequests] =
-    useState([]);
-
-  const [joinAmount, setJoinAmount] =
-    useState('10000');
-
-  const [joiningScheme, setJoiningScheme] =
-    useState(false);
-
-  const [notice, setNotice] =
-    useState('');
-
-  const [actionError, setActionError] =
-    useState('');
-
-  const isSchemeJoined =
-    Boolean(schemeUser) &&
-    schemeUser.schemeJoined !== false;
+  const [paymentRequests, setPaymentRequests] = useState([]);
+  const [paymentUtr, setPaymentUtr] = useState('');
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [paymentNotice, setPaymentNotice] = useState('');
 
   const monthly = Number(
     schemeUser?.customInstallment || 10000
@@ -327,79 +193,30 @@ export default function App() {
 
   const paidCount = Math.min(
     12,
-    Math.max(
-      0,
-      Number(schemeUser?.paidMonths || 0)
-    )
+    Math.max(0, Number(schemeUser?.paidMonths || 0))
   );
 
-  const progressPercent =
-    (paidCount / 12) * 100;
-
-  const paidHistory = Array.isArray(
-    schemeUser?.paymentHistory
-  )
-    ? schemeUser.paymentHistory
-    : [];
-
-  const totalAccumulatedValue =
-    paidHistory.length > 0
-      ? paidHistory.reduce(
-          (sum, item) =>
-            sum + Number(item.amount || 0),
-          0
-        )
-      : paidCount * monthly;
-
-  const totalSchemeValue =
-    12 * monthly;
-
-  const benefitDate = getBenefitDate(
-    schemeUser
-  );
-
-  const benefitEligible =
-    isSchemeJoined &&
-    paidCount >= 12 &&
-    benefitDate !== null &&
-    Date.now() >= benefitDate.getTime();
-
-  const nextPaymentMonth =
-    paidCount < 12
-      ? paidCount + 1
-      : null;
-
-  const currentSlide =
-    heroSlides[activeSlide];
-
-  const pendingPayment = paymentRequests.find(
-    request =>
-      request.status === 'Pending' &&
-      Number(request.monthNum) ===
-        nextPaymentMonth
-  );
+  const progressPercent = (paidCount / 12) * 100;
+  const totalAccumulatedValue = paidCount * monthly;
+  const totalSchemeValue = 12 * monthly;
 
   const handleIntroFinish = () => {
     setShowIntro(false);
-
-    sessionStorage.setItem(
-      'rj_intro_played',
-      'true'
-    );
+    sessionStorage.setItem('rj_intro_played', 'true');
   };
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(
+      const res = await axios.get(
         `${API_BASE_URL}/api/products`,
-        publicRequestConfig
+        requestConfig
       );
 
       if (
-        response.data?.success &&
-        Array.isArray(response.data.products)
+        res.data?.success &&
+        Array.isArray(res.data.products)
       ) {
-        setProducts(response.data.products);
+        setProducts(res.data.products);
       }
     } catch (error) {
       console.error(
@@ -411,30 +228,23 @@ export default function App() {
 
   const fetchStoreSettings = async () => {
     try {
-      const response = await axios.get(
+      const res = await axios.get(
         `${API_BASE_URL}/api/store/settings`,
-        publicRequestConfig
+        requestConfig
       );
 
-      const settings =
-        response.data?.settings;
-
-      if (
-        response.data?.success &&
-        settings
-      ) {
+      if (res.data?.success && res.data.settings) {
         setStoreUpiId(
-          settings.upiId ||
-          '9950091024@okbizaxis'
+          res.data.settings.upiId || ''
         );
 
         setStoreMerchantName(
-          settings.merchantName ||
+          res.data.settings.merchantName ||
           'Rahul Jewellers'
         );
 
         setStoreQrCodeUrl(
-          settings.qrCodeUrl || ''
+          res.data.settings.qrCodeUrl || ''
         );
       }
     } catch (error) {
@@ -445,26 +255,71 @@ export default function App() {
     }
   };
 
-  const fetchPaymentRequests = async () => {
-    if (!getCustomerToken()) {
-      setPaymentRequests([]);
+  const syncCustomerData = async () => {
+    const savedUser = readSavedCustomer();
+
+    if (
+      !savedUser?._id ||
+      !localStorage.getItem('customer_token')
+    ) {
       return;
     }
 
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/customer/payment-requests`,
-        getAuthConfig()
+      const res = await axios.get(
+        `${API_BASE_URL}/api/customer/profile/${savedUser._id}`,
+        getCustomerConfig()
       );
 
-      if (
-        response.data?.success &&
-        Array.isArray(response.data.requests)
-      ) {
-        setPaymentRequests(
-          response.data.requests
+      if (res.data?.success && res.data.customer) {
+        if (res.data.customer.isActive === false) {
+          localStorage.removeItem('schemeUserInfo');
+          localStorage.removeItem('customer_token');
+
+          setSchemeUser(null);
+          return;
+        }
+
+        setSchemeUser(res.data.customer);
+
+        localStorage.setItem(
+          'schemeUserInfo',
+          JSON.stringify(res.data.customer)
         );
       }
+    } catch (error) {
+      if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
+        localStorage.removeItem('schemeUserInfo');
+        localStorage.removeItem('customer_token');
+        setSchemeUser(null);
+      } else {
+        console.error(
+          'Unable to sync customer profile:',
+          error
+        );
+      }
+    }
+  };
+
+  const fetchPaymentRequests = async () => {
+    if (!localStorage.getItem('customer_token')) {
+      return;
+    }
+
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/customer/payment-requests`,
+        getCustomerConfig()
+      );
+
+      setPaymentRequests(
+        res.data.requests ||
+        res.data.paymentRequests ||
+        []
+      );
     } catch (error) {
       console.error(
         'Unable to load payment requests:',
@@ -473,101 +328,131 @@ export default function App() {
     }
   };
 
-  const syncCustomerData = async () => {
-    const savedUser = getSavedCustomer();
+  const handleJoinScheme = async event => {
+    event.preventDefault();
 
-    if (!savedUser?._id) {
-      setSchemeUser(null);
+    const amount = Number(joinAmount);
+    setJoinError('');
+
+    if (
+      !Number.isInteger(amount) ||
+      amount < 1000 ||
+      amount > 1000000
+    ) {
+      setJoinError(
+        'Choose a whole-number amount between ₹1,000 and ₹10,00,000.'
+      );
       return;
     }
 
+    const confirmed = window.confirm(
+      `Confirm your GOLD-ONLY scheme at ₹${money(amount)} ` +
+      'per month for 12 months? ' +
+      'The amount cannot be changed after joining.'
+    );
+
+    if (!confirmed) return;
+
+    setJoinLoading(true);
+
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/customer/profile/${savedUser._id}`,
-        getAuthConfig()
+      const res = await axios.post(
+        `${API_BASE_URL}/api/customer/join-scheme`,
+        { amount },
+        getCustomerConfig()
       );
 
       if (
-        response.data?.success &&
-        response.data.customer
+        !res.data?.success ||
+        !res.data?.customer
       ) {
-        const customer =
-          response.data.customer;
-
-        if (customer.isActive === false) {
-          clearCustomerSession();
-          setSchemeUser(null);
-          setPaymentRequests([]);
-          setActiveTab('showroom');
-          return;
-        }
-
-        setSchemeUser(customer);
-        saveCustomer(customer);
-      }
-    } catch (error) {
-      console.error(
-        'Unable to sync customer profile:',
-        error
-      );
-
-      const status =
-        error.response?.status;
-
-      if (
-        status === 401 ||
-        status === 403 ||
-        status === 404
-      ) {
-        clearCustomerSession();
-        setSchemeUser(null);
-        setPaymentRequests([]);
-        setActiveTab('showroom');
-
-        setNotice(
-          'Your session has expired. Please login again.'
+        throw new Error(
+          res.data?.message || 'Unable to join.'
         );
       }
+
+      setSchemeUser(res.data.customer);
+
+      localStorage.setItem(
+        'schemeUserInfo',
+        JSON.stringify(res.data.customer)
+      );
+    } catch (error) {
+      setJoinError(apiErrorText(error));
+    } finally {
+      setJoinLoading(false);
+    }
+  };
+
+  const submitPaymentUtr = async event => {
+    event.preventDefault();
+
+    setPaymentError('');
+    setPaymentNotice('');
+
+    const utr = paymentUtr.trim().toUpperCase();
+
+    if (!/^[A-Z0-9]{10,20}$/.test(utr)) {
+      setPaymentError(
+        'Enter a valid UTR / transaction reference (10–20 letters or digits).'
+      );
+      return;
+    }
+
+    setPaymentSubmitting(true);
+
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/api/customer/pay-installment`,
+        {
+          monthNum: activePaymentMonth,
+          amount: monthly,
+          transactionId: utr
+        },
+        getCustomerConfig()
+      );
+
+      if (!res.data?.success) {
+        throw new Error(
+          res.data?.message || 'Submission failed.'
+        );
+      }
+
+      setPaymentNotice(
+        'Payment submitted as PENDING. ' +
+        'It will count only after admin approval.'
+      );
+
+      setPaymentUtr('');
+
+      await fetchPaymentRequests();
+      await syncCustomerData();
+    } catch (error) {
+      setPaymentError(apiErrorText(error));
+    } finally {
+      setPaymentSubmitting(false);
     }
   };
 
   useEffect(() => {
     fetchProducts();
     fetchStoreSettings();
-
-    if (getCustomerToken()) {
-      syncCustomerData();
-      fetchPaymentRequests();
-    }
+    syncCustomerData();
+    fetchPaymentRequests();
   }, []);
-
-  useEffect(() => {
-    sessionStorage.setItem(
-      'rj_customer_active_tab',
-      activeTab
-    );
-  }, [activeTab]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveSlide(
-        current =>
-          (current + 1) % heroSlides.length
+        current => (current + 1) % heroSlides.length
       );
     }, 6500);
 
-    return () =>
-      window.clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, []);
 
   const handleTabChange = tab => {
-    setNotice('');
-    setActionError('');
-
-    if (
-      tab === 'scheme' &&
-      !schemeUser
-    ) {
+    if (tab === 'scheme' && !schemeUser) {
       setShowLoginModal(true);
       return;
     }
@@ -582,110 +467,13 @@ export default function App() {
   };
 
   const handleSchemeLogout = () => {
-    clearCustomerSession();
+    localStorage.removeItem('schemeUserInfo');
+    localStorage.removeItem('customer_token');
 
-    setSchemeUser(null);
     setPaymentRequests([]);
-    setShowProfileModal(false);
-    setShowHistoryModal(false);
-    setActivePaymentMonth(null);
+    setSchemeUser(null);
     setActiveTab('showroom');
-
-    setNotice(
-      'You have logged out successfully.'
-    );
-  };
-
-  const handleLoginSuccess = (
-    customer,
-    token
-  ) => {
-    if (token) {
-      localStorage.setItem(
-        'customer_token',
-        token
-      );
-    }
-
-    saveCustomer(customer);
-
-    setSchemeUser(customer);
-    setShowLoginModal(false);
-    setActiveTab('scheme');
-    setNotice('');
-    setActionError('');
-
-    fetchPaymentRequests();
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-  const handleJoinScheme = async event => {
-    event.preventDefault();
-
-    if (!schemeUser || joiningScheme) {
-      return;
-    }
-
-    const amount = Number(joinAmount);
-
-    if (
-      !Number.isInteger(amount) ||
-      amount < 1000 ||
-      amount > 1000000
-    ) {
-      setActionError(
-        'Please enter a monthly amount between ₹1,000 and ₹10,00,000.'
-      );
-      return;
-    }
-
-    setJoiningScheme(true);
-    setActionError('');
-    setNotice('');
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/customer/join-scheme`,
-        {
-          customInstallment: amount
-        },
-        getAuthConfig()
-      );
-
-      if (
-        response.data?.success &&
-        response.data.customer
-      ) {
-        const updated =
-          response.data.customer;
-
-        setSchemeUser(updated);
-        saveCustomer(updated);
-
-        setNotice(
-          'You have successfully joined the Gold Savings Scheme. Your customer account remains separate from the scheme.'
-        );
-
-        fetchPaymentRequests();
-      } else {
-        throw new Error(
-          'Unable to join scheme.'
-        );
-      }
-    } catch (error) {
-      setActionError(
-        apiError(
-          error,
-          'Unable to join Gold Savings Scheme.'
-        )
-      );
-    } finally {
-      setJoiningScheme(false);
-    }
+    setShowProfileModal(false);
   };
 
   const filteredProducts = useMemo(() => {
@@ -698,8 +486,7 @@ export default function App() {
         product.title || ''
       ).toLowerCase();
 
-      const query =
-        searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase();
 
       const categoryMatch =
         selectedCategory === 'All' ||
@@ -712,10 +499,7 @@ export default function App() {
         title.includes(query) ||
         category.includes(query);
 
-      return (
-        categoryMatch &&
-        searchMatch
-      );
+      return categoryMatch && searchMatch;
     });
   }, [
     products,
@@ -726,9 +510,8 @@ export default function App() {
   const openCollection = category => {
     setSelectedCategory(category);
     setActiveTab('showroom');
-    setMobileMenuOpen(false);
 
-    window.setTimeout(() => {
+    setTimeout(() => {
       document
         .getElementById('showroom-products')
         ?.scrollIntoView({
@@ -738,146 +521,26 @@ export default function App() {
     }, 80);
   };
 
-  const openPaymentModal = month => {
-    setPaymentUtr('');
-    setActionError('');
-    setActivePaymentMonth(month);
-  };
-
-  const handleSubmitPayment = async event => {
-    event.preventDefault();
-
-    if (
-      !schemeUser ||
-      activePaymentMonth === null ||
-      paymentSubmitting
-    ) {
-      return;
-    }
-
-    const transactionId = paymentUtr
-      .trim()
-      .toUpperCase();
-
-    if (
-      !/^[A-Z0-9]{10,20}$/.test(
-        transactionId
-      )
-    ) {
-      setActionError(
-        'Enter your valid 10–20 character UPI transaction reference number.'
-      );
-      return;
-    }
-
-    setPaymentSubmitting(true);
-    setActionError('');
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/customer/pay-installment`,
-        {
-          userId: schemeUser._id,
-          monthNum: activePaymentMonth,
-          amount: monthly,
-          transactionId
-        },
-        getAuthConfig()
-      );
-
-      if (!response.data?.success) {
-        throw new Error(
-          'Payment reference submission failed.'
-        );
-      }
-
-      await fetchPaymentRequests();
-
-      setNotice(
-        `Month #${activePaymentMonth} payment reference submitted. Your installment will show Paid only after Rahul Jewellers verifies the payment.`
-      );
-
-      setActivePaymentMonth(null);
-      setShowInstructionModal(false);
-      setPaymentUtr('');
-    } catch (error) {
-      setActionError(
-        apiError(
-          error,
-          'Unable to submit payment reference.'
-        )
-      );
-    } finally {
-      setPaymentSubmitting(false);
-    }
-  };
-
   const handleDownloadReceipt = monthNum => {
-    const entry = paidHistory.find(
-      item =>
-        Number(item.monthNum) ===
-        Number(monthNum)
-    );
-
-    if (!entry) {
-      setNotice(
-        'A verified receipt is not available for this installment.'
-      );
-      return;
-    }
-
-    const element =
-      document.createElement('div');
-
-    const paidAt = entry.paidAt
-      ? new Date(entry.paidAt)
-          .toLocaleDateString('en-IN')
-      : 'As per account record';
+    const element = document.createElement('div');
 
     element.innerHTML = `
-      <div style="
-        padding:35px;
-        font-family:Arial,sans-serif;
-        border:3px double #b88a3b;
-        color:#2b160d
-      ">
-        <h1 style="
-          text-align:center;
-          font-family:Georgia,serif;
-          color:#b88a3b
-        ">RAHUL JEWELLERS</h1>
-
+      <div style="padding:30px;font-family:Arial;border:3px double #b88a3b;color:#2b160d">
+        <h1 style="text-align:center;font-family:Georgia;color:#b88a3b">
+          RAHUL JEWELLERS
+        </h1>
         <p style="text-align:center">
-          SHIVGANJ · PAYMENT RECEIPT
+          SHEOGANJ • PAYMENT RECEIPT
         </p>
-
         <hr/>
-
-        <p>Customer:
-          ${escapeHtml(schemeUser?.name)}
-        </p>
-
-        <p>Customer ID:
-          ${escapeHtml(schemeUser?.customerId)}
-        </p>
-
-        <p>Phone:
-          ${escapeHtml(schemeUser?.phone)}
-        </p>
-
-        <p>Scheme: Gold Savings Scheme</p>
+        <p>Customer: ${escapeHtml(schemeUser?.name)}</p>
+        <p>Customer ID: ${escapeHtml(schemeUser?.customerId)}</p>
+        <p>Phone: ${escapeHtml(schemeUser?.phone)}</p>
         <p>Installment: Month #${monthNum}</p>
-        <p>Amount: ₹${money(entry.amount)}</p>
-        <p>Payment Date: ${escapeHtml(paidAt)}</p>
-
-        <p>Transaction Reference:
-          ${escapeHtml(entry.transactionId)}
-        </p>
-
-        <p>Status: PAID / RECORDED</p>
-
+        <p>Amount: ₹${money(monthly)}</p>
+        <p>Date: ${new Date().toLocaleDateString('en-IN')}</p>
+        <p>Status: ADMIN VERIFIED (as recorded in customer passbook)</p>
         <hr/>
-
         <p style="text-align:center">
           Support: +91 ${STORE_PHONE}
         </p>
@@ -907,64 +570,28 @@ export default function App() {
   };
 
   const handleDownloadMaturityCertificate = () => {
-    if (!benefitEligible) {
-      setNotice(
-        'The labour cost benefit becomes available in the month after the 12-month installment period, once all payments are verified.'
-      );
-      return;
-    }
-
-    const element =
-      document.createElement('div');
+    const element = document.createElement('div');
 
     element.innerHTML = `
-      <div style="
-        padding:45px;
-        border:8px double #b88a3b;
-        text-align:center;
-        font-family:Georgia,serif;
-        color:#321b10
-      ">
+      <div style="padding:45px;border:8px double #b88a3b;text-align:center;font-family:Georgia;color:#321b10">
         <h1 style="color:#b88a3b">
           RAHUL JEWELLERS
         </h1>
-
-        <p>SHIVGANJ</p>
-
-        <h2>
-          Certificate of Scheme Completion
-        </h2>
-
+        <p>MAIN MARKET, SHEOGANJ</p>
+        <h2>Certificate of Scheme Completion</h2>
         <p>Presented to</p>
-
-        <h2>
-          ${escapeHtml(schemeUser?.name)}
-        </h2>
-
+        <h2>${escapeHtml(schemeUser?.name || 'Customer')}</h2>
+        <p>Customer ID: ${escapeHtml(schemeUser?.customerId)}</p>
         <p>
-          Customer ID:
-          ${escapeHtml(schemeUser?.customerId)}
+          For completing all 12 monthly installments under
+          the Rahul Jewellers Savings Scheme.
         </p>
-
-        <p>
-          For completing all 12 verified
-          monthly installments toward Gold
-          Jewellery Value.
-        </p>
-
         <h3>
-          Eligible for 100% OFF on
-          Labour / Making Charges
+          Gold Jewellery Making/Labour Charge Benefit:
+          100% (subject to terms)
         </h3>
-
         <p>
-          Subject to Gold Savings Scheme
-          terms and showroom verification.
-        </p>
-
-        <p>
-          Date:
-          ${new Date().toLocaleDateString('en-IN')}
+          Issued: ${new Date().toLocaleDateString('en-IN')}
         </p>
       </div>
     `;
@@ -973,7 +600,9 @@ export default function App() {
       .set({
         margin: 0.5,
         filename:
-          `Rahul_Jewellers_Certificate_${schemeUser?.customerId || 'customer'}.pdf`,
+          `Rahul_Jewellers_Certificate_${
+            schemeUser?.customerId || 'customer'
+          }.pdf`,
         image: {
           type: 'jpeg',
           quality: 0.98
@@ -991,19 +620,33 @@ export default function App() {
       .save();
   };
 
-  const upiNote = encodeURIComponent(
-    `Gold Scheme Month ${activePaymentMonth} ${schemeUser?.customerId || ''}`
-  );
+  const handleLoginSuccess = (user, token) => {
+    if (token) {
+      localStorage.setItem('customer_token', token);
+    }
 
-  const upiUri =
-    `upi://pay?pa=${encodeURIComponent(storeUpiId)}` +
-    `&pn=${encodeURIComponent(storeMerchantName)}` +
-    `&am=${monthly}` +
-    `&cu=INR` +
-    `&tn=${upiNote}`;
+    setPaymentRequests([]);
+    setSchemeUser(user);
+
+    localStorage.setItem(
+      'schemeUserInfo',
+      JSON.stringify(user)
+    );
+
+    setShowLoginModal(false);
+    setActiveTab('scheme');
+
+    setTimeout(() => {
+      syncCustomerData();
+      fetchPaymentRequests();
+    }, 300);
+  };
+
+  const currentSlide = heroSlides[activeSlide];
 
   return (
     <div className="rj-site min-h-screen">
+
       {showIntro && (
         <IntroSplash
           onFinish={handleIntroFinish}
@@ -1012,12 +655,13 @@ export default function App() {
 
       <SupportChatWidget />
 
-      {/* TOP TRUST BAR */}
+      {/* TOP BAR */}
       <div className="rj-topbar">
         <div className="rj-topbar-inner">
+
           <span>
             <MapPin size={14} />
-            Shivganj, Rajasthan
+            Sheoganj, Rajasthan
           </span>
 
           <div className="rj-topbar-trust">
@@ -1051,7 +695,6 @@ export default function App() {
               href="https://www.instagram.com/rahuljewellers9/"
               target="_blank"
               rel="noreferrer"
-              aria-label="Instagram"
             >
               <Instagram size={16} />
             </a>
@@ -1060,7 +703,6 @@ export default function App() {
               href={`https://wa.me/91${STORE_PHONE}`}
               target="_blank"
               rel="noreferrer"
-              aria-label="WhatsApp"
             >
               <MessageCircle size={16} />
             </a>
@@ -1071,18 +713,15 @@ export default function App() {
       {/* MAIN NAVIGATION */}
       <header className="rj-header">
         <div className="rj-header-inner">
+
           <button
             className="rj-mobile-menu"
             onClick={() =>
-              setMobileMenuOpen(
-                previous => !previous
-              )
+              setMobileMenuOpen(!mobileMenuOpen)
             }
             aria-label="Open menu"
           >
-            {mobileMenuOpen
-              ? <X />
-              : <Menu />}
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
 
           <button
@@ -1097,21 +736,14 @@ export default function App() {
             </span>
 
             <span className="rj-brand-copy">
-              <strong>
-                RAHUL JEWELLERS
-              </strong>
-
-              <small>
-                S H I V G A N J
-              </small>
+              <strong>RAHUL JEWELLERS</strong>
+              <small>SHEOGANJ</small>
             </span>
           </button>
 
           <nav
             className={`rj-nav ${
-              mobileMenuOpen
-                ? 'is-open'
-                : ''
+              mobileMenuOpen ? 'is-open' : ''
             }`}
           >
             <button
@@ -1152,41 +784,27 @@ export default function App() {
             </div>
 
             <button
-              className={
-                activeTab === 'scheme'
-                  ? 'active'
-                  : ''
-              }
               onClick={() =>
                 handleTabChange('scheme')
               }
             >
-              Gold Scheme
+              Schemes
               <ChevronDown size={13} />
             </button>
 
-            <a href="#about">
-              About Us
-            </a>
-
-            <a href="#contact">
-              Contact
-            </a>
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact</a>
           </nav>
 
           <div className="rj-header-actions">
             <button
               aria-label="Search"
               onClick={() => {
-                setSearchOpen(
-                  previous => !previous
-                );
+                setSearchOpen(!searchOpen);
 
-                window.setTimeout(() => {
+                setTimeout(() => {
                   document
-                    .getElementById(
-                      'rj-search-input'
-                    )
+                    .getElementById('rj-search-input')
                     ?.focus();
                 }, 50);
               }}
@@ -1224,15 +842,12 @@ export default function App() {
               id="rj-search-input"
               value={searchQuery}
               onChange={event =>
-                setSearchQuery(
-                  event.target.value
-                )
+                setSearchQuery(event.target.value)
               }
               placeholder="Search necklaces, rings, bangles..."
             />
 
             <button
-              aria-label="Close search"
               onClick={() => {
                 setSearchOpen(false);
                 setSearchQuery('');
@@ -1244,38 +859,21 @@ export default function App() {
         )}
       </header>
 
-      {/* LIVE GOLD RATE */}
+      {/* GOLD RATE NAVBAR */}
       <LiveGoldNavbar />
 
-      {/* GLOBAL INFORMATION */}
-      {notice && (
-        <div
-          role="status"
-          className="mx-auto my-4 flex max-w-6xl items-start justify-between gap-3 rounded-xl border border-[#C8A565]/30 bg-[#C8A565]/10 p-4 text-sm text-[#E8D1A3]"
-        >
-          <span>{notice}</span>
-
-          <button
-            onClick={() => setNotice('')}
-            aria-label="Dismiss message"
-          >
-            <X size={17} />
-          </button>
-        </div>
-      )}
-
-      {/* HOME / SHOWROOM */}
+      {/* SHOWROOM */}
       {activeTab === 'showroom' && (
         <>
-          {/* HERO SLIDER */}
+
+          {/* HERO */}
           <section
             className="rj-hero"
             style={{
               backgroundImage:
                 `url("${currentSlide.image}")`,
               backgroundSize: 'cover',
-              backgroundPosition:
-                'center center',
+              backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
               position: 'relative'
             }}
@@ -1284,16 +882,15 @@ export default function App() {
 
             <button
               className="rj-hero-arrow left"
+              aria-label="Previous slide"
               onClick={() =>
                 setActiveSlide(
-                  (
-                    activeSlide +
+                  (activeSlide +
                     heroSlides.length -
-                    1
-                  ) % heroSlides.length
+                    1) %
+                  heroSlides.length
                 )
               }
-              aria-label="Previous slide"
             >
               ‹
             </button>
@@ -1307,9 +904,7 @@ export default function App() {
                 {currentSlide.title
                   .split('\n')
                   .map((line, index) => (
-                    <React.Fragment
-                      key={`${line}-${index}`}
-                    >
+                    <React.Fragment key={line}>
                       {line}
                       {index === 0 && <br />}
                     </React.Fragment>
@@ -1335,37 +930,32 @@ export default function App() {
 
             <button
               className="rj-hero-arrow right"
+              aria-label="Next slide"
               onClick={() =>
                 setActiveSlide(
-                  (
-                    activeSlide + 1
-                  ) % heroSlides.length
+                  (activeSlide + 1) %
+                  heroSlides.length
                 )
               }
-              aria-label="Next slide"
             >
               ›
             </button>
 
             <div className="rj-hero-dots">
-              {heroSlides.map(
-                (slide, index) => (
-                  <button
-                    key={slide.title}
-                    className={
-                      activeSlide === index
-                        ? 'active'
-                        : ''
-                    }
-                    onClick={() =>
-                      setActiveSlide(index)
-                    }
-                    aria-label={
-                      `Show slide ${index + 1}`
-                    }
-                  />
-                )
-              )}
+              {heroSlides.map((slide, index) => (
+                <button
+                  key={slide.title}
+                  className={
+                    activeSlide === index
+                      ? 'active'
+                      : ''
+                  }
+                  onClick={() =>
+                    setActiveSlide(index)
+                  }
+                  aria-label={`Show slide ${index + 1}`}
+                />
+              ))}
             </div>
           </section>
 
@@ -1416,9 +1006,7 @@ export default function App() {
           <section className="rj-section rj-collections">
             <div className="rj-section-heading">
               <span />
-              <h2>
-                Explore Our Collections
-              </h2>
+              <h2>Explore Our Collections</h2>
               <span />
             </div>
 
@@ -1433,23 +1021,15 @@ export default function App() {
                 >
                   <img
                     src={item.image}
-                    alt={
-                      `${item.name} jewellery collection`
-                    }
+                    alt={`${item.name} jewellery collection`}
                     loading="lazy"
                   />
 
                   <span className="rj-collection-overlay" />
 
                   <span className="rj-collection-caption">
-                    <strong>
-                      {item.name}
-                    </strong>
-
-                    <small>
-                      {item.subtitle}
-                    </small>
-
+                    <strong>{item.name}</strong>
+                    <small>{item.subtitle}</small>
                     <em>
                       Explore
                       <ArrowRight size={15} />
@@ -1460,7 +1040,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* GOLD SCHEME BANNER */}
+          {/* GOLD SAVINGS SCHEME BANNER */}
           <section className="rj-scheme-banner">
             <div className="rj-scheme-art">
               <div className="rj-gold-stack">
@@ -1478,34 +1058,23 @@ export default function App() {
 
             <div className="rj-scheme-copy">
               <p className="rj-eyebrow">
-                SHIVGANJ GOLD SAVINGS SCHEME
+                SHEOGANJ EXCLUSIVE SAVINGS SCHEME
               </p>
 
               <h2>
-                Pay 12 Monthly Installments
+                Pay in 12 Monthly Installments &amp; Get
                 <br />
-
                 <strong>
-                  100% OFF on Labour Charges
-                  in the Following Month!
+                  100% OFF on Making Charges!
                 </strong>
               </h2>
 
               <p>
-                Save toward the value of
-                Gold Jewellery. Complete
-                12 monthly installments
-                and become eligible for
-                the labour/making charge
-                benefit in the following
-                month, subject to scheme
-                terms.
-              </p>
-
-              <p>
-                Gold Jewellery Only.
-                Silver is not included
-                in this scheme.
+                GOLD ONLY: Pay 12 installments;
+                eligible customers receive 100% off
+                making/labour charges in the following
+                month, subject to scheme terms.
+                No free 13th installment.
               </p>
             </div>
 
@@ -1515,15 +1084,12 @@ export default function App() {
                 handleTabChange('scheme')
               }
             >
-              {isSchemeJoined
-                ? 'My Gold Scheme'
-                : 'Join Gold Scheme'}
-
+              Join Scheme
               <ArrowRight size={17} />
             </button>
           </section>
 
-          {/* PRODUCT CATALOGUE */}
+          {/* JEWELLERY PRODUCTS */}
           <section
             className="rj-section rj-products"
             id="showroom-products"
@@ -1533,10 +1099,7 @@ export default function App() {
                 <p className="rj-eyebrow">
                   MADE TO BE TREASURED
                 </p>
-
-                <h2>
-                  Discover Our Jewellery
-                </h2>
+                <h2>Discover Our Jewellery</h2>
               </div>
 
               <div className="rj-product-search">
@@ -1566,15 +1129,12 @@ export default function App() {
                 <button
                   key={category}
                   className={
-                    selectedCategory ===
-                    category
+                    selectedCategory === category
                       ? 'active'
                       : ''
                   }
                   onClick={() =>
-                    setSelectedCategory(
-                      category
-                    )
+                    setSelectedCategory(category)
                   }
                 >
                   {category === 'All'
@@ -1596,15 +1156,12 @@ export default function App() {
                   </h3>
 
                   <p>
-                    Please contact our
-                    showroom for personalised
-                    assistance.
+                    Please contact our showroom
+                    for personalised assistance.
                   </p>
 
                   <a
-                    href={
-                      `https://wa.me/91${STORE_PHONE}`
-                    }
+                    href={`https://wa.me/91${STORE_PHONE}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -1615,15 +1172,19 @@ export default function App() {
               ) : (
                 filteredProducts.map(product => {
                   const message =
-                    `Namaste Rahul Jewellers, I am interested in:\n` +
+                    `Namaste Rahul Jewellers, ` +
+                    `I am interested in:\n` +
                     `${product.title}\n` +
                     `Category: ${product.category}\n` +
-                    `Weight: ${product.weight || 'Please share'}\n` +
+                    `Weight: ${
+                      product.weight ||
+                      'Please share'
+                    }\n` +
                     `Please share further details.`;
 
                   const whatsappUrl =
-                    `https://wa.me/91${STORE_PHONE}?text=` +
-                    encodeURIComponent(message);
+                    `https://wa.me/91${STORE_PHONE}` +
+                    `?text=${encodeURIComponent(message)}`;
 
                   return (
                     <article
@@ -1650,14 +1211,13 @@ export default function App() {
                       </button>
 
                       <div className="rj-product-info">
-                        <h3>
-                          {product.title}
-                        </h3>
+                        <h3>{product.title}</h3>
 
                         <p>
-                          Net Weight:{' '}
-                          {product.weight ||
-                            'Ask in showroom'}
+                          Net Weight: {
+                            product.weight ||
+                            'Ask in showroom'
+                          }
                         </p>
 
                         {Number(product.price) > 0 && (
@@ -1697,22 +1257,23 @@ export default function App() {
             </h2>
 
             <p>
-              Discover thoughtfully selected
-              jewellery and personal service
-              at Rahul Jewellers, Shivganj.
+              Discover thoughtfully selected jewellery
+              and personal service at Rahul Jewellers,
+              Sheoganj.
             </p>
           </section>
         </>
       )}
 
-      {/* CUSTOMER ACCOUNT */}
+      {/* ACCOUNT CREATED BUT SCHEME NOT JOINED */}
       {activeTab === 'scheme' &&
-        schemeUser && (
+        schemeUser &&
+        !schemeUser.schemeJoined && (
           <main className="rj-scheme-dashboard">
 
             <div className="rj-dashboard-heading">
               <p className="rj-eyebrow">
-                RAHUL JEWELLERS · SHIVGANJ
+                RAHUL JEWELLERS · SHEOGANJ
               </p>
 
               <h1>
@@ -1720,436 +1281,461 @@ export default function App() {
               </h1>
 
               <p>
-                Customer ID:{' '}
-                {schemeUser.customerId || '—'}
-                {' · '}
-                {schemeUser.phone || ''}
+                Customer ID: {
+                  schemeUser.customerId
+                } · Your profile is ready.
               </p>
             </div>
 
-            {actionError && (
-              <div
-                role="alert"
-                className="my-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300"
-              >
-                {actionError}
+            <section
+              className="rj-progress-card"
+              style={{
+                maxWidth: 680,
+                margin: '20px auto'
+              }}
+            >
+              <div className="rj-progress-top">
+                <div>
+                  <small>
+                    OPTIONAL · GOLD ONLY
+                  </small>
+
+                  <h2>
+                    Choose Your 12-Month Gold Scheme
+                  </h2>
+                </div>
               </div>
-            )}
 
-            {/* CUSTOMER ACCOUNT WITHOUT SCHEME */}
-            {!isSchemeJoined && (
-              <>
-                <section className="rj-progress-card">
-                  <div className="rj-progress-top">
-                    <div>
-                      <small>
-                        YOUR CUSTOMER PROFILE
-                      </small>
+              <p style={{ marginBottom: 18 }}>
+                Select your fixed monthly installment.
+                Once joined, your amount cannot
+                be changed.
+              </p>
 
-                      <h2>
-                        Your Account Is Active
-                      </h2>
-                    </div>
+              <form
+                onSubmit={handleJoinScheme}
+                style={{
+                  display: 'grid',
+                  gap: 14
+                }}
+              >
+                <label htmlFor="join-amount">
+                  Monthly Amount
+                  (₹1,000 – ₹10,00,000)
+                </label>
 
-                    <span>
-                      <CheckCircle2 size={17} />
-                      Registered
-                    </span>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  {[1000, 2000, 5000, 10000].map(
+                    amount => (
+                      <button
+                        key={amount}
+                        type="button"
+                        onClick={() =>
+                          setJoinAmount(
+                            String(amount)
+                          )
+                        }
+                        style={{
+                          padding: '9px 14px',
+                          borderRadius: 9,
+                          border:
+                            Number(joinAmount) === amount
+                              ? '2px solid #b88a3b'
+                              : '1px solid #b88a3b',
+                          background:
+                            Number(joinAmount) === amount
+                              ? '#b88a3b'
+                              : '#fff',
+                          color:
+                            Number(joinAmount) === amount
+                              ? '#fff'
+                              : '#302015',
+                          fontWeight: 700
+                        }}
+                      >
+                        ₹{money(amount)}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <input
+                  id="join-amount"
+                  type="number"
+                  min="1000"
+                  max="1000000"
+                  step="1"
+                  required
+                  value={joinAmount}
+                  onChange={event =>
+                    setJoinAmount(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Or enter your own amount"
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    color: '#22170d',
+                    background: '#fff',
+                    width: '100%'
+                  }}
+                />
+
+                <div className="rj-progress-numbers">
+                  <div>
+                    <small>Monthly</small>
+                    <strong>
+                      ₹{money(joinAmount)}
+                    </strong>
                   </div>
-
-                  <p className="my-5 text-sm leading-relaxed opacity-80">
-                    Your Rahul Jewellers
-                    customer account has been
-                    created successfully.
-                    Joining the Gold Savings
-                    Scheme is optional.
-                  </p>
-
-                  <div className="rj-dashboard-actions">
-                    <button
-                      onClick={() =>
-                        setShowProfileModal(true)
-                      }
-                    >
-                      <UserRound size={16} />
-                      My Profile
-                    </button>
-
-                    <button
-                      onClick={handleSchemeLogout}
-                    >
-                      <LogOut size={16} />
-                      Logout
-                    </button>
-                  </div>
-                </section>
-
-                <section className="rj-benefit-card">
-                  <Gem size={28} />
 
                   <div>
-                    <h3>
-                      Gold Savings Scheme
-                    </h3>
-
-                    <p>
-                      Pay 12 monthly
-                      installments toward
-                      Gold Jewellery Value.
-                      After completing the
-                      installment period,
-                      eligible customers
-                      receive 100% OFF on
-                      labour/making charges
-                      in the following month,
-                      subject to scheme terms.
-                    </p>
-
-                    <p className="mt-2">
-                      This scheme is for
-                      Gold Jewellery only.
-                    </p>
-                  </div>
-                </section>
-
-                <section className="rj-progress-card">
-                  <div className="rj-progress-top">
-                    <div>
-                      <small>
-                        OPTIONAL ENROLLMENT
-                      </small>
-
-                      <h2>
-                        Join Gold Savings Scheme
-                      </h2>
-                    </div>
-                  </div>
-
-                  <form
-                    onSubmit={handleJoinScheme}
-                    className="mt-5"
-                  >
-                    <label
-                      htmlFor="rj-join-amount"
-                      className="mb-2 block text-sm font-semibold"
-                    >
-                      Monthly Installment Amount
-                    </label>
-
-                    <input
-                      id="rj-join-amount"
-                      type="number"
-                      min="1000"
-                      max="1000000"
-                      step="1"
-                      value={joinAmount}
-                      onChange={event =>
-                        setJoinAmount(
-                          event.target.value
+                    <small>
+                      12 Installments Total
+                    </small>
+                    <strong>
+                      ₹{
+                        money(
+                          Number(joinAmount) * 12
                         )
                       }
-                      required
-                      className="w-full max-w-sm rounded-xl border border-[#C6A66B]/40 bg-black/20 px-4 py-3 text-base outline-none"
-                    />
-
-                    <p className="mt-3 text-sm opacity-75">
-                      12 installments:
-                      {' '}
-                      ₹{money(
-                        Number(joinAmount || 0) * 12
-                      )}
-                    </p>
-
-                    <p className="mt-2 text-xs opacity-65">
-                      Enrollment starts
-                      the Gold Scheme only.
-                      Your customer profile
-                      remains active
-                      independently.
-                    </p>
-
-                    <button
-                      type="submit"
-                      disabled={joiningScheme}
-                      className="rj-gold-button mt-5"
-                    >
-                      {joiningScheme
-                        ? 'Joining...'
-                        : 'Confirm & Join Gold Scheme'}
-
-                      <ArrowRight size={17} />
-                    </button>
-                  </form>
-                </section>
-              </>
-            )}
-
-            {/* JOINED GOLD SCHEME */}
-            {isSchemeJoined && (
-              <>
-                <section className="rj-progress-card">
-                  <div className="rj-progress-top">
-                    <div>
-                      <small>
-                        GOLD SAVINGS SCHEME
-                      </small>
-
-                      <h2>
-                        Your Scheme Progress
-                      </h2>
-                    </div>
-
-                    <span>
-                      {paidCount}/12 Paid
-                    </span>
+                    </strong>
                   </div>
+                </div>
 
-                  <div className="rj-progress-track">
-                    <span
-                      style={{
-                        width:
-                          `${progressPercent}%`
-                      }}
-                    />
-                  </div>
+                <p>
+                  After 12 admin-verified installments,
+                  eligible customers receive 100% off
+                  making/labour charges on Gold Jewellery
+                  in the following month, subject
+                  to scheme terms. No free 13th
+                  installment or gold.
+                </p>
 
-                  <div className="rj-progress-numbers">
-                    <div>
-                      <small>
-                        Amount Paid
-                      </small>
+                <p>
+                  <strong>
+                    Important:
+                  </strong>{' '}
+                  Once you confirm this scheme,
+                  your monthly installment amount
+                  is locked and cannot be changed.
+                </p>
 
-                      <strong>
-                        ₹{money(
+                {joinError && (
+                  <p
+                    role="alert"
+                    style={{
+                      color: '#b91c1c'
+                    }}
+                  >
+                    {joinError}
+                  </p>
+                )}
+
+                <button
+                  className="rj-gold-button"
+                  type="submit"
+                  disabled={joinLoading}
+                >
+                  {joinLoading
+                    ? 'Joining...'
+                    : 'Confirm & Join Gold Scheme'}
+
+                  <ArrowRight size={16} />
+                </button>
+              </form>
+
+              <div
+                className="rj-dashboard-actions"
+                style={{
+                  marginTop: 18
+                }}
+              >
+                <button
+                  onClick={() =>
+                    setShowProfileModal(true)
+                  }
+                >
+                  <UserRound size={16} />
+                  My Profile
+                </button>
+
+                <button
+                  onClick={handleSchemeLogout}
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </section>
+          </main>
+        )}
+
+      {/* JOINED SCHEME DASHBOARD */}
+      {activeTab === 'scheme' &&
+        schemeUser?.schemeJoined && (
+          <main className="rj-scheme-dashboard">
+
+            <div className="rj-dashboard-heading">
+              <p className="rj-eyebrow">
+                CUSTOMER SAVINGS ACCOUNT
+              </p>
+
+              <h1>
+                Welcome, {schemeUser.name}
+              </h1>
+
+              <p>
+                Customer ID: {
+                  schemeUser.customerId || '—'
+                } · {schemeUser.phone || ''}
+              </p>
+            </div>
+
+            <section className="rj-progress-card">
+              <div className="rj-progress-top">
+                <div>
+                  <small>
+                    12-MONTH SAVINGS SCHEME
+                  </small>
+
+                  <h2>
+                    Your Scheme Progress
+                  </h2>
+                </div>
+
+                <span>
+                  {paidCount}/12 Paid
+                </span>
+              </div>
+
+              <div className="rj-progress-track">
+                <span
+                  style={{
+                    width:
+                      `${progressPercent}%`
+                  }}
+                />
+              </div>
+
+              <div className="rj-progress-numbers">
+                <div>
+                  <small>
+                    Amount Paid
+                  </small>
+
+                  <strong>
+                    ₹{
+                      money(
+                        totalAccumulatedValue
+                      )
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <small>
+                    Scheme Target
+                  </small>
+
+                  <strong>
+                    ₹{money(totalSchemeValue)}
+                  </strong>
+                </div>
+
+                <div>
+                  <small>
+                    Remaining
+                  </small>
+
+                  <strong>
+                    ₹{
+                      money(
+                        Math.max(
+                          0,
+                          totalSchemeValue -
                           totalAccumulatedValue
-                        )}
-                      </strong>
-                    </div>
+                        )
+                      )
+                    }
+                  </strong>
+                </div>
+              </div>
 
-                    <div>
-                      <small>
-                        Scheme Target
-                      </small>
+              <div className="rj-dashboard-actions">
+                <button
+                  onClick={() =>
+                    setShowHistoryModal(true)
+                  }
+                >
+                  <History size={16} />
+                  Payment Receipts
+                </button>
 
-                      <strong>
-                        ₹{money(
-                          totalSchemeValue
-                        )}
-                      </strong>
-                    </div>
+                <button
+                  onClick={() =>
+                    setShowProfileModal(true)
+                  }
+                >
+                  <UserRound size={16} />
+                  My Profile
+                </button>
 
-                    <div>
-                      <small>
-                        Remaining
-                      </small>
+                <button
+                  onClick={handleSchemeLogout}
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </section>
 
-                      <strong>
-                        ₹{money(
-                          Math.max(
-                            0,
-                            totalSchemeValue -
-                              totalAccumulatedValue
-                          )
-                        )}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <p className="mt-4 text-xs opacity-70">
-                    Scheme Type: Gold Only
-                    {' · '}
-                    Monthly Installment:
-                    {' '}
-                    ₹{money(monthly)}
+            {/* PASSBOOK */}
+            <section className="rj-installments">
+              <div className="rj-dashboard-section-title">
+                <div>
+                  <p className="rj-eyebrow">
+                    YOUR PASSBOOK
                   </p>
 
-                  <div className="rj-dashboard-actions">
-                    <button
-                      onClick={() =>
-                        setShowHistoryModal(true)
-                      }
-                    >
-                      <History size={16} />
-                      Payment Receipts
-                    </button>
+                  <h2>
+                    Monthly Installments
+                  </h2>
+                </div>
 
-                    <button
-                      onClick={() =>
-                        setShowProfileModal(true)
-                      }
-                    >
-                      <UserRound size={16} />
-                      My Profile
-                    </button>
+                <Receipt size={25} />
+              </div>
 
-                    <button
-                      onClick={async () => {
-                        await syncCustomerData();
-                        await fetchPaymentRequests();
+              {Array.from({
+                length: 12
+              }).map((_, index) => {
+                const month = index + 1;
+                const paid = month <= paidCount;
+                const next =
+                  month === paidCount + 1;
 
-                        setNotice(
-                          'Your account and payment status have been refreshed.'
-                        );
-                      }}
-                    >
-                      <RefreshCw size={16} />
-                      Refresh
-                    </button>
+                const pending =
+                  paymentRequests.some(
+                    payment =>
+                      Number(payment.monthNum) ===
+                        month &&
+                      payment.status === 'Pending'
+                  );
 
-                    <button
-                      onClick={handleSchemeLogout}
-                    >
-                      <LogOut size={16} />
-                      Logout
-                    </button>
-                  </div>
-                </section>
-
-                {/* INSTALLMENTS */}
-                <section className="rj-installments">
-                  <div className="rj-dashboard-section-title">
-                    <div>
-                      <p className="rj-eyebrow">
-                        GOLD SCHEME PASSBOOK
-                      </p>
-
-                      <h2>
-                        Monthly Installments
-                      </h2>
+                return (
+                  <div
+                    className={
+                      `rj-installment-row ` +
+                      `${
+                        paid
+                          ? 'paid'
+                          : next
+                            ? 'next'
+                            : ''
+                      }`
+                    }
+                    key={month}
+                  >
+                    <div className="rj-installment-icon">
+                      {paid ? (
+                        <CheckCircle2 />
+                      ) : next ? (
+                        <Clock />
+                      ) : (
+                        <Lock />
+                      )}
                     </div>
 
-                    <Receipt size={25} />
-                  </div>
+                    <div className="rj-installment-name">
+                      <strong>
+                        Month #{month}
+                      </strong>
 
-                  {Array.from({
-                    length: 12
-                  }).map((_, index) => {
-                    const month =
-                      index + 1;
+                      <small>
+                        ₹{money(monthly)}
+                      </small>
+                    </div>
 
-                    const paid =
-                      month <= paidCount;
-
-                    const next =
-                      month ===
-                      paidCount + 1;
-
-                    const pending =
-                      paymentRequests.some(
-                        request =>
-                          Number(
-                            request.monthNum
-                          ) === month &&
-                          request.status ===
-                            'Pending'
-                      );
-
-                    return (
-                      <div
-                        className={
-                          `rj-installment-row ${
-                            paid
-                              ? 'paid'
-                              : next
-                                ? 'next'
-                                : ''
-                          }`
-                        }
-                        key={month}
+                    {paid ? (
+                      <span className="rj-paid-label">
+                        Verified Paid
+                      </span>
+                    ) : next && pending ? (
+                      <span className="rj-locked-label">
+                        Pending Admin Approval
+                      </span>
+                    ) : next ? (
+                      <button
+                        className="rj-pay-button"
+                        onClick={() => {
+                          setActivePaymentMonth(month);
+                          setPaymentError('');
+                          setPaymentNotice('');
+                        }}
                       >
-                        <div className="rj-installment-icon">
-                          {paid
-                            ? <CheckCircle2 />
-                            : next
-                              ? <Clock />
-                              : <Lock />}
-                        </div>
-
-                        <div className="rj-installment-name">
-                          <strong>
-                            Month #{month}
-                          </strong>
-
-                          <small>
-                            ₹{money(monthly)}
-                          </small>
-                        </div>
-
-                        {paid ? (
-                          <span className="rj-paid-label">
-                            Paid / Verified
-                          </span>
-                        ) : pending ? (
-                          <span className="rj-locked-label">
-                            Pending Verification
-                          </span>
-                        ) : next ? (
-                          <button
-                            className="rj-pay-button"
-                            onClick={() =>
-                              openPaymentModal(
-                                month
-                              )
-                            }
-                          >
-                            <Smartphone size={15} />
-                            Pay
-                          </button>
-                        ) : (
-                          <span className="rj-locked-label">
-                            Locked
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </section>
-
-                {/* BENEFIT */}
-                <section className="rj-benefit-card">
-                  <Gift size={27} />
-
-                  <div>
-                    <h3>
-                      {benefitEligible
-                        ? 'Labour Cost Benefit Available'
-                        : paidCount >= 12
-                          ? '12 Installments Completed'
-                          : 'Your Gold Scheme Benefit'}
-                    </h3>
-
-                    <p>
-                      {benefitEligible
-                        ? 'All 12 installments are recorded and the following-month eligibility date has arrived. Contact Rahul Jewellers for Gold Jewellery redemption and verification.'
-                        : paidCount >= 12
-                          ? 'Your 12 installments are complete. The 100% labour/making charge benefit becomes available in the following month, subject to scheme terms.'
-                          : 'Complete 12 monthly installments toward Gold Jewellery Value. The eligible 100% labour/making charge benefit becomes available in the following month, subject to scheme terms.'}
-                    </p>
-
-                    {benefitDate && (
-                      <p className="mt-2 text-xs opacity-70">
-                        Benefit eligibility date:
-                        {' '}
-                        {benefitDate.toLocaleDateString(
-                          'en-IN'
-                        )}
-                      </p>
+                        <Smartphone size={15} />
+                        Pay
+                      </button>
+                    ) : (
+                      <span className="rj-locked-label">
+                        Locked
+                      </span>
                     )}
                   </div>
+                );
+              })}
+            </section>
 
-                  {benefitEligible && (
-                    <button
-                      onClick={
-                        handleDownloadMaturityCertificate
-                      }
-                    >
-                      <Download size={15} />
-                      Certificate
-                    </button>
-                  )}
-                </section>
-              </>
-            )}
+            {/* SCHEME BENEFIT */}
+            <section className="rj-benefit-card">
+              <Gift size={27} />
+
+              <div>
+                <h3>
+                  {schemeUser
+                    .eligibleForMakingChargeDiscount
+                    ? 'Making Charge Benefit Eligible'
+                    : 'Your Scheme Benefit'}
+                </h3>
+
+                <p>
+                  {schemeUser
+                    .eligibleForMakingChargeDiscount
+                    ? (
+                      'Your 12 verified installments ' +
+                      'are complete and the following ' +
+                      'month has begun. Contact the ' +
+                      'showroom for Gold Jewellery ' +
+                      'redemption, subject to scheme terms.'
+                    )
+                    : (
+                      'After 12 verified installments, ' +
+                      'the making/labour charge benefit ' +
+                      'becomes eligible in the following ' +
+                      'month, subject to terms. GOLD ONLY.'
+                    )}
+                </p>
+              </div>
+
+              {schemeUser
+                .eligibleForMakingChargeDiscount && (
+                  <button
+                    onClick={
+                      handleDownloadMaturityCertificate
+                    }
+                  >
+                    <Download size={15} />
+                    Certificate
+                  </button>
+                )}
+            </section>
           </main>
         )}
 
@@ -2170,7 +1756,7 @@ export default function App() {
             </strong>
 
             <small>
-              SHIVGANJ
+              SHEOGANJ
             </small>
           </div>
         </div>
@@ -2178,8 +1764,7 @@ export default function App() {
         <div className="rj-footer-contact">
           <span>
             <MapPin size={15} />
-            Main Market, Shivganj,
-            Rajasthan
+            Main Market, Sheoganj, Rajasthan
           </span>
 
           <a href={`tel:+91${STORE_PHONE}`}>
@@ -2198,22 +1783,18 @@ export default function App() {
         </div>
 
         <p>
-          © {new Date().getFullYear()}
-          {' '}
-          Rahul Jewellers.
+          © {new Date().getFullYear()} Rahul Jewellers.
           All rights reserved.
         </p>
       </footer>
 
-      {/* LOGIN MODAL */}
+      {/* CUSTOMER LOGIN MODAL */}
       <CustomerLoginModal
         isOpen={showLoginModal}
         onClose={() =>
           setShowLoginModal(false)
         }
-        onLoginSuccess={
-          handleLoginSuccess
-        }
+        onLoginSuccess={handleLoginSuccess}
       />
 
       {/* CUSTOMER PROFILE MODAL */}
@@ -2224,10 +1805,12 @@ export default function App() {
         }
         user={schemeUser}
         onUpdateUser={updatedUser => {
-          if (!updatedUser) return;
-
           setSchemeUser(updatedUser);
-          saveCustomer(updatedUser);
+
+          localStorage.setItem(
+            'schemeUserInfo',
+            JSON.stringify(updatedUser)
+          );
         }}
       />
 
@@ -2243,7 +1826,6 @@ export default function App() {
             onClick={() =>
               setPreviewImage(null)
             }
-            aria-label="Close preview"
           >
             <X />
           </button>
@@ -2258,17 +1840,16 @@ export default function App() {
         </div>
       )}
 
-      {/* PAYMENT MODAL */}
+      {/* UPI PAYMENT MODAL */}
       {activePaymentMonth !== null && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
+
             <button
               className="rj-modal-close"
-              onClick={() => {
-                setActivePaymentMonth(null);
-                setActionError('');
-              }}
-              aria-label="Close payment"
+              onClick={() =>
+                setActivePaymentMonth(null)
+              }
             >
               <X />
             </button>
@@ -2276,7 +1857,7 @@ export default function App() {
             <Smartphone size={32} />
 
             <p className="rj-eyebrow">
-              GOLD SCHEME PAYMENT
+              SAVINGS SCHEME PAYMENT
             </p>
 
             <h2>
@@ -2292,7 +1873,8 @@ export default function App() {
             </p>
 
             <p className="rj-upi-id">
-              {storeUpiId}
+              {storeUpiId ||
+                'Store UPI is not configured. Contact showroom.'}
             </p>
 
             {storeQrCodeUrl && (
@@ -2303,82 +1885,38 @@ export default function App() {
               />
             )}
 
-            <a
+            <button
+              disabled={!storeUpiId}
               className="rj-gold-button rj-pay-full"
-              href={upiUri}
+              onClick={() => {
+                const note =
+                  `Month ${activePaymentMonth} ` +
+                  `${schemeUser?.customerId || ''}`;
+
+                const uri =
+                  `upi://pay?pa=${encodeURIComponent(storeUpiId)}` +
+                  `&pn=${encodeURIComponent(storeMerchantName)}` +
+                  `&am=${monthly}` +
+                  `&cu=INR` +
+                  `&tn=${encodeURIComponent(note)}`;
+
+                window.location.href = uri;
+
+                setShowInstructionModal(true);
+              }}
+            >
+              Open UPI App & Pay
+              <ArrowRight size={16} />
+            </button>
+
+            <button
+              className="rj-secondary-button"
               onClick={() =>
                 setShowInstructionModal(true)
               }
             >
-              Open UPI App & Pay
-              <ArrowRight size={16} />
-            </a>
-
-            <p className="my-3 text-center text-xs opacity-75">
-              After completing your
-              payment, enter the UPI
-              transaction reference
-              below. Payment is not
-              considered verified until
-              the store approves it.
-            </p>
-
-            <form
-              onSubmit={
-                handleSubmitPayment
-              }
-            >
-              <label
-                htmlFor="rj-payment-utr"
-                className="mb-2 block text-sm font-semibold"
-              >
-                UPI Transaction Reference / UTR
-              </label>
-
-              <input
-                id="rj-payment-utr"
-                type="text"
-                value={paymentUtr}
-                onChange={event =>
-                  setPaymentUtr(
-                    event.target.value
-                      .toUpperCase()
-                      .replace(
-                        /[^A-Z0-9]/g,
-                        ''
-                      )
-                  )
-                }
-                maxLength={20}
-                minLength={10}
-                placeholder="Enter UPI reference number"
-                required
-                className="mb-3 w-full rounded-lg border border-[#C9A66D]/40 bg-black/20 px-3 py-3 text-sm outline-none"
-              />
-
-              {actionError && (
-                <p
-                  role="alert"
-                  className="mb-3 text-xs text-red-400"
-                >
-                  {actionError}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={
-                  paymentSubmitting
-                }
-                className="rj-gold-button rj-pay-full"
-              >
-                {paymentSubmitting
-                  ? 'Submitting...'
-                  : 'Submit Payment for Verification'}
-
-                <ArrowRight size={16} />
-              </button>
-            </form>
+              Already paid? Submit UTR
+            </button>
 
             <button
               className="rj-secondary-button"
@@ -2392,64 +1930,112 @@ export default function App() {
         </div>
       )}
 
-      {/* PAYMENT INSTRUCTIONS */}
+      {/* PAYMENT VERIFICATION */}
       {showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
+
             <button
               className="rj-modal-close"
               onClick={() =>
                 setShowInstructionModal(false)
               }
-              aria-label="Close instructions"
             >
               <X />
             </button>
 
-            <Smartphone size={34} />
+            <CheckCircle2 size={34} />
 
             <h2>
-              Payment Verification
+              Next Step
             </h2>
 
             <p>
-              Complete payment in your
-              UPI app. Keep your UPI
-              transaction reference
-              and payment screenshot.
+              Only submit after completing your actual
+              UPI payment. Your installment remains
+              PENDING until Admin approves it.
             </p>
 
-            <p>
-              Return to the payment
-              form and submit your UTR.
-              Rahul Jewellers will
-              verify the payment
-              before marking the
-              installment as Paid.
-            </p>
-
-            <a
-              className="rj-gold-button rj-pay-full"
-              href={
-                `https://wa.me/91${STORE_PHONE}?text=` +
-                encodeURIComponent(
-                  `Namaste Rahul Jewellers, I have initiated Gold Scheme Month #${activePaymentMonth} payment for Customer ID ${schemeUser?.customerId || ''}. I will share my payment receipt for verification.`
-                )
-              }
-              target="_blank"
-              rel="noreferrer"
+            <form
+              onSubmit={submitPaymentUtr}
+              style={{
+                display: 'grid',
+                gap: 12
+              }}
             >
-              <MessageCircle size={16} />
-              Share Receipt on WhatsApp
-            </a>
+              <label htmlFor="payment-utr">
+                UPI UTR / Transaction Reference
+              </label>
+
+              <input
+                id="payment-utr"
+                type="text"
+                required
+                minLength={10}
+                maxLength={20}
+                value={paymentUtr}
+                onChange={event =>
+                  setPaymentUtr(
+                    event.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, '')
+                  )
+                }
+                placeholder="10–20 digit/letter UTR"
+                style={{
+                  padding: 14,
+                  borderRadius: 10,
+                  background: '#fff',
+                  color: '#20140c'
+                }}
+              />
+
+              {paymentError && (
+                <p
+                  role="alert"
+                  style={{
+                    color: '#ffaaa5'
+                  }}
+                >
+                  {paymentError}
+                </p>
+              )}
+
+              {paymentNotice && (
+                <p
+                  role="status"
+                  style={{
+                    color: '#b8f4ce'
+                  }}
+                >
+                  {paymentNotice}
+                </p>
+              )}
+
+              <button
+                className="rj-gold-button rj-pay-full"
+                type="submit"
+                disabled={
+                  paymentSubmitting ||
+                  !!paymentNotice
+                }
+              >
+                {paymentSubmitting
+                  ? 'Submitting...'
+                  : 'Submit for Admin Verification'}
+              </button>
+            </form>
 
             <button
               className="rj-secondary-button"
-              onClick={() =>
-                setShowInstructionModal(false)
-              }
+              onClick={() => {
+                setShowInstructionModal(false);
+                setActivePaymentMonth(null);
+                setPaymentNotice('');
+                setPaymentError('');
+              }}
             >
-              Back to Payment Form
+              Close
             </button>
           </div>
         </div>
@@ -2459,18 +2045,18 @@ export default function App() {
       {showHistoryModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-history-modal">
+
             <button
               className="rj-modal-close"
               onClick={() =>
                 setShowHistoryModal(false)
               }
-              aria-label="Close payment history"
             >
               <X />
             </button>
 
             <p className="rj-eyebrow">
-              GOLD SCHEME PASSBOOK
+              CUSTOMER PASSBOOK
             </p>
 
             <h2>
@@ -2479,67 +2065,34 @@ export default function App() {
 
             {paidCount === 0 ? (
               <p className="rj-no-history">
-                No verified installments
+                No completed installments
                 are recorded yet.
               </p>
             ) : (
               Array.from({
                 length: paidCount
-              }).map((_, index) => {
-                const month =
-                  index + 1;
+              }).map((_, index) => (
+                <div
+                  className="rj-history-row"
+                  key={index}
+                >
+                  <span>
+                    Month #{index + 1} ·
+                    ₹{money(monthly)}
+                  </span>
 
-                const entry =
-                  paidHistory.find(
-                    item =>
-                      Number(
-                        item.monthNum
-                      ) === month
-                  );
-
-                return (
-                  <div
-                    className="rj-history-row"
-                    key={month}
+                  <button
+                    onClick={() =>
+                      handleDownloadReceipt(
+                        index + 1
+                      )
+                    }
                   >
-                    <span>
-                      Month #{month}
-                      {' · '}
-                      ₹{money(
-                        entry?.amount ||
-                        monthly
-                      )}
-                    </span>
-
-                    {entry ? (
-                      <button
-                        onClick={() =>
-                          handleDownloadReceipt(
-                            month
-                          )
-                        }
-                      >
-                        <Download size={14} />
-                        PDF
-                      </button>
-                    ) : (
-                      <span>
-                        Recorded
-                      </span>
-                    )}
-                  </div>
-                );
-              })
-            )}
-
-            {pendingPayment && (
-              <p className="mt-4 text-xs opacity-70">
-                Month #
-                {pendingPayment.monthNum}
-                {' '}
-                is awaiting payment
-                verification.
-              </p>
+                    <Download size={14} />
+                    PDF
+                  </button>
+                </div>
+              ))
             )}
           </div>
         </div>
