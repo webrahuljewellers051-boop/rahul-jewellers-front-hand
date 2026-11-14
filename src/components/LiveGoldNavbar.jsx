@@ -15,6 +15,7 @@ import {
 import "./LiveGoldNavbar.css";
 
 const API_URL =
+  import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
   "https://rahul-jewellers-backend-jlr0.onrender.com";
 
@@ -30,6 +31,7 @@ function formatINR(value) {
 
 export default function LiveGoldNavbar() {
   const [price, setPrice] = useState(null);
+  const [displayEnabled, setDisplayEnabled] = useState(false);
   const [connected, setConnected] = useState(false);
   const [direction, setDirection] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -45,7 +47,17 @@ export default function LiveGoldNavbar() {
       try {
         const response = await fetch(`${API_URL}/api/gold-rate`);
         const data = await response.json();
-        if (data.success && data.priceInrPerGram) {
+        if (data.success) {
+          // The Admin Panel controls whether this entire bar is visible.
+          const showRate = data.enabled === true && Number(data.priceInrPerGram) > 0;
+          setDisplayEnabled(showRate);
+          if (!showRate) {
+            previous.current = null;
+            setPrice(null);
+            setConnected(false);
+            setDirection(0);
+            return;
+          }
           const newPrice = Number(data.priceInrPerGram);
           if (Number.isFinite(newPrice)) {
             if (Number.isFinite(previous.current)) {
@@ -90,6 +102,16 @@ export default function LiveGoldNavbar() {
             return;
           }
 
+          const showRate = data.enabled === true && Number(data.priceInrPerGram) > 0;
+          setDisplayEnabled(showRate);
+          if (!showRate) {
+            previous.current = null;
+            setPrice(null);
+            setConnected(false);
+            setDirection(0);
+            return;
+          }
+
           const newPrice = Number(data.priceInrPerGram);
 
           if (!Number.isFinite(newPrice)) {
@@ -129,13 +151,16 @@ export default function LiveGoldNavbar() {
     };
   }, []);
 
+  // OFF means no bar, no placeholder, and no blank gold-rate area.
+  if (!displayEnabled || price === null) return null;
+
   return (
     <div className="gold-rate-bar" role="status">
       <div className="gold-rate-marquee">
         <div className="gold-rate-content">
           <div className="gold-rate-brand">
             <span className={`gold-live-dot ${connected ? "is-live" : ""}`} />
-            <span>LIVE GOLD RATE</span>
+            <span>22K GOLD RATE</span>
           </div>
 
           <span className="gold-separator" />
@@ -166,7 +191,7 @@ export default function LiveGoldNavbar() {
                 ? "RISING"
                 : direction < 0
                 ? "FALLING"
-                : "LIVE MARKET"}
+                : "STORE RATE"}
             </span>
           </div>
 
@@ -174,7 +199,7 @@ export default function LiveGoldNavbar() {
 
           <div className={`gold-connection ${connected ? "online" : "offline"}`}>
             {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-            <span>{connected ? "LIVE" : "OFFLINE"}</span>
+            <span>{connected ? "PUBLISHED" : "OFFLINE"}</span>
           </div>
 
           <span className="gold-update">
