@@ -747,6 +747,8 @@ export default function App() {
               const paid = month <= paidCount;
               const next = month === paidCount + 1;
               const pending = paymentRequests.some(p => Number(p.monthNum) === month && p.status === 'Pending');
+              const upiAdjusted = paymentRequests.some(p => Number(p.monthNum) === month &&
+                p.status === 'Approved' && p.passbookApplied === false);
               return (
                 <div className={`rj-installment-row ${paid ? 'paid' : next ? 'next' : ''}`} key={month}>
                   <div className="rj-installment-icon">
@@ -755,6 +757,8 @@ export default function App() {
                   <div className="rj-installment-name"><strong>Month #{month}</strong><small>₹{money(monthly)}</small></div>
                   {paid ? <span className="rj-paid-label">Verified Paid</span> : next && pending ? (
                     <span className="rj-locked-label">Pending Admin Approval</span>
+                  ) : next && upiAdjusted ? (
+                    <span className="rj-locked-label" title="UPI approved, but passbook adjusted by admin. No refund was issued.">UPI Verified · Contact Admin</span>
                   ) : next ? (
                     <button className="rj-pay-button" onClick={() => { setActivePaymentMonth(month); setPaymentError(''); setPaymentNotice(''); }}><Smartphone size={15}/> Pay</button>
                   ) : <span className="rj-locked-label">Locked</span>}
