@@ -3,38 +3,39 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   X,
-  UserRound,
-  Phone,
-  LockKeyhole,
+  LogIn,
+  Sparkles,
   Eye,
   EyeOff,
-  CalendarDays,
-  MapPin,
-  ArrowRight,
+  User,
+  Lock,
   ShieldCheck,
-  Gem,
+  Phone,
+  MapPin,
+  Calendar,
+  UserPlus,
+  ArrowLeft,
   Loader2,
   CheckCircle2,
-  IdCard
+  CreditCard,
+  Copy,
+  Check
 } from 'lucide-react';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
   'https://rahul-jewellers-backend-jlr0.onrender.com';
 
-const inputClass =
-  'w-full rounded-xl border border-[#D6BD8B]/20 ' +
-  'bg-white/[0.045] px-4 py-3 text-sm text-white ' +
-  'outline-none transition ' +
-  'placeholder:text-white/30 ' +
-  'focus:border-[#D9B977]/70 ' +
-  'focus:bg-white/[0.075]';
+const requestConfig = {
+  headers: {
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
+  },
+  timeout: 25000
+};
 
-const labelClass =
-  'mb-2 block text-[11px] font-semibold ' +
-  'uppercase tracking-[0.13em] text-[#D8C6A6]';
-
-const initialRegisterForm = {
+const emptyRegistration = {
   name: '',
   dob: '',
   phone: '',
@@ -43,132 +44,99 @@ const initialRegisterForm = {
   confirmPassword: ''
 };
 
+const inputClass =
+  'w-full rounded-xl border border-[#C9A76B]/30 bg-[#100B0C] ' +
+  'px-4 py-3 text-sm text-[#F4E8CB] outline-none ' +
+  'placeholder:text-[#887763] focus:border-[#E6CC8D]';
+
+const labelClass =
+  'mb-2 flex items-center gap-2 text-[10px] font-bold ' +
+  'uppercase tracking-[0.13em] text-[#D9BD83]';
+
+function Field({ label, icon: Icon, children }) {
+  return (
+    <div>
+      <label className={labelClass}>
+        <Icon size={14} />
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 export default function CustomerLoginModal({
   isOpen,
   onClose,
   onLoginSuccess
 }) {
-  const [mode, setMode] = useState('login');
-
+  const [view, setView] = useState('login');
   const [identifier, setIdentifier] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-
-  const [registerForm, setRegisterForm] = useState(
-    initialRegisterForm
-  );
-
-  const [showLoginPassword, setShowLoginPassword] =
-    useState(false);
-
-  const [showRegisterPassword, setShowRegisterPassword] =
-    useState(false);
-
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
-
+  const [password, setPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [registration, setRegistration] = useState(emptyRegistration);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const [registeredCustomer, setRegisteredCustomer] =
-    useState(null);
-
-  const [registeredToken, setRegisteredToken] =
-    useState('');
+  const [registeredAccount, setRegisteredAccount] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      setError('');
-      setLoading(false);
-      return;
-    }
+    if (!isOpen) return undefined;
 
-    const handleEscape = event => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onEscape = event => {
       if (event.key === 'Escape' && !loading) {
         onClose?.();
       }
     };
 
-    document.addEventListener(
-      'keydown',
-      handleEscape
-    );
-
-    const previousOverflow =
-      document.body.style.overflow;
-
-    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onEscape);
 
     return () => {
-      document.removeEventListener(
-        'keydown',
-        handleEscape
-      );
-
-      document.body.style.overflow =
-        previousOverflow;
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onEscape);
     };
   }, [isOpen, loading, onClose]);
 
   if (!isOpen) return null;
 
-  const today = new Date()
-    .toISOString()
-    .slice(0, 10);
-
-  const switchMode = nextMode => {
-    if (loading) return;
-
-    setMode(nextMode);
+  const switchView = next => {
+    setView(next);
     setError('');
     setShowLoginPassword(false);
     setShowRegisterPassword(false);
-    setShowConfirmPassword(false);
   };
 
-  const updateRegisterField = (field, value) => {
-    setRegisterForm(previous => ({
+  const updateRegistration = (key, value) => {
+    setRegistration(previous => ({
       ...previous,
-      [field]: value
+      [key]: value
     }));
 
-    if (error) {
-      setError('');
-    }
+    if (error) setError('');
   };
 
-  const saveCustomerSession = (customer, token) => {
-    if (!customer?._id || !token) {
-      throw new Error(
-        'Login session could not be created.'
-      );
+  const finishLogin = (customer, token) => {
+    if (!customer || !token) {
+      setError('Login response was incomplete. Please try again.');
+      return;
     }
 
-    // Backend customer JWT.
-    localStorage.setItem(
-      'customer_token',
-      token
-    );
+    localStorage.setItem('customer_token', token);
+    localStorage.setItem('schemeUserInfo', JSON.stringify(customer));
 
-    // Existing Home.jsx compatibility.
-    localStorage.setItem(
-      'schemeUserInfo',
-      JSON.stringify(customer)
-    );
+    setIdentifier('');
+    setPassword('');
+    setRegistration(emptyRegistration);
+    setRegisteredAccount(null);
+    setError('');
+    setView('login');
 
-    // Home.jsx will receive the customer object.
     onLoginSuccess?.(customer, token);
-  };
-
-  const getApiError = (error, fallback) => {
-    return (
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      (
-        !error.response
-          ? 'Unable to connect to the server. Please try again.'
-          : fallback
-      )
-    );
+    onClose?.();
   };
 
   const handleLogin = async event => {
@@ -176,56 +144,40 @@ export default function CustomerLoginModal({
 
     if (loading) return;
 
-    const cleanIdentifier = identifier.trim();
+    setError('');
 
-    if (!cleanIdentifier || !loginPassword) {
-      setError(
-        'Please enter your mobile number / Customer ID and password.'
-      );
+    if (!identifier.trim() || !password) {
+      setError('Please enter your Customer ID / mobile and password.');
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/customer/login`,
         {
-          identifier: cleanIdentifier,
-          password: loginPassword
+          identifier: identifier.trim(),
+          password
         },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 20000
-        }
+        requestConfig
       );
 
-      const { success, customer, token } =
-        response.data || {};
-
-      if (!success || !customer || !token) {
+      if (!response.data?.success) {
         throw new Error(
-          'Invalid login response. Please try again.'
+          response.data?.message || 'Login failed.'
         );
       }
 
-      saveCustomerSession(customer, token);
-
-      setIdentifier('');
-      setLoginPassword('');
-      setError('');
+      finishLogin(
+        response.data.customer,
+        response.data.token
+      );
     } catch (err) {
       setError(
-        err.response
-          ? getApiError(
-              err,
-              'Login failed. Please check your details.'
-            )
-          : err.message ||
-            'Unable to login. Please try again.'
+        err.response?.data?.message ||
+        err.message ||
+        'Unable to log in. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -237,517 +189,400 @@ export default function CustomerLoginModal({
 
     if (loading) return;
 
-    const name = registerForm.name.trim();
+    setError('');
 
-    const phone = registerForm.phone
-      .replace(/\D/g, '')
-      .replace(/^91(?=\d{10}$)/, '');
+    const data = {
+      name: registration.name.trim(),
+      dob: registration.dob,
+      phone: registration.phone.replace(/\D/g, ''),
+      address: registration.address.trim(),
+      password: registration.password,
+      confirmPassword: registration.confirmPassword
+    };
 
-    const {
-      dob,
-      address,
-      password,
-      confirmPassword
-    } = registerForm;
-
-    if (name.length < 2) {
-      setError(
-        'Please enter your full name.'
-      );
+    if (!data.name || !data.dob || !data.phone || !data.address) {
+      setError('Please fill in all profile details.');
       return;
     }
 
-    if (!dob || dob > today) {
-      setError(
-        'Please select a valid date of birth.'
-      );
+    if (!/^[6-9]\d{9}$/.test(data.phone)) {
+      setError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
 
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      setError(
-        'Please enter a valid 10-digit Indian mobile number.'
-      );
+    if (data.dob > new Date().toISOString().slice(0, 10)) {
+      setError('Date of birth cannot be in the future.');
       return;
     }
 
-    if (password.length < 8) {
-      setError(
-        'Password must contain at least 8 characters.'
-      );
+    if (data.password.length < 8 || data.password.length > 128) {
+      setError('Password must be between 8 and 128 characters.');
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError(
-        'Password and Confirm Password do not match.'
-      );
+    if (data.password !== data.confirmPassword) {
+      setError('Password and confirm password do not match.');
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/customer/register`,
-        {
-          name,
-          dob,
-          phone,
-          address: address.trim(),
-          password,
-          confirmPassword
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 20000
-        }
+        data,
+        requestConfig
       );
 
-      const {
-        success,
-        customer,
-        token
-      } = response.data || {};
-
-      if (!success || !customer || !token) {
+      if (!response.data?.success || !response.data?.customer) {
         throw new Error(
-          'Registration response was incomplete.'
+          response.data?.message || 'Registration failed.'
         );
       }
 
-      setRegisteredCustomer(customer);
-      setRegisteredToken(token);
-      setRegisterForm(initialRegisterForm);
-      setMode('success');
+      setRegisteredAccount({
+        customer: response.data.customer,
+        token: response.data.token || ''
+      });
+
+      setPassword('');
+      setRegistration(emptyRegistration);
+      setView('success');
     } catch (err) {
       setError(
-        err.response
-          ? getApiError(
-              err,
-              'Unable to create your profile.'
-            )
-          : err.message ||
-            'Registration failed. Please try again.'
+        err.response?.data?.message ||
+        err.message ||
+        'Unable to create account. Please try again.'
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleContinueAfterRegistration = () => {
-    try {
-      saveCustomerSession(
-        registeredCustomer,
-        registeredToken
-      );
+  const copyCustomerId = async () => {
+    const id = registeredAccount?.customer?.customerId;
 
-      setRegisteredCustomer(null);
-      setRegisteredToken('');
-      setMode('login');
-      setError('');
-    } catch (err) {
-      setError(err.message);
+    if (!id) return;
+
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopied(true);
+    } catch {
+      setError('Please select and copy your Customer ID manually.');
     }
   };
 
+  const isRegister = view === 'register';
+  const isSuccess = view === 'success';
+
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/85 p-3 backdrop-blur-md sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Rahul Jewellers Customer Account"
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/85 p-3 backdrop-blur-md sm:p-5"
       onMouseDown={event => {
-        if (
-          event.target === event.currentTarget &&
-          !loading
-        ) {
+        if (event.target === event.currentTarget && !loading) {
           onClose?.();
         }
       }}
     >
-      <div className="relative my-auto w-full max-w-[480px] overflow-hidden rounded-[28px] border border-[#D6B875]/30 bg-[#130F10] text-white shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={
+          isSuccess
+            ? 'Account created'
+            : isRegister
+              ? 'Create customer account'
+              : 'Customer login'
+        }
+        className="relative my-auto w-full max-w-md overflow-hidden rounded-3xl border border-[#C9A76B]/40 bg-[#171011] shadow-2xl"
+      >
+        <div className="h-1 bg-gradient-to-r from-transparent via-[#D9BD83] to-transparent" />
 
-        {/* GOLD TOP BORDER */}
-        <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-[#E4C27C] to-transparent" />
+        <button
+          type="button"
+          onClick={() => !loading && onClose?.()}
+          disabled={loading}
+          aria-label="Close"
+          className="absolute right-4 top-5 z-10 rounded-full p-2 text-[#D9BD83] hover:bg-white/10 disabled:opacity-40"
+        >
+          <X size={19} />
+        </button>
 
-        {/* HEADER */}
-        <div className="relative overflow-hidden border-b border-[#D6B875]/15 px-5 pb-6 pt-7 text-center sm:px-8">
+        <div className="max-h-[88vh] overflow-y-auto px-5 pb-6 pt-7 sm:px-7">
 
-          <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[#C69C54]/10 blur-3xl" />
-
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-[#D6B875]/40 hover:text-white disabled:opacity-40"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#D6B875]/40 bg-[#D6B875]/10 shadow-[0_0_30px_rgba(214,184,117,0.08)]">
-            <Gem
-              size={30}
-              className="text-[#E4C27C]"
-            />
-          </div>
-
-          <h2 className="font-serif text-[27px] tracking-[0.05em] text-[#F2DEB4] sm:text-[30px]">
-            RAHUL JEWELLERS
-          </h2>
-
-          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.4em] text-[#C9AA72]">
-            SHIVGANJ
-          </p>
-
-          <div className="mx-auto mt-4 h-px w-24 bg-gradient-to-r from-transparent via-[#C9AA72]/70 to-transparent" />
-
-          <p className="mt-4 text-sm text-white/60">
-            {mode === 'login'
-              ? 'Welcome back to your jewellery account'
-              : mode === 'register'
-                ? 'Create your personal jewellery account'
-                : 'Your profile has been created'}
-          </p>
-        </div>
-
-        <div className="max-h-[65vh] overflow-y-auto px-5 py-6 sm:px-8">
-
-          {/* LOGIN / REGISTER TABS */}
-          {mode !== 'success' && (
-            <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black/25 p-1">
-              <button
-                type="button"
-                onClick={() => switchMode('login')}
-                className={`rounded-lg px-3 py-3 text-xs font-bold transition sm:text-sm ${
-                  mode === 'login'
-                    ? 'bg-[#D8B571] text-[#21170C] shadow-lg'
-                    : 'text-white/55 hover:text-white'
-                }`}
-              >
-                Login
-              </button>
-
-              <button
-                type="button"
-                onClick={() => switchMode('register')}
-                className={`rounded-lg px-3 py-3 text-xs font-bold transition sm:text-sm ${
-                  mode === 'register'
-                    ? 'bg-[#D8B571] text-[#21170C] shadow-lg'
-                    : 'text-white/55 hover:text-white'
-                }`}
-              >
-                Create New Profile
-              </button>
+          {/* HEADER */}
+          <div className="mb-5 text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D9BD83]/40 bg-[#D9BD83]/10">
+              {isSuccess ? (
+                <CheckCircle2
+                  size={28}
+                  className="text-emerald-400"
+                />
+              ) : isRegister ? (
+                <UserPlus
+                  size={26}
+                  className="text-[#D9BD83]"
+                />
+              ) : (
+                <Sparkles
+                  size={27}
+                  className="text-[#D9BD83]"
+                />
+              )}
             </div>
-          )}
+
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#C9A76B]">
+              Elegance · Heritage · Trust
+            </p>
+
+            <h2 className="mt-2 font-serif text-2xl font-semibold text-[#F4E8CB]">
+              RAHUL JEWELLERS
+            </h2>
+
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#C9A76B]">
+              SHIVGANJ
+            </p>
+
+            <p className="mt-4 text-xs text-[#BDAE96]">
+              {isSuccess
+                ? 'Your customer account is ready.'
+                : isRegister
+                  ? 'Create your customer account securely.'
+                  : 'Login to your customer account.'}
+            </p>
+          </div>
 
           {/* ERROR */}
           {error && (
             <div
               role="alert"
-              className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs leading-relaxed text-red-300"
+              className="mb-4 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-xs leading-relaxed text-red-200"
             >
               {error}
             </div>
           )}
 
-          {/* LOGIN FORM */}
-          {mode === 'login' && (
+          {/* LOGIN */}
+          {view === 'login' && (
             <form
               onSubmit={handleLogin}
-              className="space-y-5"
+              className="space-y-4"
             >
-              <div>
-                <label
-                  htmlFor="rj-login-identifier"
-                  className={labelClass}
-                >
-                  Mobile Number / Customer ID
-                </label>
+              <Field
+                label="Customer ID or Mobile"
+                icon={User}
+              >
+                <input
+                  className={inputClass}
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={identifier}
+                  onChange={event =>
+                    setIdentifier(event.target.value)
+                  }
+                  placeholder="RJ Customer ID / 10-digit mobile"
+                />
+              </Field>
 
+              <Field
+                label="Password"
+                icon={Lock}
+              >
                 <div className="relative">
-                  <UserRound
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
                   <input
-                    id="rj-login-identifier"
-                    type="text"
-                    autoComplete="username"
-                    value={identifier}
-                    onChange={event =>
-                      setIdentifier(event.target.value)
-                    }
-                    placeholder="Mobile number or RJ Customer ID"
-                    required
-                    className={`${inputClass} pl-11`}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="rj-login-password"
-                  className={labelClass}
-                >
-                  Password
-                </label>
-
-                <div className="relative">
-                  <LockKeyhole
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
-                  <input
-                    id="rj-login-password"
+                    className={`${inputClass} pr-12`}
                     type={
                       showLoginPassword
                         ? 'text'
                         : 'password'
                     }
                     autoComplete="current-password"
-                    value={loginPassword}
+                    required
+                    value={password}
                     onChange={event =>
-                      setLoginPassword(event.target.value)
+                      setPassword(event.target.value)
                     }
                     placeholder="Enter your password"
-                    required
-                    className={`${inputClass} pl-11 pr-12`}
                   />
 
                   <button
                     type="button"
                     onClick={() =>
-                      setShowLoginPassword(
-                        previous => !previous
-                      )
+                      setShowLoginPassword(previous => !previous)
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/45 transition hover:text-[#D8B571]"
                     aria-label={
                       showLoginPassword
                         ? 'Hide password'
                         : 'Show password'
                     }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#D9BD83]"
                   >
                     {showLoginPassword
-                      ? <EyeOff size={18} />
-                      : <Eye size={18} />}
+                      ? <EyeOff size={17} />
+                      : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
+              </Field>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-[#B99452] via-[#E2C47F] to-[#B99452] px-5 py-3.5 text-sm font-bold text-[#21170C] shadow-[0_8px_30px_rgba(214,184,117,0.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#E6CC8D] to-[#B38A48] py-3.5 text-xs font-black uppercase tracking-wider text-[#171011] hover:brightness-110 disabled:opacity-60"
               >
                 {loading ? (
-                  <>
-                    <Loader2
-                      size={18}
-                      className="animate-spin"
-                    />
-                    Logging In...
-                  </>
+                  <Loader2
+                    size={17}
+                    className="animate-spin"
+                  />
                 ) : (
-                  <>
-                    Login to My Account
-                    <ArrowRight size={18} />
-                  </>
+                  <LogIn size={17} />
                 )}
+
+                {loading
+                  ? 'Logging in...'
+                  : 'Login to My Account'}
               </button>
 
-              <p className="text-center text-xs leading-relaxed text-white/50">
-                New to Rahul Jewellers?{' '}
+              <div className="border-t border-[#D9BD83]/20 pt-4 text-center">
+                <p className="mb-3 text-xs text-[#BDAE96]">
+                  Don't have an account?
+                </p>
+
                 <button
                   type="button"
                   onClick={() =>
-                    switchMode('register')
+                    switchView('register')
                   }
-                  className="font-semibold text-[#E4C27C] hover:underline"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#D9BD83]/50 px-5 py-2.5 text-xs font-bold text-[#F4E8CB] hover:bg-[#D9BD83]/10"
                 >
+                  <UserPlus size={16} />
                   Create New Profile
                 </button>
-              </p>
+              </div>
             </form>
           )}
 
-          {/* REGISTER FORM */}
-          {mode === 'register' && (
+          {/* REGISTRATION */}
+          {isRegister && (
             <form
               onSubmit={handleRegister}
               className="space-y-4"
             >
-              <div>
-                <label
-                  htmlFor="rj-register-name"
-                  className={labelClass}
+              <Field
+                label="Full Name"
+                icon={User}
+              >
+                <input
+                  className={inputClass}
+                  type="text"
+                  autoComplete="name"
+                  required
+                  maxLength={100}
+                  value={registration.name}
+                  onChange={event =>
+                    updateRegistration(
+                      'name',
+                      event.target.value
+                    )
+                  }
+                  placeholder="Your full name"
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field
+                  label="Date of Birth"
+                  icon={Calendar}
                 >
-                  Full Name *
-                </label>
-
-                <div className="relative">
-                  <UserRound
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
                   <input
-                    id="rj-register-name"
-                    type="text"
-                    autoComplete="name"
-                    value={registerForm.name}
-                    onChange={event =>
-                      updateRegisterField(
-                        'name',
-                        event.target.value
-                      )
-                    }
-                    placeholder="Enter your full name"
-                    maxLength={100}
-                    required
-                    className={`${inputClass} pl-11`}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="rj-register-dob"
-                  className={labelClass}
-                >
-                  Date of Birth *
-                </label>
-
-                <div className="relative">
-                  <CalendarDays
-                    size={17}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
-                  <input
-                    id="rj-register-dob"
+                    className={inputClass}
                     type="date"
-                    min="1900-01-01"
-                    max={today}
-                    value={registerForm.dob}
+                    required
+                    max={
+                      new Date()
+                        .toISOString()
+                        .slice(0, 10)
+                    }
+                    value={registration.dob}
                     onChange={event =>
-                      updateRegisterField(
+                      updateRegistration(
                         'dob',
                         event.target.value
                       )
                     }
-                    required
-                    className={`${inputClass} pl-11 [color-scheme:dark]`}
                   />
-                </div>
-              </div>
+                </Field>
 
-              <div>
-                <label
-                  htmlFor="rj-register-phone"
-                  className={labelClass}
+                <Field
+                  label="Mobile Number"
+                  icon={Phone}
                 >
-                  Mobile Number *
-                </label>
-
-                <div className="relative">
-                  <Phone
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
                   <input
-                    id="rj-register-phone"
+                    className={inputClass}
                     type="tel"
+                    autoComplete="tel"
                     inputMode="numeric"
-                    autoComplete="tel-national"
-                    value={registerForm.phone}
+                    required
+                    maxLength={10}
+                    value={registration.phone}
                     onChange={event =>
-                      updateRegisterField(
+                      updateRegistration(
                         'phone',
                         event.target.value
+                          .replace(/\D/g, '')
+                          .slice(0, 10)
                       )
                     }
-                    placeholder="10-digit mobile number"
-                    maxLength={13}
-                    required
-                    className={`${inputClass} pl-11`}
+                    placeholder="10-digit mobile"
                   />
-                </div>
+                </Field>
               </div>
 
-              <div>
-                <label
-                  htmlFor="rj-register-address"
-                  className={labelClass}
-                >
-                  Address (Optional)
-                </label>
+              <Field
+                label="Residential Address"
+                icon={MapPin}
+              >
+                <textarea
+                  className={`${inputClass} resize-none`}
+                  rows={2}
+                  required
+                  maxLength={500}
+                  value={registration.address}
+                  onChange={event =>
+                    updateRegistration(
+                      'address',
+                      event.target.value
+                    )
+                  }
+                  placeholder="House, street, city, PIN code"
+                />
+              </Field>
 
+              <Field
+                label="Create Password"
+                icon={Lock}
+              >
                 <div className="relative">
-                  <MapPin
-                    size={17}
-                    className="absolute left-4 top-4 text-[#C9AA72]"
-                  />
-
-                  <textarea
-                    id="rj-register-address"
-                    value={registerForm.address}
-                    onChange={event =>
-                      updateRegisterField(
-                        'address',
-                        event.target.value
-                      )
-                    }
-                    placeholder="Your address"
-                    rows={2}
-                    maxLength={500}
-                    className={`${inputClass} resize-none pl-11`}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="rj-register-password"
-                  className={labelClass}
-                >
-                  Create Password *
-                </label>
-
-                <div className="relative">
-                  <LockKeyhole
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
                   <input
-                    id="rj-register-password"
+                    className={`${inputClass} pr-12`}
                     type={
                       showRegisterPassword
                         ? 'text'
                         : 'password'
                     }
                     autoComplete="new-password"
-                    value={registerForm.password}
+                    required
+                    minLength={8}
+                    maxLength={128}
+                    value={registration.password}
                     onChange={event =>
-                      updateRegisterField(
+                      updateRegistration(
                         'password',
                         event.target.value
                       )
                     }
                     placeholder="Minimum 8 characters"
-                    minLength={8}
-                    required
-                    className={`${inputClass} pl-11 pr-12`}
                   />
 
                   <button
@@ -757,219 +592,169 @@ export default function CustomerLoginModal({
                         previous => !previous
                       )
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/45 hover:text-[#D8B571]"
-                    aria-label="Toggle password visibility"
+                    aria-label={
+                      showRegisterPassword
+                        ? 'Hide password'
+                        : 'Show password'
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#D9BD83]"
                   >
                     {showRegisterPassword
-                      ? <EyeOff size={18} />
-                      : <Eye size={18} />}
+                      ? <EyeOff size={17} />
+                      : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
+              </Field>
 
-              <div>
-                <label
-                  htmlFor="rj-register-confirm"
-                  className={labelClass}
-                >
-                  Confirm Password *
-                </label>
+              <Field
+                label="Confirm Password"
+                icon={Lock}
+              >
+                <input
+                  className={inputClass}
+                  type={
+                    showRegisterPassword
+                      ? 'text'
+                      : 'password'
+                  }
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  maxLength={128}
+                  value={registration.confirmPassword}
+                  onChange={event =>
+                    updateRegistration(
+                      'confirmPassword',
+                      event.target.value
+                    )
+                  }
+                  placeholder="Re-enter password"
+                />
+              </Field>
 
-                <div className="relative">
-                  <ShieldCheck
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9AA72]"
-                  />
-
-                  <input
-                    id="rj-register-confirm"
-                    type={
-                      showConfirmPassword
-                        ? 'text'
-                        : 'password'
-                    }
-                    autoComplete="new-password"
-                    value={
-                      registerForm.confirmPassword
-                    }
-                    onChange={event =>
-                      updateRegisterField(
-                        'confirmPassword',
-                        event.target.value
-                      )
-                    }
-                    placeholder="Enter password again"
-                    required
-                    className={`${inputClass} pl-11 pr-12`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(
-                        previous => !previous
-                      )
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/45 hover:text-[#D8B571]"
-                    aria-label="Toggle confirm password visibility"
-                  >
-                    {showConfirmPassword
-                      ? <EyeOff size={18} />
-                      : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-[#D6B875]/20 bg-[#D6B875]/[0.055] p-4">
-                <div className="flex items-start gap-3">
-                  <Gem
-                    size={19}
-                    className="mt-0.5 shrink-0 text-[#D8B571]"
-                  />
-
-                  <div>
-                    <p className="text-xs font-bold text-[#E9D5AA]">
-                      Gold Savings Scheme
-                    </p>
-
-                    <p className="mt-1 text-[11px] leading-relaxed text-white/55">
-                      Creating a customer profile does
-                      not automatically enroll you in
-                      the Gold Savings Scheme.
-                      You can join separately.
-                    </p>
-
-                    <p className="mt-2 text-[11px] leading-relaxed text-[#D9BD88]">
-                      Pay 12 monthly installments.
-                      Eligible labour/making charge
-                      benefit becomes available in
-                      the following month, subject
-                      to scheme terms.
-                    </p>
-                  </div>
-                </div>
+              <div className="flex items-start gap-2 rounded-xl border border-[#D9BD83]/20 bg-[#D9BD83]/5 p-3 text-[11px] leading-relaxed text-[#BDAE96]">
+                <ShieldCheck
+                  size={17}
+                  className="mt-0.5 shrink-0 text-[#D9BD83]"
+                />
+                Creating a customer account does not automatically join the Gold Savings Scheme.
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-[#B99452] via-[#E2C47F] to-[#B99452] px-5 py-3.5 text-sm font-bold text-[#21170C] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#E6CC8D] to-[#B38A48] py-3.5 text-xs font-black uppercase tracking-wider text-[#171011] hover:brightness-110 disabled:opacity-60"
               >
                 {loading ? (
-                  <>
-                    <Loader2
-                      size={18}
-                      className="animate-spin"
-                    />
-                    Creating Profile...
-                  </>
+                  <Loader2
+                    size={17}
+                    className="animate-spin"
+                  />
                 ) : (
-                  <>
-                    Create My Profile
-                    <ArrowRight size={18} />
-                  </>
+                  <UserPlus size={17} />
                 )}
+
+                {loading
+                  ? 'Creating Account...'
+                  : 'Create My Account'}
               </button>
 
-              <p className="text-center text-xs text-white/50">
-                Already registered?{' '}
-                <button
-                  type="button"
-                  onClick={() =>
-                    switchMode('login')
-                  }
-                  className="font-semibold text-[#E4C27C] hover:underline"
-                >
-                  Login Here
-                </button>
-              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  switchView('login')
+                }
+                className="flex w-full items-center justify-center gap-2 py-2 text-xs font-semibold text-[#D9BD83] hover:text-white"
+              >
+                <ArrowLeft size={15} />
+                Back to Login
+              </button>
             </form>
           )}
 
           {/* REGISTRATION SUCCESS */}
-          {mode === 'success' &&
-            registeredCustomer && (
-              <div className="py-3 text-center">
+          {isSuccess && registeredAccount && (
+            <div className="space-y-5 text-center">
 
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10">
-                  <CheckCircle2
-                    size={40}
-                    className="text-emerald-400"
-                  />
-                </div>
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4">
+                <CheckCircle2
+                  size={24}
+                  className="mx-auto mb-2 text-emerald-400"
+                />
 
-                <h3 className="mt-5 font-serif text-2xl text-[#F2DEB4]">
-                  Profile Created!
+                <h3 className="text-sm font-bold text-[#F4E8CB]">
+                  Registration Successful!
                 </h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-white/60">
-                  Welcome to Rahul Jewellers,
-                  Shivganj.
+                <p className="mt-2 text-xs text-[#BDAE96]">
+                  Save your Customer ID. You can log in using this ID or your mobile number.
                 </p>
+              </div>
 
-                <div className="mt-6 rounded-2xl border border-[#D6B875]/30 bg-[#D6B875]/10 p-5">
-                  <div className="flex items-center justify-center gap-2 text-[#D6B875]">
-                    <IdCard size={18} />
-
-                    <span className="text-[11px] font-semibold uppercase tracking-widest">
-                      Your Customer ID
-                    </span>
-                  </div>
-
-                  <p className="mt-3 font-serif text-3xl font-bold tracking-wider text-[#F3D79A]">
-                    {registeredCustomer.customerId}
-                  </p>
-
-                  <p className="mt-2 text-xs text-white/55">
-                    Please save this ID for future login.
-                  </p>
+              <div className="rounded-2xl border border-[#D9BD83]/40 bg-[#100B0C] p-4">
+                <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#D9BD83]">
+                  <CreditCard size={18} />
+                  Customer ID
                 </div>
 
-                <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.035] p-4 text-left">
-                  <p className="text-xs text-white/65">
-                    <span className="font-semibold text-[#E4C27C]">
-                      Account:
-                    </span>{' '}
-                    {registeredCustomer.name}
-                  </p>
-
-                  <p className="mt-2 text-xs text-white/65">
-                    <span className="font-semibold text-[#E4C27C]">
-                      Mobile:
-                    </span>{' '}
-                    {registeredCustomer.phone}
-                  </p>
-
-                  <p className="mt-3 text-xs leading-relaxed text-white/55">
-                    Your profile is active. The
-                    Gold Savings Scheme is optional
-                    and can be joined separately.
-                  </p>
-                </div>
+                <p className="mt-3 select-all break-all font-mono text-xl font-black tracking-wider text-[#F4E8CB]">
+                  {registeredAccount.customer.customerId}
+                </p>
 
                 <button
                   type="button"
-                  onClick={
-                    handleContinueAfterRegistration
-                  }
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#B99452] via-[#E2C47F] to-[#B99452] px-5 py-3.5 text-sm font-bold text-[#21170C] transition hover:brightness-110"
+                  onClick={copyCustomerId}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#D9BD83]/40 px-3 py-2 text-xs font-bold text-[#D9BD83]"
                 >
-                  Open My Account
-                  <ArrowRight size={18} />
+                  {copied
+                    ? <Check size={15} />
+                    : <Copy size={15} />}
+
+                  {copied
+                    ? 'Copied'
+                    : 'Copy Customer ID'}
                 </button>
               </div>
-            )}
-        </div>
 
-        {/* FOOTER */}
-        <div className="border-t border-[#D6B875]/15 bg-black/20 px-5 py-4 text-center">
-          <p className="flex items-center justify-center gap-2 text-[10px] tracking-wide text-white/45">
+              <p className="text-xs leading-relaxed text-[#BDAE96]">
+                Your account is ready. You can choose to join the Gold Savings Scheme separately after logging in.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (registeredAccount.token) {
+                    finishLogin(
+                      registeredAccount.customer,
+                      registeredAccount.token
+                    );
+                  } else {
+                    setIdentifier(
+                      registeredAccount.customer.customerId || ''
+                    );
+                    switchView('login');
+                  }
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#E6CC8D] to-[#B38A48] py-3.5 text-xs font-black uppercase text-[#171011]"
+              >
+                <LogIn size={17} />
+
+                {registeredAccount.token
+                  ? 'Continue to My Account'
+                  : 'Go to Login'}
+              </button>
+            </div>
+          )}
+
+          {/* FOOTER */}
+          <div className="mt-6 flex items-center justify-center gap-2 border-t border-[#D9BD83]/15 pt-4 text-[10px] text-[#887763]">
             <ShieldCheck
               size={14}
-              className="text-[#D6B875]"
+              className="text-[#D9BD83]"
             />
-            Rahul Jewellers · Shivganj · Secure Customer Access
-          </p>
+            Secure Customer Portal · Rahul Jewellers Shivganj
+          </div>
+
         </div>
       </div>
     </div>
