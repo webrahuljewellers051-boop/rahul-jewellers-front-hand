@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
@@ -147,11 +146,13 @@ export default function App() {
   const [joinAmount, setJoinAmount] = useState('5000');
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState('');
+  const [joinTermsAccepted, setJoinTermsAccepted] = useState(false);
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [paymentUtr, setPaymentUtr] = useState('');
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
+
 
   const monthly = Number(schemeUser?.customInstallment || 10000);
   const paidCount = Math.min(12, Math.max(0, Number(schemeUser?.paidMonths || 0)));
@@ -248,10 +249,12 @@ export default function App() {
     if (!Number.isInteger(amount) || amount < 1000 || amount > 1000000) {
       setJoinError('Choose a whole-number amount between ₹1,000 and ₹10,00,000.'); return;
     }
-    if (!window.confirm(`Confirm your GOLD-ONLY scheme at ₹${money(amount)} per month for 12 months? The amount cannot be changed after joining.`)) return;
+    if (!joinTermsAccepted) { setJoinError('Please accept the 5-day installment deadline and cancellation/refund terms.'); return; }
+    if (!schemeUser?.email) { setJoinError('Please add your email in My Profile before joining.'); return; }
+    if (!window.confirm(`Start GOLD-ONLY scheme TODAY at ₹${money(amount)} per month for 12 months? Your first 5-day payment window starts TODAY, and the next installment opens on the same date next month.`)) return;
     setJoinLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/customer/join-scheme`, { amount }, getCustomerConfig());
+      const res = await axios.post(`${API_BASE_URL}/api/customer/join-scheme`, { amount, termsAccepted: true }, getCustomerConfig());
       if (!res.data?.success || !res.data?.customer) throw new Error(res.data?.message || 'Unable to join.');
       setSchemeUser(res.data.customer);
       localStorage.setItem('schemeUserInfo', JSON.stringify(res.data.customer));
@@ -290,6 +293,7 @@ export default function App() {
     fetchPaymentRequests();
   }, []);
 
+  // Keep the 5-day warning fresh on customer screens, including at midnight.
   useEffect(() => {
     if (activeTab !== 'scheme' || authState !== 'authenticated') return;
     const refresh = () => { syncCustomerData(); fetchPaymentRequests(); };
@@ -299,6 +303,8 @@ export default function App() {
     return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', onFocus); };
   }, [activeTab, authState]);
 
+  // Hash-based URLs work on Vercel without a server rewrite.
+  // Examples: /#/scheme and /#/collection/Gold.
   useEffect(() => {
     const onHashChange = () => {
       setRoute(readRoute());
@@ -456,6 +462,7 @@ export default function App() {
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
       <SupportChatWidget />
 
+      {/* Top trust and contact strip */}
       <div className="rj-topbar">
         <div className="rj-topbar-inner">
           <span><MapPin size={14}/> Sheoganj, Rajasthan</span>
@@ -474,6 +481,7 @@ export default function App() {
         </div>
       </div>
 
+      {/* Main premium navigation */}
       <header className="rj-header">
         <div className="rj-header-inner">
           <button className="rj-mobile-menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu">
@@ -527,10 +535,12 @@ export default function App() {
         )}
       </header>
 
+      {/* Live rates */}
       <LiveGoldNavbar />
 
       {activeTab === 'showroom' && (
         <>
+          {/* Hero slider */}
           <section
             className="rj-hero"
             style={{
@@ -559,6 +569,7 @@ export default function App() {
             </div>
           </section>
 
+          {/* Trust strip */}
           <section className="rj-trust-strip">
             <div><Gem/><span><b>BIS Certified</b><small>Jewellery</small></span></div>
             <div><ShieldCheck/><span><b>HUID</b><small>Hallmark</small></span></div>
@@ -567,6 +578,7 @@ export default function App() {
             <div><RefreshCw/><span><b>Trusted</b><small>Showroom</small></span></div>
           </section>
 
+          {/* Collections */}
           <section className="rj-section rj-collections">
             <div className="rj-section-heading">
               <span/>
@@ -588,6 +600,7 @@ export default function App() {
             </div>
           </section>
 
+          {/* Savings scheme banner */}
           <section className="rj-scheme-banner">
             <div className="rj-scheme-art">
               <div className="rj-gold-stack"><span/><span/><span/><span/></div>
@@ -603,6 +616,7 @@ export default function App() {
             </button>
           </section>
 
+          {/* Product catalogue */}
           <section className="rj-section rj-products" id="showroom-products">
             <div className="rj-products-heading">
               <div>
@@ -684,7 +698,7 @@ export default function App() {
           </div>
         </main>
       )}
-
+      {/* Customer account exists even without a Gold Scheme */}
       {activeTab === 'scheme' && authState === 'authenticated' && schemeUser && !schemeUser.schemeJoined && (
         <main className="rj-scheme-dashboard">
           <div className="rj-dashboard-heading">
@@ -696,13 +710,14 @@ export default function App() {
                 <strong>Previous Scheme Refunded</strong>
                 <p>Your previous scheme has been closed and its refund recorded by the store.
                   Reference: {schemeUser.schemeRefundReference || 'Contact store'}.
-                  You may now start a NEW 12+1 scheme. The first installment is due on the 1st–5th of next month.</p>
+                  You may now start a NEW 12+1 scheme. Its first installment starts on the date you join, for five calendar dates.</p>
               </div>
             )}
           </div>
           <section className="rj-progress-card" style={{maxWidth:680, margin:'20px auto'}}>
             <div className="rj-progress-top"><div><small>OPTIONAL · GOLD ONLY</small><h2>Choose Your 12-Month Gold Scheme</h2></div></div>
-            <p style={{marginBottom:18}}>Select your fixed monthly installment. Once joined, your amount cannot be changed.</p>
+            <p style={{marginBottom:18}}>Select your fixed monthly installment. The backend automatically records your joining date. The first installment starts that same date, and each next month on the same day. You have 5 calendar dates to pay (example: 3rd–7th).</p>
+            <p style={{marginBottom:10}}>Registered email: <strong>{schemeUser.email || 'Not provided'}</strong> <button type="button" onClick={() => setShowProfileModal(true)} style={{textDecoration:'underline'}}>Edit email in profile</button></p>
             <form onSubmit={handleJoinScheme} style={{display:'grid',gap:14}}>
               <label htmlFor="join-amount">Monthly amount (₹1,000 – ₹10,00,000)</label>
               <input id="join-amount" type="number" min="1000" max="1000000" step="1" required
@@ -713,6 +728,10 @@ export default function App() {
                 <div><small>12 Installments Total</small><strong>₹{money(Number(joinAmount)*12)}</strong></div>
               </div>
               <p>After 12 admin-verified installments, eligible customers receive 100% off making/labour charges on Gold Jewellery in the following month, subject to scheme terms. No free 13th installment or gold.</p>
+              <label style={{display:'flex',gap:10,alignItems:'start'}}>
+                <input type="checkbox" required checked={joinTermsAccepted} onChange={e => setJoinTermsAccepted(e.target.checked)} />
+                <span>I accept the 5-calendar-date installment deadline, automatic suspension on the next date, admin-only Resume decision, and manual refund review policy.</span>
+              </label>
               {joinError && <p role="alert" style={{color:'#ffaaa5'}}>{joinError}</p>}
               <button className="rj-gold-button" type="submit" disabled={joinLoading}>
                 {joinLoading ? 'Joining...' : 'Confirm & Join Gold Scheme'} <ArrowRight size={16}/>
@@ -726,14 +745,18 @@ export default function App() {
         </main>
       )}
 
+      {/* Savings scheme customer dashboard */}
       {activeTab === 'scheme' && authState === 'authenticated' && schemeUser?.schemeJoined && (
         <main className="rj-scheme-dashboard">
           <div className="rj-dashboard-heading">
             <p className="rj-eyebrow">CUSTOMER SAVINGS ACCOUNT</p>
             <h1>Welcome, {schemeUser.name}</h1>
-            <p>Customer ID: {schemeUser.customerId || '—'} · {schemeUser.phone || ''}</p>
+            <p>Customer ID: {schemeUser.customerId || '—'} · {schemeUser.phone || ''} · {schemeUser.email || 'Email missing'}</p>
+            <p style={{fontWeight:700,marginTop:10}}>Scheme started: {schemeDeadline.schemeStartDate || schemeUser.startDate || '—'} · Monthly due day: {schemeDeadline.anchorDay || '—'}</p>
+            <p style={{fontWeight:700}}>Current installment: {schemeDeadline.dueDate || 'Completed'} · Last payment date: {schemeDeadline.graceEndDate || '—'}</p>
           </div>
 
+          {/* Each customer's due date is the same day-of-month as their joining date. */}
           <section role="status" aria-live="polite" style={{
             margin:'0 auto 22px', padding:'18px 20px', borderRadius:16, maxWidth:1100,
             background: schemeStatus === 'Suspended' ? '#fff0ed' : schemeStatus === 'RefundPending' ? '#fff6e4' : '#fff9eb',
@@ -741,7 +764,7 @@ export default function App() {
           }}>
             {schemeStatus === 'Suspended' ? <>
               <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Your Gold Scheme has been Cancelled / Paused</h2>
-              <p>Installment was not received within the first five days of the due month ({schemeUser.schemeSuspendedDueMonth || 'due month'}).
+              <p>Installment was not received within five calendar dates from {schemeUser.schemeSuspendedDueDate || schemeDeadline.dueDate || 'the installment start date'} (last day: {schemeDeadline.graceEndDate || 'as per your passbook'}).
                 Your scheme is awaiting admin review. You cannot pay a new installment until the store resumes it.</p>
               <p><strong>Contact Rahul Jewellers Shivganj and explain the reason for the delay.</strong>
                 If the admin accepts your explanation, the scheme can be resumed. Otherwise the store will arrange a refund of verified payments and you will need to start a new scheme.</p>
@@ -754,18 +777,18 @@ export default function App() {
               <a href={`tel:+91${STORE_PHONE}`} style={{fontWeight:900,textDecoration:'underline'}}>Call Store</a>
             </> : currentPendingPayment ? <>
               <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>UPI Submitted — Admin Verification Pending</h2>
-              <p>Your submitted installment is awaiting verification. If it was submitted by the 5th, your scheme will not be cancelled solely because admin verification is pending.</p>
+              <p>Your submitted installment is awaiting verification. If it was submitted within your five-date payment window, your scheme will not be suspended solely because admin verification is pending.</p>
             </> : schemeDeadline.stage === 'DUE' ? <>
               <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Installment Due — Day {schemeDeadline.dueDay} of 5</h2>
-              <p>Today is Due Day {schemeDeadline.dueDay}/5. {schemeDeadline.daysRemaining === 0
+              <p>Your installment opened on {schemeDeadline.dueDate} and closes on {schemeDeadline.graceEndDate}. Today is Due Day {schemeDeadline.dueDay}/5. {schemeDeadline.daysRemaining === 0
                 ? 'Today is the FINAL DAY to submit your installment.'
                 : `${schemeDeadline.daysRemaining} day(s) remain to submit your installment.`}</p>
-              <p><strong>Important: After the 5th day (from the 6th), your scheme will be cancelled/paused automatically if the installment has not been submitted.</strong>
+              <p><strong>Important: After {schemeDeadline.graceEndDate} (from {schemeDeadline.cancellationDate}), your scheme will be suspended automatically if the installment has not been submitted.</strong>
                 You must contact the store to explain the delay and request admin approval to resume.</p>
             </> : schemeDeadline.stage === 'UPCOMING' ? <>
               <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Next Installment: {schemeDeadline.dueDate}</h2>
-              <p>Your installment is due on the 1st of the month. You have until the 5th (IST).
-                After five days, the scheme will be cancelled/paused and requires store approval to resume.</p>
+              <p>Your installment opens on {schemeDeadline.dueDate} and can be paid through {schemeDeadline.graceEndDate} (IST).
+                After that, the scheme will be suspended and requires store approval to resume.</p>
             </> : schemeDeadline.stage === 'COMPLETED' ? <>
               <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>All 12 Installments Completed</h2>
               <p>Your verified installment cycle is complete. Check your making/labour charge benefit below.</p>
@@ -817,6 +840,10 @@ export default function App() {
                     <span className="rj-locked-label" title="UPI approved, but passbook adjusted by admin. No refund was issued.">UPI Verified · Contact Admin</span>
                   ) : next && (!isSchemeActive || schemeDeadline.stage === 'OVERDUE') ? (
                     <span className="rj-locked-label">Scheme Paused · Contact Store</span>
+                  ) : next && schemeDeadline.stage === 'UPCOMING' ? (
+                    <span className="rj-locked-label">Opens {schemeDeadline.dueDate}</span>
+                  ) : next && schemeDeadline.stage !== 'DUE' ? (
+                    <span className="rj-locked-label">Payment Not Available</span>
                   ) : next ? (
                     <button className="rj-pay-button" onClick={() => { setActivePaymentMonth(month); setPaymentError(''); setPaymentNotice(''); }}><Smartphone size={15}/> Pay</button>
                   ) : <span className="rj-locked-label">Locked</span>}
@@ -838,6 +865,7 @@ export default function App() {
         </main>
       )}
 
+      {/* Footer */}
       <footer className="rj-footer" id="contact">
         <div className="rj-footer-brand">
           <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
@@ -851,22 +879,26 @@ export default function App() {
         <p>© {new Date().getFullYear()} Rahul Jewellers. All rights reserved.</p>
       </footer>
 
+      {/* Login modal */}
       <CustomerLoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
+      {/* Profile modal */}
       <CustomerProfileModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         user={schemeUser}
-        onUpdateUser={updatedUser => {
+        onUpdateUser={(updatedUser, newToken) => {
+          if (newToken) localStorage.setItem('customer_token', newToken);
           setSchemeUser(updatedUser);
           localStorage.setItem('schemeUserInfo', JSON.stringify(updatedUser));
         }}
       />
 
+      {/* Product image preview */}
       {previewImage && (
         <div className="rj-lightbox" onClick={() => setPreviewImage(null)}>
           <button onClick={() => setPreviewImage(null)}><X/></button>
@@ -874,6 +906,7 @@ export default function App() {
         </div>
       )}
 
+      {/* UPI payment modal */}
       {activePaymentMonth !== null && !showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
@@ -897,6 +930,7 @@ export default function App() {
         </div>
       )}
 
+      {/* Payment screenshot instructions */}
       {showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
@@ -924,6 +958,7 @@ export default function App() {
         </div>
       )}
 
+      {/* Payment history */}
       {showHistoryModal && authState === 'authenticated' && (
         <div className="rj-modal-backdrop">
           <div className="rj-history-modal">
