@@ -19,16 +19,11 @@ import {
 } from 'lucide-react';
 
 
-
-import LiveGoldNavbar from './components/ui/LiveGoldNavbar.jsx';
-
-import CustomerLoginModal from './components/ui/loginmodal.jsx';
-
-import IntroSplash from './components/ui/IntroSplash.jsx';
-
-import CustomerProfileModal from './components/ui/CustomerProfileModal.jsx';
-
-import SupportChatWidget from './components/ui/SupportChatWidget.jsx';
+import LiveGoldNavbar from './components/LiveGoldNavbar.jsx';
+import CustomerLoginModal from './components/loginmodal.jsx';
+import IntroSplash from './components/IntroSplash.jsx';
+import CustomerProfileModal from './components/CustomerProfileModal.jsx';
+import SupportChatWidget from './components/SupportChatWidget.jsx';
 
 
 
