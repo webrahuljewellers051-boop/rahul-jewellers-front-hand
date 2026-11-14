@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import html2pdf from 'html2pdf.js';
@@ -152,12 +153,16 @@ export default function App() {
   const [paymentError, setPaymentError] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
 
-
   const monthly = Number(schemeUser?.customInstallment || 10000);
   const paidCount = Math.min(12, Math.max(0, Number(schemeUser?.paidMonths || 0)));
   const progressPercent = (paidCount / 12) * 100;
   const totalAccumulatedValue = paidCount * monthly;
   const totalSchemeValue = 12 * monthly;
+  const schemeDeadline = schemeUser?.schemeDeadline || {};
+  const schemeStatus = schemeUser?.schemeStatus || (schemeUser?.schemeJoined ? 'Active' : 'NotJoined');
+  const isSchemeActive = schemeStatus === 'Active';
+  const currentPendingPayment = paymentRequests.some(p =>
+    Number(p.monthNum) === paidCount + 1 && p.status === 'Pending');
 
   const handleIntroFinish = () => {
     setShowIntro(false);
@@ -256,6 +261,10 @@ export default function App() {
 
   const submitPaymentUtr = async event => {
     event.preventDefault();
+    if (!isSchemeActive || schemeDeadline.stage === 'OVERDUE') {
+      setPaymentError('Scheme is paused or overdue. Contact the showroom before paying.');
+      return;
+    }
     setPaymentError(''); setPaymentNotice('');
     const utr = paymentUtr.trim().toUpperCase();
     if (!/^[A-Z0-9]{10,20}$/.test(utr)) {
@@ -281,8 +290,15 @@ export default function App() {
     fetchPaymentRequests();
   }, []);
 
-  // Hash-based URLs work on Vercel without a server rewrite.
-  // Examples: /#/scheme and /#/collection/Gold.
+  useEffect(() => {
+    if (activeTab !== 'scheme' || authState !== 'authenticated') return;
+    const refresh = () => { syncCustomerData(); fetchPaymentRequests(); };
+    const timer = window.setInterval(refresh, 60 * 1000);
+    const onFocus = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onFocus);
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', onFocus); };
+  }, [activeTab, authState]);
+
   useEffect(() => {
     const onHashChange = () => {
       setRoute(readRoute());
@@ -440,7 +456,6 @@ export default function App() {
       {showIntro && <IntroSplash onFinish={handleIntroFinish} />}
       <SupportChatWidget />
 
-      {/* Top trust and contact strip */}
       <div className="rj-topbar">
         <div className="rj-topbar-inner">
           <span><MapPin size={14}/> Sheoganj, Rajasthan</span>
@@ -459,7 +474,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main premium navigation */}
       <header className="rj-header">
         <div className="rj-header-inner">
           <button className="rj-mobile-menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu">
@@ -513,12 +527,10 @@ export default function App() {
         )}
       </header>
 
-      {/* Live rates */}
       <LiveGoldNavbar />
 
       {activeTab === 'showroom' && (
         <>
-          {/* Hero slider */}
           <section
             className="rj-hero"
             style={{
@@ -547,7 +559,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Trust strip */}
           <section className="rj-trust-strip">
             <div><Gem/><span><b>BIS Certified</b><small>Jewellery</small></span></div>
             <div><ShieldCheck/><span><b>HUID</b><small>Hallmark</small></span></div>
@@ -556,7 +567,6 @@ export default function App() {
             <div><RefreshCw/><span><b>Trusted</b><small>Showroom</small></span></div>
           </section>
 
-          {/* Collections */}
           <section className="rj-section rj-collections">
             <div className="rj-section-heading">
               <span/>
@@ -578,7 +588,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Savings scheme banner */}
           <section className="rj-scheme-banner">
             <div className="rj-scheme-art">
               <div className="rj-gold-stack"><span/><span/><span/><span/></div>
@@ -594,7 +603,6 @@ export default function App() {
             </button>
           </section>
 
-          {/* Product catalogue */}
           <section className="rj-section rj-products" id="showroom-products">
             <div className="rj-products-heading">
               <div>
@@ -676,13 +684,21 @@ export default function App() {
           </div>
         </main>
       )}
-      {/* Customer account exists even without a Gold Scheme */}
+
       {activeTab === 'scheme' && authState === 'authenticated' && schemeUser && !schemeUser.schemeJoined && (
         <main className="rj-scheme-dashboard">
           <div className="rj-dashboard-heading">
             <p className="rj-eyebrow">RAHUL JEWELLERS · SHEOGANJ</p>
             <h1>Welcome, {schemeUser.name}</h1>
             <p>Customer ID: {schemeUser.customerId} · Your profile is ready.</p>
+            {schemeStatus === 'Refunded' && (
+              <div role="status" style={{border:'1px solid #c69c50',padding:16,borderRadius:12,marginTop:12}}>
+                <strong>Previous Scheme Refunded</strong>
+                <p>Your previous scheme has been closed and its refund recorded by the store.
+                  Reference: {schemeUser.schemeRefundReference || 'Contact store'}.
+                  You may now start a NEW 12+1 scheme. The first installment is due on the 1st–5th of next month.</p>
+              </div>
+            )}
           </div>
           <section className="rj-progress-card" style={{maxWidth:680, margin:'20px auto'}}>
             <div className="rj-progress-top"><div><small>OPTIONAL · GOLD ONLY</small><h2>Choose Your 12-Month Gold Scheme</h2></div></div>
@@ -710,7 +726,6 @@ export default function App() {
         </main>
       )}
 
-      {/* Savings scheme customer dashboard */}
       {activeTab === 'scheme' && authState === 'authenticated' && schemeUser?.schemeJoined && (
         <main className="rj-scheme-dashboard">
           <div className="rj-dashboard-heading">
@@ -718,6 +733,47 @@ export default function App() {
             <h1>Welcome, {schemeUser.name}</h1>
             <p>Customer ID: {schemeUser.customerId || '—'} · {schemeUser.phone || ''}</p>
           </div>
+
+          <section role="status" aria-live="polite" style={{
+            margin:'0 auto 22px', padding:'18px 20px', borderRadius:16, maxWidth:1100,
+            background: schemeStatus === 'Suspended' ? '#fff0ed' : schemeStatus === 'RefundPending' ? '#fff6e4' : '#fff9eb',
+            color:'#40250f', border:'2px solid #c69c50', lineHeight:1.6
+          }}>
+            {schemeStatus === 'Suspended' ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Your Gold Scheme has been Cancelled / Paused</h2>
+              <p>Installment was not received within the first five days of the due month ({schemeUser.schemeSuspendedDueMonth || 'due month'}).
+                Your scheme is awaiting admin review. You cannot pay a new installment until the store resumes it.</p>
+              <p><strong>Contact Rahul Jewellers Shivganj and explain the reason for the delay.</strong>
+                If the admin accepts your explanation, the scheme can be resumed. Otherwise the store will arrange a refund of verified payments and you will need to start a new scheme.</p>
+              <a href={`https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent(`My Gold Scheme ${schemeUser.customerId} was paused. I would like to explain the delayed installment.`)}`}
+                target="_blank" rel="noreferrer" style={{display:'inline-block',fontWeight:900,textDecoration:'underline',marginTop:8}}>Contact Store on WhatsApp</a>
+            </> : schemeStatus === 'RefundPending' ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Scheme Closed — Refund Under Review</h2>
+              <p>The store has started a manual refund review of ₹{money(schemeUser.schemeRefundAmount)}.
+                The amount has NOT necessarily been transferred yet. Please contact the store for the actual refund status and reference.</p>
+              <a href={`tel:+91${STORE_PHONE}`} style={{fontWeight:900,textDecoration:'underline'}}>Call Store</a>
+            </> : currentPendingPayment ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>UPI Submitted — Admin Verification Pending</h2>
+              <p>Your submitted installment is awaiting verification. If it was submitted by the 5th, your scheme will not be cancelled solely because admin verification is pending.</p>
+            </> : schemeDeadline.stage === 'DUE' ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Installment Due — Day {schemeDeadline.dueDay} of 5</h2>
+              <p>Today is Due Day {schemeDeadline.dueDay}/5. {schemeDeadline.daysRemaining === 0
+                ? 'Today is the FINAL DAY to submit your installment.'
+                : `${schemeDeadline.daysRemaining} day(s) remain to submit your installment.`}</p>
+              <p><strong>Important: After the 5th day (from the 6th), your scheme will be cancelled/paused automatically if the installment has not been submitted.</strong>
+                You must contact the store to explain the delay and request admin approval to resume.</p>
+            </> : schemeDeadline.stage === 'UPCOMING' ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Next Installment: {schemeDeadline.dueDate}</h2>
+              <p>Your installment is due on the 1st of the month. You have until the 5th (IST).
+                After five days, the scheme will be cancelled/paused and requires store approval to resume.</p>
+            </> : schemeDeadline.stage === 'COMPLETED' ? <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>All 12 Installments Completed</h2>
+              <p>Your verified installment cycle is complete. Check your making/labour charge benefit below.</p>
+            </> : <>
+              <h2 style={{fontSize:19,fontWeight:900,margin:'0 0 8px'}}>Payment Deadline Passed</h2>
+              <p>Contact the showroom to review your Gold Scheme status before making another payment.</p>
+            </>}
+          </section>
 
           <section className="rj-progress-card">
             <div className="rj-progress-top">
@@ -759,6 +815,8 @@ export default function App() {
                     <span className="rj-locked-label">Pending Admin Approval</span>
                   ) : next && upiAdjusted ? (
                     <span className="rj-locked-label" title="UPI approved, but passbook adjusted by admin. No refund was issued.">UPI Verified · Contact Admin</span>
+                  ) : next && (!isSchemeActive || schemeDeadline.stage === 'OVERDUE') ? (
+                    <span className="rj-locked-label">Scheme Paused · Contact Store</span>
                   ) : next ? (
                     <button className="rj-pay-button" onClick={() => { setActivePaymentMonth(month); setPaymentError(''); setPaymentNotice(''); }}><Smartphone size={15}/> Pay</button>
                   ) : <span className="rj-locked-label">Locked</span>}
@@ -780,7 +838,6 @@ export default function App() {
         </main>
       )}
 
-      {/* Footer */}
       <footer className="rj-footer" id="contact">
         <div className="rj-footer-brand">
           <span className="rj-brand-mark">R<span>J</span><Gem size={14}/></span>
@@ -794,14 +851,12 @@ export default function App() {
         <p>© {new Date().getFullYear()} Rahul Jewellers. All rights reserved.</p>
       </footer>
 
-      {/* Login modal */}
       <CustomerLoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Profile modal */}
       <CustomerProfileModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
@@ -812,7 +867,6 @@ export default function App() {
         }}
       />
 
-      {/* Product image preview */}
       {previewImage && (
         <div className="rj-lightbox" onClick={() => setPreviewImage(null)}>
           <button onClick={() => setPreviewImage(null)}><X/></button>
@@ -820,7 +874,6 @@ export default function App() {
         </div>
       )}
 
-      {/* UPI payment modal */}
       {activePaymentMonth !== null && !showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
@@ -844,7 +897,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Payment screenshot instructions */}
       {showInstructionModal && (
         <div className="rj-modal-backdrop">
           <div className="rj-payment-modal">
@@ -872,7 +924,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Payment history */}
       {showHistoryModal && authState === 'authenticated' && (
         <div className="rj-modal-backdrop">
           <div className="rj-history-modal">
