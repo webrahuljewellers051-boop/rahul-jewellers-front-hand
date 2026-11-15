@@ -177,7 +177,7 @@ export default function ProductDetails({
 
             <div className="space-y-5 p-6 sm:p-8">
               <p className="text-xs font-bold uppercase tracking-widest text-[#c9a76b]">
-                Rahul Jewellers · Shivganj
+                Rahul Jewellers · Sheoganj
               </p>
 
               <h2 className="font-serif text-2xl font-bold sm:text-3xl">

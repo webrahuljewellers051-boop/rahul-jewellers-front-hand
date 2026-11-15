@@ -28,13 +28,13 @@ export const STORE_CONTACTS = [
 export function makeEnquiryMessage(product) {
   if (!product) {
     return (
-      'Namaste Rahul Jewellers Shivganj,\n' +
+      'Namaste Rahul Jewellers Sheoganj,\n' +
       'I would like to enquire about your jewellery collection.'
     );
   }
 
   const lines = [
-    'Namaste Rahul Jewellers Shivganj,',
+    'Namaste Rahul Jewellers Sheoganj,',
     '',
     'I am interested in this jewellery product:',
     '',
@@ -177,7 +177,7 @@ export default function ContactOptions({
 
             <div>
               <p className="text-[10px] tracking-widest text-[#d6b875]">
-                RAHUL JEWELLERS · SHIVGANJ
+                RAHUL JEWELLERS · Sheoganj
               </p>
 
               <h2 className="text-lg font-bold mt-1">

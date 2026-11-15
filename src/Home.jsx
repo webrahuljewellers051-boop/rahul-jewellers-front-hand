@@ -804,7 +804,7 @@ export default function App() {
           RAHUL JEWELLERS
         </h1>
         <p style="text-align:center">
-          SHIVGANJ · PAYMENT RECEIPT
+          Sheoganj · PAYMENT RECEIPT
         </p>
         <hr/>
         <p>Customer: ${escapeHtml(schemeUser?.name)}</p>
@@ -886,7 +886,7 @@ export default function App() {
                   font-family:Georgia;
                   color:#321b10">
         <h1 style="color:#b88a3b">
-          RAHUL JEWELLERS SHIVGANJ
+          RAHUL JEWELLERS Sheoganj
         </h1>
         <h2>Gold Scheme Benefit Claim Card</h2>
         <p>Customer</p>
@@ -950,7 +950,7 @@ export default function App() {
         <div className="rj-topbar-inner">
           <span>
             <MapPin size={14} />
-            Shivganj, Rajasthan
+            Sheoganj, Rajasthan
           </span>
 
           <div className="rj-topbar-trust">
@@ -1019,7 +1019,7 @@ export default function App() {
 
             <span className="rj-brand-copy">
               <strong>RAHUL JEWELLERS</strong>
-              <small>SHIVGANJ</small>
+              <small>Sheoganj</small>
             </span>
           </button>
 
@@ -1475,7 +1475,7 @@ export default function App() {
 
           <section className="rj-about" id="about">
             <p className="rj-eyebrow">
-              RAHUL JEWELLERS SHIVGANJ
+              RAHUL JEWELLERS Sheoganj
             </p>
 
             <h2>
@@ -1484,7 +1484,7 @@ export default function App() {
 
             <p>
               Explore thoughtfully selected jewellery
-              designs and connect with our Shivganj
+              designs and connect with our Sheoganj
               showroom for product enquiries.
             </p>
           </section>
@@ -1558,7 +1558,7 @@ export default function App() {
           <main className="rj-scheme-dashboard">
             <div className="rj-dashboard-heading">
               <p className="rj-eyebrow">
-                RAHUL JEWELLERS · SHIVGANJ
+                RAHUL JEWELLERS · Sheoganj
               </p>
 
               <h1>Welcome, {schemeUser.name}</h1>
@@ -1855,7 +1855,7 @@ export default function App() {
 
                   <p>
                     Your payment deadline was missed.
-                    Contact Rahul Jewellers Shivganj
+                    Contact Rahul Jewellers Sheoganj
                     to explain the delay and request
                     admin review.
                   </p>
@@ -1865,7 +1865,7 @@ export default function App() {
                     onClick={() => openContact({
                       title: 'Scheme Reactivation Help',
                       message:
-                        `Namaste Rahul Jewellers Shivganj,\n` +
+                        `Namaste Rahul Jewellers Sheoganj,\n` +
                         `Customer ID: ${schemeUser.customerId}\n` +
                         'Please help me with my paused Gold Scheme.'
                     })}
@@ -2284,7 +2284,7 @@ export default function App() {
 
                 <p>
                   Present this card at Rahul Jewellers
-                  Shivganj. Final redemption requires
+                  Sheoganj. Final redemption requires
                   admin verification.
                 </p>
               </section>
@@ -2302,14 +2302,14 @@ export default function App() {
 
           <div>
             <strong>RAHUL JEWELLERS</strong>
-            <small>SHIVGANJ</small>
+            <small>Sheoganj</small>
           </div>
         </div>
 
         <div className="rj-footer-contact">
           <span>
             <MapPin size={15} />
-            Shivganj, Rajasthan
+            Sheoganj, Rajasthan
           </span>
 
           {STORE_CONTACTS.map(contact => (
@@ -2334,7 +2334,7 @@ export default function App() {
         <p>
           © {new Date().getFullYear()}
           {' '}
-          Rahul Jewellers Shivganj.
+          Rahul Jewellers Sheoganj.
           All rights reserved.
         </p>
       </footer>
