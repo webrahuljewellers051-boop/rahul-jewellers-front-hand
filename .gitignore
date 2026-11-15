@@ -1,1 +1,11 @@
 node_modules
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+*.bak
+*.backup
+*.backup-*
+server.js.before-update-*
+update-server*.mjs
