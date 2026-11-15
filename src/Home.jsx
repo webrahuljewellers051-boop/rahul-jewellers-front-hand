@@ -875,7 +875,10 @@ export default function App() {
   };
 
   const handleDownloadBenefitCard = () => {
-    if (!claim?.claimId) return;
+    // A saved or revoked claim alone is never sufficient to issue a valid card.
+    if (!claim?.claimId ||
+        !schemeUser?.eligibleForMakingChargeDiscount ||
+        !['Pending', 'Verified'].includes(claim.status)) return;
 
     const element = document.createElement('div');
 
@@ -902,6 +905,12 @@ export default function App() {
         </p>
         <p>Benefit Date:
           ${escapeHtml(schemeUser?.schemeBenefitDate)}
+        </p>
+        <p>Installment 1:
+          ${escapeHtml(schemeUser?.schemeSchedule?.firstInstallmentDate)}
+        </p>
+        <p>Installment 12:
+          ${escapeHtml(schemeUser?.schemeSchedule?.twelfthInstallmentDate)}
         </p>
         <p>Verified Installments: 12 / 12</p>
         <p>Total Paid: ₹${money(totalPaid)}</p>
@@ -1613,9 +1622,13 @@ export default function App() {
 
               <p style={{ marginBottom: 18 }}>
                 Choose your fixed monthly installment.
-                Your joining date determines each
-                monthly payment window. You have five
-                calendar dates to submit a payment.
+                Option A: Your joining date is also the
+                first installment due date. Installments
+                2–12 are due on the same date in each
+                following month. You have five calendar
+                dates (including the due date) to submit
+                each payment. The making-charge benefit
+                opens in month 13, never earlier.
               </p>
 
               <p style={{ marginBottom: 10 }}>
@@ -1690,6 +1703,7 @@ export default function App() {
 
                 <p>
                   All 12 installments must be verified.
+                  Installment 1 begins on the joining date.
                   The making/labour charge benefit on
                   eligible Gold Jewellery unlocks only
                   on the original 13th-month eligibility
@@ -1811,6 +1825,14 @@ export default function App() {
                 {' '}
                 {schemeDeadline.graceEndDate || '—'}
               </p>
+
+              {schemeUser.schemeSchedule && (
+                <p style={{ fontWeight: 700 }}>
+                  Installment 1: {schemeUser.schemeSchedule.firstInstallmentDate}
+                  {' · '}
+                  Installment 12: {schemeUser.schemeSchedule.twelfthInstallmentDate}
+                </p>
+              )}
 
               <p style={{ fontWeight: 700 }}>
                 Benefit Eligibility Date:
@@ -2237,7 +2259,9 @@ export default function App() {
                   </button>
                 )}
 
-              {claim?.claimId && (
+              {claim?.claimId &&
+                schemeUser.eligibleForMakingChargeDiscount &&
+                ['Pending', 'Verified'].includes(claim.status) && (
                 <button
                   type="button"
                   onClick={handleDownloadBenefitCard}

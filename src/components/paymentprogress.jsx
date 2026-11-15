@@ -129,7 +129,7 @@ export default function PaymentProgress({
 
               <p className="mt-1 text-sm text-[#F4E8CB]">
                 {isCompleted
-                  ? 'Congratulations! Scheme completed.'
+                  ? 'All 12 installments paid. Benefit unlocks on your original month-13 date.'
                   : 'Keep going, your goal is getting closer.'}
               </p>
             </div>
@@ -206,11 +206,11 @@ export default function PaymentProgress({
               </p>
 
               <p className="mt-1 text-xs leading-relaxed text-gray-300">
-                Pay all {safeTotalMonths} monthly installments on time to unlock your{' '}
+                Complete all {safeTotalMonths} verified installments. On the original 13th-month date, claim{' '}
                 <span className="font-bold text-[#E8D5A8]">
-                  13th Month Free Store Bonus
+                  100% Off Eligible Gold Making Charges
                 </span>
-                !
+                . Gold is not free; there is no 13th installment.
               </p>
             </div>
 
