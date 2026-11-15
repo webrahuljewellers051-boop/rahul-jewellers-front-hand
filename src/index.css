@@ -1014,3 +1014,257 @@ body,html{background:#fffdf9;color:#332b23}
 @media(max-width:900px){.rj-hero-with-model{min-height:470px}.rj-hero-model{right:1%;width:49%}.rj-hero-with-model .rj-hero-content{width:49%;margin-left:7%}.rj-hero-with-model .rj-hero-content h1{font-size:clamp(45px,6vw,65px)}}
 @media(max-width:760px){.rj-nav{background:#fff!important;border-color:#e9dfcf!important;box-shadow:0 12px 22px rgba(50,35,15,.08)}.rj-nav>button,.rj-nav>a,.rj-nav-dropdown>button{color:#514536!important}}
 @media(max-width:600px){.rj-hero-with-model{min-height:650px;align-items:flex-start;background:linear-gradient(180deg,#746457 0%,#b6a18a 48%,#e9d8c1 100%)}.rj-hero-with-model .rj-hero-content{width:88%;margin:0 auto;padding:35px 0 0;text-align:center}.rj-hero-with-model .rj-hero-content h1{font-size:clamp(43px,12vw,59px);line-height:.9}.rj-hero-with-model .rj-hero-description{max-width:330px;margin:15px auto;font-size:16px}.rj-hero-model{width:100%;height:330px;right:0;bottom:0;justify-content:center}.rj-hero-model img{width:100%;height:100%;object-fit:contain;object-position:center bottom}.rj-hero-with-model .rj-hero-arrow{top:48%;width:32px;height:32px;font-size:22px}.rj-hero-with-model .rj-hero-arrow.left{left:8px}.rj-hero-with-model .rj-hero-arrow.right{right:8px}.rj-hero-with-model .rj-hero-dots{bottom:12px}}
+
+/* RAHUL JEWELLERS — CATALOGUE & FOOTER FIX */
+/* Keep this block at the END of index.css */
+
+/* Old premium centered layout */
+.rj-section.rj-products,
+#showroom-products {
+  width: min(1260px, calc(100% - 40px)) !important;
+  max-width: 1260px !important;
+  margin: 46px auto 42px !important;
+  box-sizing: border-box;
+}
+
+/* Heading and search */
+.rj-products-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px !important;
+}
+
+.rj-products-heading h2 {
+  font-size: clamp(28px, 2.3vw, 34px) !important;
+  line-height: 1.15;
+}
+
+.rj-products-heading .rj-eyebrow {
+  font-size: 10px !important;
+  letter-spacing: 2.8px !important;
+}
+
+.rj-product-search {
+  width: min(270px, 100%) !important;
+  padding: 9px 13px !important;
+  border-radius: 24px !important;
+  box-sizing: border-box;
+}
+
+.rj-product-search input {
+  min-width: 0;
+  font-size: 12px !important;
+}
+
+/* Smaller, elegant category buttons */
+.rj-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px !important;
+  padding-bottom: 13px !important;
+}
+
+.rj-category-pills button {
+  padding: 8px 16px !important;
+  min-height: 34px;
+  font-size: 11px !important;
+  border-radius: 999px !important;
+  white-space: nowrap;
+}
+
+/* Keep new folder filter, but make it compact */
+.rj-products select,
+#showroom-products select {
+  width: min(100%, 300px) !important;
+  max-width: 300px !important;
+  min-height: 40px;
+  font-size: 13px !important;
+  border-radius: 10px !important;
+  box-sizing: border-box;
+}
+
+/* Compact collection empty state */
+.rj-empty-products {
+  position: relative;
+  min-height: 218px;
+  padding: 40px 24px 34px !important;
+  border-radius: 15px !important;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.rj-empty-products > svg {
+  position: absolute;
+  left: 20px;
+  top: 48px;
+}
+
+.rj-empty-products h3 {
+  margin: 30px 0 4px;
+  font-size: 15px !important;
+  line-height: 1.35;
+}
+
+.rj-empty-products p {
+  margin: 0;
+  font-size: 12px !important;
+}
+
+/* Restore green WhatsApp button */
+.rj-empty-products a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 200px;
+  max-width: 100%;
+  margin: 15px auto 0 !important;
+  padding: 10px 16px !important;
+  background: #286b42 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  line-height: 1.2;
+}
+
+.rj-empty-products a:hover {
+  background: #205735 !important;
+}
+
+.rj-empty-products a svg {
+  position: static !important;
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
+}
+
+/* Footer layout and phone number glitch fix */
+.rj-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 25px;
+  padding: 26px 5% !important;
+}
+
+.rj-footer-brand {
+  flex: 0 0 auto;
+}
+
+.rj-footer-contact {
+  display: flex !important;
+  flex: 1 1 390px;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 12px 20px !important;
+  min-width: 0;
+  font-size: 12px !important;
+  line-height: 1.4;
+}
+
+.rj-footer-contact span,
+.rj-footer-contact a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  text-decoration: none;
+}
+
+.rj-footer-contact a[href^="tel:"],
+.rj-topbar-contact a[href^="tel:"] {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+  flex-shrink: 0;
+}
+
+.rj-footer-contact svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px !important;
+}
+
+.rj-footer > p {
+  margin: 0 0 0 auto;
+  font-size: 10px !important;
+  text-align: right;
+}
+
+/* Tablet */
+@media (max-width: 1000px) {
+  .rj-footer-contact {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+
+  .rj-footer > p {
+    margin-left: 0;
+    text-align: left;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .rj-section.rj-products,
+  #showroom-products {
+    width: calc(100% - 28px) !important;
+    margin: 30px auto !important;
+  }
+
+  .rj-products-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .rj-product-search {
+    width: 100% !important;
+  }
+
+  .rj-category-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .rj-empty-products {
+    min-height: 210px;
+    padding: 45px 16px 30px !important;
+  }
+
+  .rj-empty-products > svg {
+    left: 15px;
+    top: 18px;
+    width: 25px;
+    height: 25px;
+  }
+
+  .rj-footer {
+    padding: 25px 20px !important;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rj-footer-contact {
+    flex: 0 1 auto;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .rj-footer > p {
+    margin: 0;
+  }
+}
