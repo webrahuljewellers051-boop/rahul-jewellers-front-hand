@@ -31,11 +31,14 @@ import ProductDetails from './components/ProductDetails.jsx';
 import SchemeMultiPayment from './components/SchemeMultiPayment.jsx';
 import './styles/RJLayoutPolish.css';
 
-const API = (
-  import.meta.env.VITE_API_BASE_URL ||
+// Vite environment variables are embedded at build time.
+// Keep both supported variable names, but prefer VITE_API_URL.
+// The fallback is the verified production API hostname.
+const API = String(
   import.meta.env.VITE_API_URL ||
-  'https://rahul-jewellers-backend-jlr0.onrender.com'
-).replace(/\/+$/, '');
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://api.rahuljewellersheoganj.com'
+).trim().replace(/\/+$/, '').replace(/\/api$/i, '');
 
 const COLLECTIONS = [
   {
@@ -118,27 +121,31 @@ const escapeHtml = value =>
     "'": '&#39;'
   }[character]));
 
-const errorText = error =>
-  error?.response?.data?.message ||
-  error?.message ||
-  'Request failed. Please try again.';
+const errorText = error => {
+  if (!error?.response && (
+    error?.code === 'ERR_NETWORK' ||
+    error?.message === 'Network Error'
+  )) {
+    return 'Unable to connect to the server. Please try again shortly.';
+  }
 
-const publicConfig = {
-  headers: {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true'
-  },
-  timeout: 30000
+  return error?.response?.data?.message ||
+    error?.message ||
+    'Request failed. Please try again.';
 };
 
+// Avoid unnecessary custom headers on public GET requests.
+// Extra headers can trigger a browser CORS preflight.
+const publicConfig = { timeout: 30000 };
+
 function customerConfig() {
+  const token = localStorage.getItem('customer_token');
+
   return {
     ...publicConfig,
-    headers: {
-      ...publicConfig.headers,
-      Authorization:
-        `Bearer ${localStorage.getItem('customer_token') || ''}`
-    }
+    headers: token
+      ? { Authorization: `Bearer ${token}` }
+      : {}
   };
 }
 
