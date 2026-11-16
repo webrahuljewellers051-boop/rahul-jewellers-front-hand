@@ -11,7 +11,7 @@ import ContactOptions from './ContactOptions.jsx';
 const API = (
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://rahul-jewellers-backend-jlr0.onrender.com'
+  'https://api.rahuljewellerSHEOGANJ.com'
 ).replace(/\/+$/, '');
 
 const ROOT_CATEGORIES = [

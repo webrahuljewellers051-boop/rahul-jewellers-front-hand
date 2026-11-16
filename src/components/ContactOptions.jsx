@@ -17,7 +17,7 @@ import {
 const API = (
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://rahul-jewellers-backend-jlr0.onrender.com'
+  'https://api.rahuljewellerSHEOGANJ.com'
 ).replace(/\/+$/, '');
 
 export const STORE_CONTACTS = [
@@ -28,13 +28,13 @@ export const STORE_CONTACTS = [
 export function makeEnquiryMessage(product) {
   if (!product) {
     return (
-      'Namaste Rahul Jewellers Sheoganj,\n' +
+      'Namaste Rahul Jewellers SHEOGANJ,\n' +
       'I would like to enquire about your jewellery collection.'
     );
   }
 
   const lines = [
-    'Namaste Rahul Jewellers Sheoganj,',
+    'Namaste Rahul Jewellers SHEOGANJ,',
     '',
     'I am interested in this jewellery product:',
     '',
@@ -177,7 +177,7 @@ export default function ContactOptions({
 
             <div>
               <p className="text-[10px] tracking-widest text-[#d6b875]">
-                RAHUL JEWELLERS · Sheoganj
+                RAHUL JEWELLERS · SHEOGANJ
               </p>
 
               <h2 className="text-lg font-bold mt-1">

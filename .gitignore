@@ -9,3 +9,17 @@ dist/
 *.backup-*
 server.js.before-update-*
 update-server*.mjs
+build/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+*.log
+*.bak
+*.backup
+*.backup-*

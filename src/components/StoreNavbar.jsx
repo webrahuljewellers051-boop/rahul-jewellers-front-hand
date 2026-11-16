@@ -41,7 +41,7 @@ export default function StoreNavbar() {
             </span>
             <span className="hidden sm:inline text-[#806c4a] text-[10px]">|</span>
             <span className="hidden sm:inline text-[9px] tracking-[0.2em] text-[#a9977d] uppercase">
-              Sheoganj
+              SHEOGANJ
             </span>
           </div>
 
@@ -128,7 +128,7 @@ export default function StoreNavbar() {
                   </div>
 
                   <p>
-                    Located in the heart of Main Market, Sheoganj,
+                    Located in the heart of Main Market, SHEOGANJ,
                     Rahul Jewellers is dedicated to bringing beautiful
                     jewellery and traditional Indian craftsmanship
                     to every special occasion.
@@ -162,7 +162,7 @@ export default function StoreNavbar() {
                         Showroom Address
                       </p>
                       <p className="text-[#eee0c5] mt-1">
-                        Main Market, Sheoganj, Rajasthan
+                        Main Market, SHEOGANJ, Rajasthan
                       </p>
                     </div>
                   </div>

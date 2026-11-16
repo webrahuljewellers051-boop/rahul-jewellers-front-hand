@@ -21,7 +21,7 @@ import {
 const API = (
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://rahul-jewellers-backend-jlr0.onrender.com'
+  'https://api.rahuljewellerSHEOGANJ.com'
 ).replace(/\/+$/, '');
 
 const DEFAULT_CONTACTS = [
@@ -47,7 +47,7 @@ export default function SupportChatWidget() {
     {
       sender: 'bot',
       text:
-        'नमस्ते! Rahul Jewellers Sheoganj में आपका स्वागत है। Jewellery Collection, Gold Scheme या Payment के बारे में मैं आपकी क्या सहायता कर सकता हूँ?'
+        'नमस्ते! Rahul Jewellers SHEOGANJ में आपका स्वागत है। Jewellery Collection, Gold Scheme या Payment के बारे में मैं आपकी क्या सहायता कर सकता हूँ?'
     }
   ]);
 
@@ -194,7 +194,7 @@ export default function SupportChatWidget() {
 
   function whatsappUrl(phone) {
     const message =
-      'Namaste Rahul Jewellers Sheoganj,\n\n' +
+      'Namaste Rahul Jewellers SHEOGANJ,\n\n' +
       'I need assistance with:\n' +
       latestUserMessageRef.current;
 
@@ -255,7 +255,7 @@ export default function SupportChatWidget() {
                 </h3>
 
                 <p className="text-[10px] text-[#c9a76b] tracking-wider">
-                  Sheoganj · AI SUPPORT
+                  SHEOGANJ · AI SUPPORT
                 </p>
               </div>
             </div>

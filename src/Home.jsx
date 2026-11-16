@@ -207,27 +207,35 @@ function getId(value) {
   );
 }
 
-function descendants(categories, folderId) {
-  if (!folderId) return null;
+// Search also understands common jewellery names used by customers.
+// Category hierarchy is read-only here; Admin/Backend own folder creation.
+const SEARCH_ALIASES = {
+  haar: ['haar', 'har', 'necklace'],
+  har: ['har', 'haar', 'necklace'],
+  necklace: ['necklace', 'haar', 'har'],
+  ring: ['ring', 'anguthi'],
+  anguthi: ['anguthi', 'ring'],
+  bangle: ['bangle', 'bangles', 'chudi', 'kangan'],
+  bangles: ['bangle', 'bangles', 'chudi', 'kangan'],
+  chudi: ['chudi', 'bangle', 'bangles'],
+  kada: ['kada', 'kangan', 'bracelet'],
+  kangan: ['kangan', 'kada', 'bangle', 'bangles']
+};
 
-  const ids = new Set([String(folderId)]);
-  let changed = true;
+function getCategoryPath(categoryId, categoryById) {
+  const path = [];
+  const visited = new Set();
+  let current = categoryById.get(getId(categoryId));
 
-  while (changed) {
-    changed = false;
-
-    categories.forEach(category => {
-      const parent = getId(category.parentCategory);
-      const id = getId(category._id);
-
-      if (parent && ids.has(parent) && !ids.has(id)) {
-        ids.add(id);
-        changed = true;
-      }
-    });
+  while (current) {
+    const id = getId(current._id);
+    if (!id || visited.has(id)) break;
+    visited.add(id);
+    path.push(String(current.name || ''));
+    current = categoryById.get(getId(current.parentCategory));
   }
 
-  return ids;
+  return path;
 }
 
 function productImage(product) {
@@ -287,12 +295,13 @@ export default function App() {
   const selectedCategory = route.category;
 
   const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState('');
   const [categories, setCategories] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState('');
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -377,49 +386,56 @@ export default function App() {
 
   const hasPendingPayment = pendingMonths.size > 0;
 
-  const selectedFolderIds = useMemo(
-    () => descendants(categories, selectedFolder),
-    [categories, selectedFolder]
+  const categoryById = useMemo(
+    () => new Map(categories.map(category => [
+      getId(category._id), category
+    ])),
+    [categories]
   );
 
   const filteredProducts = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+    const words = searchQuery.trim().toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
 
     return products.filter(product => {
-      const root = String(
-        product.category || ''
-      ).toLowerCase();
+      const categoryPath = getCategoryPath(
+        product.categoryId,
+        categoryById
+      );
 
-      const rootMatch =
-        selectedCategory === 'All' ||
-        root === selectedCategory.toLowerCase();
+      // A valid parent folder is authoritative when available.
+      // Old products without a folder still use product.category.
+      const topFolder = categoryPath[categoryPath.length - 1];
+      const rootCategory = ROOT_NAMES.find(
+        name => name.toLowerCase() === String(topFolder).toLowerCase()
+      ) || String(product.category || '');
 
-      const folderMatch =
-        !selectedFolderIds ||
-        selectedFolderIds.has(getId(product.categoryId));
+      const rootMatch = selectedCategory === 'All' ||
+        rootCategory.toLowerCase() === selectedCategory.toLowerCase();
 
       const searchable = [
         product.title,
+        product.sku,
         product.category,
+        product.metal,
+        product.stone,
         product.description,
         product.weight,
+        product.netWeight,
+        product.grossWeight,
         product.purity,
         product.design,
-        product.craftsmanship
-      ].join(' ').toLowerCase();
+        product.craftsmanship,
+        ...categoryPath
+      ].filter(Boolean).join(' ').toLowerCase();
 
-      return (
-        rootMatch &&
-        folderMatch &&
-        (!query || searchable.includes(query))
-      );
+      return rootMatch && words.every(word => {
+        const alternatives = SEARCH_ALIASES[word] || [word];
+        return alternatives.some(term => searchable.includes(term));
+      });
     });
-  }, [
-    products,
-    selectedCategory,
-    selectedFolderIds,
-    searchQuery
-  ]);
+  }, [products, selectedCategory, categoryById, searchQuery]);
 
   const openContact = ({
     product = null,
@@ -443,15 +459,27 @@ export default function App() {
   }, []);
 
   const fetchProducts = useCallback(async () => {
+    setProductsLoading(true);
+    setProductsError('');
+
     try {
       const response = await axios.get(
         `${API}/api/products`,
         publicConfig
       );
 
-      setProducts(response.data?.products || []);
+      if (!Array.isArray(response.data?.products)) {
+        throw new Error(
+          'Unexpected jewellery catalogue response.'
+        );
+      }
+
+      setProducts(response.data.products);
     } catch (error) {
+      setProductsError(errorText(error));
       console.error('Product loading failed:', error);
+    } finally {
+      setProductsLoading(false);
     }
   }, []);
 
@@ -569,7 +597,6 @@ export default function App() {
   useEffect(() => {
     const handleHash = () => {
       setRoute(readRoute());
-      setSelectedFolder('');
       setMobileMenuOpen(false);
 
       window.scrollTo({
@@ -661,7 +688,10 @@ export default function App() {
     }
   };
 
-  const openCollection = category => {
+  const openCollection = (category, { keepSearch = false } = {}) => {
+    if (!keepSearch) setSearchQuery('');
+    setSearchOpen(false);
+
     const hash =
       `#/collection/${encodeURIComponent(category)}`;
 
@@ -679,6 +709,13 @@ export default function App() {
     }
 
     setMobileMenuOpen(false);
+  };
+
+  const handleSearchSubmit = event => {
+    event?.preventDefault();
+    setSearchQuery(value => value.trim());
+    // Search the entire catalogue, not only the previously chosen collection.
+    openCollection('All', { keepSearch: true });
   };
 
   const handleIntroFinish = () => {
@@ -812,7 +849,7 @@ export default function App() {
           RAHUL JEWELLERS
         </h1>
         <p style="text-align:center">
-          Sheoganj · PAYMENT RECEIPT
+          SHEOGANJ · PAYMENT RECEIPT
         </p>
         <hr/>
         <p>Customer: ${escapeHtml(schemeUser?.name)}</p>
@@ -897,7 +934,7 @@ export default function App() {
                   font-family:Georgia;
                   color:#321b10">
         <h1 style="color:#b88a3b">
-          RAHUL JEWELLERS Sheoganj
+          RAHUL JEWELLERS SHEOGANJ
         </h1>
         <h2>Gold Scheme Benefit Claim Card</h2>
         <p>Customer</p>
@@ -967,7 +1004,7 @@ export default function App() {
         <div className="rj-topbar-inner">
           <span className="rj-topbar-location">
             <MapPin size={14} aria-hidden="true" />
-            Sheoganj, Rajasthan
+            SHEOGANJ, Rajasthan
           </span>
 
           <div className="rj-topbar-trust">
@@ -1032,7 +1069,7 @@ export default function App() {
 
             <span className="rj-brand-copy">
               <strong>RAHUL JEWELLERS</strong>
-              <small>Sheoganj</small>
+              <small>SHEOGANJ</small>
             </span>
           </button>
 
@@ -1129,12 +1166,23 @@ export default function App() {
         </div>
 
         {searchOpen && (
-          <div className="rj-search-panel">
-            <Search size={18} />
+          <form
+            className="rj-search-panel"
+            role="search"
+            onSubmit={handleSearchSubmit}
+          >
+            <button
+              type="submit"
+              aria-label="Show jewellery search results"
+              title="Search jewellery"
+            >
+              <Search size={18} />
+            </button>
 
             <input
               id="rj-search-input"
               type="search"
+              aria-label="Search all jewellery"
               value={searchQuery}
               onChange={event =>
                 setSearchQuery(event.target.value)
@@ -1145,14 +1193,11 @@ export default function App() {
             <button
               type="button"
               aria-label="Close search"
-              onClick={() => {
-                setSearchOpen(false);
-                setSearchQuery('');
-              }}
+              onClick={() => setSearchOpen(false)}
             >
               <X size={18} />
             </button>
-          </div>
+          </form>
         )}
       </header>
 
@@ -1163,7 +1208,7 @@ export default function App() {
           {/* Smooth slider */}
           <HeroSlider
             slides={HERO_SLIDES}
-            onExplore={openCollection}
+            onExplore={category => openCollection(category)}
             intervalMs={6500}
           />
 
@@ -1305,18 +1350,38 @@ export default function App() {
                 <h2>Discover Our Jewellery</h2>
               </div>
 
-              <div className="rj-product-search">
-                <Search size={16} />
+              <form
+                className="rj-product-search"
+                role="search"
+                onSubmit={handleSearchSubmit}
+              >
+                <button
+                  type="submit"
+                  aria-label="Show jewellery results"
+                  title="Search jewellery"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 0,
+                    padding: 0,
+                    background: 'transparent',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Search size={16} />
+                </button>
 
                 <input
                   type="search"
+                  aria-label="Search jewellery products"
                   value={searchQuery}
                   onChange={event =>
                     setSearchQuery(event.target.value)
                   }
                   placeholder="Search jewellery"
                 />
-              </div>
+              </form>
             </div>
 
             <div className="rj-category-pills">
@@ -1338,56 +1403,45 @@ export default function App() {
               ))}
             </div>
 
-            {categories.length > 0 && (
-              <div style={{
-                maxWidth: 460,
-                margin: '0 auto 28px',
-                padding: '0 14px'
-              }}>
-                <label
-                  htmlFor="rj-folder-filter"
-                  style={{
-                    display: 'block',
-                    marginBottom: 8,
-                    fontWeight: 700
-                  }}
-                >
-                  Browse Jewellery Folders
-                </label>
-
-                <select
-                  id="rj-folder-filter"
-                  value={selectedFolder}
-                  onChange={event =>
-                    setSelectedFolder(event.target.value)
-                  }
-                  style={{
-                    width: '100%',
-                    padding: 13,
-                    border: '1px solid #c9a76b',
-                    borderRadius: 10,
-                    background: '#fffdf9',
-                    color: '#302015'
-                  }}
-                >
-                  <option value="">
-                    All Folders
-                  </option>
-
-                  {categories.map(category => (
-                    <option
-                      key={category._id}
-                      value={category._id}
-                    >
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {searchQuery.trim() && (
+              <p
+                role="status"
+                aria-live="polite"
+                style={{ textAlign: 'center', margin: '0 0 18px' }}
+              >
+                {filteredProducts.length} result(s) for “{searchQuery.trim()}”
+              </p>
             )}
 
             <div className="rj-product-grid">
-              {filteredProducts.length === 0 ? (
+              {productsLoading && products.length === 0 ? (
+                <div
+                  className="rj-empty-products rj-empty-products--refined"
+                  role="status"
+                >
+                  <h3>Loading jewellery collections...</h3>
+                  <p>
+                    Please wait while we load the latest designs.
+                  </p>
+                </div>
+              ) : productsError && products.length === 0 ? (
+                <div
+                  className="rj-empty-products rj-empty-products--refined"
+                  role="alert"
+                >
+                  <h3>Unable to load jewellery</h3>
+                  <p>{productsError}</p>
+
+                  <button
+                    type="button"
+                    className="rj-whatsapp-cta"
+                    onClick={fetchProducts}
+                  >
+                    <RefreshCw size={18} />
+                    Retry Loading
+                  </button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="rj-empty-products rj-empty-products--refined">
                   <span className="rj-empty-jewel" aria-hidden="true">
                     <Gem size={26} strokeWidth={1.5} />
@@ -1457,7 +1511,7 @@ export default function App() {
                     <h3>{product.title}</h3>
 
                     <p>
-                      Net Weight:
+                      Main Weight:
                       {' '}
                       {product.weight || 'Ask in showroom'}
                     </p>
@@ -1504,7 +1558,7 @@ export default function App() {
 
           <section className="rj-about" id="about">
             <p className="rj-eyebrow">
-              RAHUL JEWELLERS Sheoganj
+              RAHUL JEWELLERS SHEOGANJ
             </p>
 
             <h2>
@@ -1513,7 +1567,7 @@ export default function App() {
 
             <p>
               Explore thoughtfully selected jewellery
-              designs and connect with our Sheoganj
+              designs and connect with our SHEOGANJ
               showroom for product enquiries.
             </p>
           </section>
@@ -1587,7 +1641,7 @@ export default function App() {
           <main className="rj-scheme-dashboard">
             <div className="rj-dashboard-heading">
               <p className="rj-eyebrow">
-                RAHUL JEWELLERS · Sheoganj
+                RAHUL JEWELLERS · SHEOGANJ
               </p>
 
               <h1>Welcome, {schemeUser.name}</h1>
@@ -1897,7 +1951,7 @@ export default function App() {
 
                   <p>
                     Your payment deadline was missed.
-                    Contact Rahul Jewellers Sheoganj
+                    Contact Rahul Jewellers SHEOGANJ
                     to explain the delay and request
                     admin review.
                   </p>
@@ -1907,7 +1961,7 @@ export default function App() {
                     onClick={() => openContact({
                       title: 'Scheme Reactivation Help',
                       message:
-                        `Namaste Rahul Jewellers Sheoganj,\n` +
+                        `Namaste Rahul Jewellers SHEOGANJ,\n` +
                         `Customer ID: ${schemeUser.customerId}\n` +
                         'Please help me with my paused Gold Scheme.'
                     })}
@@ -2328,7 +2382,7 @@ export default function App() {
 
                 <p>
                   Present this card at Rahul Jewellers
-                  Sheoganj. Final redemption requires
+                  SHEOGANJ. Final redemption requires
                   admin verification.
                 </p>
               </section>
@@ -2349,7 +2403,7 @@ export default function App() {
 
                 <div>
                   <strong>RAHUL JEWELLERS</strong>
-                  <small>Sheoganj</small>
+                  <small>SHEOGANJ</small>
                 </div>
               </div>
 
@@ -2407,7 +2461,7 @@ export default function App() {
 
               <span className="rj-footer-address">
                 <MapPin size={17} />
-                Sheoganj, Rajasthan
+                SHEOGANJ, Rajasthan
               </span>
 
               <p>
@@ -2444,7 +2498,7 @@ export default function App() {
           <div className="rj-footer-bottom">
             <span>
               © {new Date().getFullYear()}
-              {' '}Rahul Jewellers Sheoganj.
+              {' '}Rahul Jewellers SHEOGANJ.
               All rights reserved.
             </span>
             <span>Gold · Diamond · Silver</span>
