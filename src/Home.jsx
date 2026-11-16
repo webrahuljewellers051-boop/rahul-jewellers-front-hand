@@ -29,6 +29,7 @@ import ContactOptions, {
 } from './components/ContactOptions.jsx';
 import ProductDetails from './components/ProductDetails.jsx';
 import SchemeMultiPayment from './components/SchemeMultiPayment.jsx';
+import './styles/RJLayoutPolish.css';
 
 const API = (
   import.meta.env.VITE_API_BASE_URL ||
@@ -955,19 +956,19 @@ export default function App() {
       <SupportChatWidget />
 
       {/* Top bar */}
-      <div className="rj-topbar">
+      <div className="rj-topbar rj-topbar--refined">
         <div className="rj-topbar-inner">
-          <span>
-            <MapPin size={14} />
+          <span className="rj-topbar-location">
+            <MapPin size={14} aria-hidden="true" />
             Sheoganj, Rajasthan
           </span>
 
           <div className="rj-topbar-trust">
             <span>
               <ShieldCheck size={14} />
-              Jewellery Showroom
+              Trusted Jewellery Showroom
             </span>
-            <i />
+            <i aria-hidden="true" />
             <span>
               <Gem size={14} />
               Gold · Diamond · Silver
@@ -975,32 +976,28 @@ export default function App() {
           </div>
 
           <div className="rj-topbar-contact">
-            {STORE_CONTACTS.map(contact => (
-              <a
-                key={contact.id}
-                href={`tel:+91${contact.number}`}
-              >
-                <Phone size={14} />
-                +91 {contact.number}
-              </a>
-            ))}
+            <button
+              type="button"
+              className="rj-topbar-icon"
+              aria-label="Call showroom: choose a number"
+              title="Call showroom"
+              onClick={() => openContact({
+                title: 'Call Rahul Jewellers'
+              })}
+            >
+              <Phone size={17} />
+            </button>
 
             <a
+              className="rj-topbar-icon"
               href="https://www.instagram.com/rahuljewellers9/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram"
+              aria-label="Rahul Jewellers on Instagram"
+              title="Instagram"
             >
-              <Instagram size={16} />
+              <Instagram size={17} />
             </a>
-
-            <button
-              type="button"
-              aria-label="WhatsApp contacts"
-              onClick={() => openContact()}
-            >
-              <MessageCircle size={16} />
-            </button>
           </div>
         </div>
       </div>
@@ -1384,8 +1381,14 @@ export default function App() {
 
             <div className="rj-product-grid">
               {filteredProducts.length === 0 ? (
-                <div className="rj-empty-products">
-                  <Gem size={35} />
+                <div className="rj-empty-products rj-empty-products--refined">
+                  <span className="rj-empty-jewel" aria-hidden="true">
+                    <Gem size={26} strokeWidth={1.5} />
+                  </span>
+
+                  <span className="rj-empty-eyebrow">
+                    PERSONALISED JEWELLERY SERVICE
+                  </span>
 
                   <h3>
                     {products.length
@@ -1394,20 +1397,30 @@ export default function App() {
                   </h3>
 
                   <p>
-                    Please contact our showroom for
-                    personalised assistance.
+                    {products.length
+                      ? 'Try a different search, or let our team help you find the perfect piece.'
+                      : 'Explore our latest designs with personal assistance from our showroom.'}
                   </p>
 
                   <button
                     type="button"
+                    className="rj-whatsapp-cta"
                     onClick={() => openContact({
                       title: 'Jewellery Enquiry'
                     })}
                   >
-                    Enquire on WhatsApp
-                    <ArrowRight size={15} />
+                    <MessageCircle
+                      size={19}
+                      strokeWidth={2.3}
+                    />
+                    <span>Enquire on WhatsApp</span>
                   </button>
+
+                  <small>
+                    Quick help from our jewellery team
+                  </small>
                 </div>
+
               ) : filteredProducts.map(product => (
                 <article
                   className="rj-product-card"
@@ -2317,50 +2330,119 @@ export default function App() {
         )}
 
       {/* Footer */}
-      <footer className="rj-footer" id="contact">
-        <div className="rj-footer-brand">
-          <span className="rj-brand-mark">
-            R<span>J</span>
-            <Gem size={14} />
-          </span>
+      <footer className="rj-footer rj-footer--refined" id="contact">
+        <div className="rj-footer-shell">
+          <div className="rj-footer-top">
 
-          <div>
-            <strong>RAHUL JEWELLERS</strong>
-            <small>Sheoganj</small>
+            <div className="rj-footer-identity">
+              <div className="rj-footer-brand">
+                <span className="rj-brand-mark">
+                  R<span>J</span><Gem size={14} />
+                </span>
+
+                <div>
+                  <strong>RAHUL JEWELLERS</strong>
+                  <small>Sheoganj</small>
+                </div>
+              </div>
+
+              <p>
+                Timeless jewellery, thoughtful craftsmanship,
+                and a personal showroom experience.
+              </p>
+
+              <a
+                className="rj-footer-instagram"
+                href="https://www.instagram.com/rahuljewellers9/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visit our Instagram page"
+              >
+                <Instagram size={17} />
+                <span>Follow our collections</span>
+              </a>
+            </div>
+
+            <div className="rj-footer-links">
+              <h3>Explore</h3>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('showroom')}
+              >
+                Home
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openCollection('All')}
+              >
+                Jewellery Collections
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('scheme')}
+              >
+                12+1 Gold Scheme
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToAbout}
+              >
+                About Us
+              </button>
+            </div>
+
+            <div className="rj-footer-reach">
+              <h3>Visit & Connect</h3>
+
+              <span className="rj-footer-address">
+                <MapPin size={17} />
+                Sheoganj, Rajasthan
+              </span>
+
+              <p>
+                Need help choosing jewellery?
+                Our team is here for you.
+              </p>
+
+              <div className="rj-footer-actions">
+                <button
+                  type="button"
+                  className="rj-footer-call"
+                  onClick={() => openContact({
+                    title: 'Call Rahul Jewellers'
+                  })}
+                >
+                  <Phone size={17} />
+                  Call Store
+                </button>
+
+                <button
+                  type="button"
+                  className="rj-footer-whatsapp"
+                  onClick={() => openContact({
+                    title: 'WhatsApp Rahul Jewellers'
+                  })}
+                >
+                  <MessageCircle size={18} />
+                  WhatsApp Us
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="rj-footer-bottom">
+            <span>
+              © {new Date().getFullYear()}
+              {' '}Rahul Jewellers Sheoganj.
+              All rights reserved.
+            </span>
+            <span>Gold · Diamond · Silver</span>
           </div>
         </div>
-
-        <div className="rj-footer-contact">
-          <span>
-            <MapPin size={15} />
-            Sheoganj, Rajasthan
-          </span>
-
-          {STORE_CONTACTS.map(contact => (
-            <a
-              key={contact.id}
-              href={`tel:+91${contact.number}`}
-            >
-              <Phone size={15} />
-              +91 {contact.number}
-            </a>
-          ))}
-
-          <button
-            type="button"
-            onClick={() => openContact()}
-          >
-            <MessageCircle size={15} />
-            WhatsApp Enquiry
-          </button>
-        </div>
-
-        <p>
-          © {new Date().getFullYear()}
-          {' '}
-          Rahul Jewellers Sheoganj.
-          All rights reserved.
-        </p>
       </footer>
 
       {/* Customer Login */}
