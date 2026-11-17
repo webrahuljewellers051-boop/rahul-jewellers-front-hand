@@ -24,6 +24,7 @@ import CustomerProfileModal from './components/CustomerProfileModal.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
 
 import HeroSlider from './components/HeroSlider.jsx';
+import SchemeTerms from './components/SchemeTerms.jsx';
 import ContactOptions, {
   STORE_CONTACTS
 } from './components/ContactOptions.jsx';
@@ -81,7 +82,8 @@ const HERO_SLIDES = [
       'A timeless range of traditional and modern jewellery crafted for every occasion.',
     image:
       'https://images.unsplash.com/photo-1635767798638-3665a6b2b9b5?q=90&w=2000&auto=format&fit=crop',
-    category: 'Gold'
+    category: 'All',
+    action: 'collection'
   },
   {
     eyebrow: 'CELEBRATE EVERY MOMENT',
@@ -90,7 +92,8 @@ const HERO_SLIDES = [
       'Discover exquisite designs that make your most special moments unforgettable.',
     image:
       'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=90&w=2000&auto=format&fit=crop',
-    category: 'Kundan'
+    category: 'All',
+    action: 'collection'
   },
   {
     eyebrow: 'TIMELESS BEAUTY',
@@ -99,9 +102,32 @@ const HERO_SLIDES = [
       'Exceptional craftsmanship, made to become a part of your story.',
     image:
       'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=90&w=2000&auto=format&fit=crop',
-    category: 'Diamond'
+    category: 'All',
+    action: 'collection'
+  },
+  {
+    eyebrow: 'OUR CURRENT JEWELLERY SCHEME',
+    title: 'No Making Charge\non Jewellery',
+    description: '12 monthly installments. Eligible Gold Jewellery and Gold Coins: making-charge benefit in month 13, up to your total deposits.',
+    image: '/images/no-making-charge-slide.svg',
+    action: 'scheme',
+    cta: 'Explore Scheme'
+  },
+  {
+    eyebrow: 'NEW SCHEME • COMING SOON',
+    title: 'स्वर्ण बचत योजना',
+    description: 'A new jewellery savings scheme is on the way. Watch this space for details and launch updates.',
+    image: '/images/swarn-bachat-slide.svg',
+    action: 'coming-soon',
+    cta: 'Coming Soon'
   }
 ];
+
+const BASE_UPCOMING_SCHEMES = [{
+  slug: 'swarn-bachat-yojana',
+  name: 'स्वर्ण बचत योजना',
+  description: 'नई स्वर्ण बचत योजना जल्द आ रही है। पूरी जानकारी और नियम योजना शुरू होने पर साझा किए जाएँगे।'
+}];
 
 const ROOT_NAMES = [
   'Gold', 'Polki', 'Kundan', 'Diamond', 'Silver'
@@ -163,6 +189,14 @@ function savedCustomer() {
 
 function readRoute() {
   const hash = window.location.hash.slice(1);
+
+  if (/^\/schemes\/[a-z0-9-]+$/.test(hash)) {
+    return {
+      tab: 'coming-soon',
+      schemeSlug: hash.slice('/schemes/'.length),
+      category: 'All', collectionView: false
+    };
+  }
 
   if (hash === '/scheme') {
     return {
@@ -298,10 +332,17 @@ export default function App() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState('');
   const [categories, setCategories] = useState([]);
+  const [announcementSlides, setAnnouncementSlides] = useState([]);
+  const [futureSchemes, setFutureSchemes] = useState(BASE_UPCOMING_SCHEMES);
+
+  const carouselSlides = useMemo(() => [...HERO_SLIDES, ...announcementSlides], [announcementSlides]);
+  const selectedUpcomingScheme = futureSchemes.find(item => item.slug === route.schemeSlug) ||
+    BASE_UPCOMING_SCHEMES[0];
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [schemesMenuOpen, setSchemesMenuOpen] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -496,6 +537,41 @@ export default function App() {
     }
   }, []);
 
+  const fetchAnnouncements = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API}/api/site/announcements`, publicConfig);
+      if (Array.isArray(data?.announcements)) {
+        setAnnouncementSlides(data.announcements.map(item => ({
+          eyebrow: item.eyebrow,
+          title: item.title,
+          description: item.description,
+          image: item.image,
+          cta: item.cta,
+          action: item.action,
+          schemeSlug: item.schemeSlug
+        })));
+      }
+    } catch (error) {
+      // Built-in slides still work if the new announcement API is not yet deployed.
+      console.warn('Extra announcements unavailable:', error?.message);
+    }
+  }, []);
+
+  const fetchUpcomingSchemes = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API}/api/site/future-schemes`, publicConfig);
+      if (Array.isArray(data?.schemes)) {
+        const merged = new Map(BASE_UPCOMING_SCHEMES.map(item => [item.slug, item]));
+        data.schemes.forEach(item => {
+          if (item.slug && item.name) merged.set(item.slug, item);
+        });
+        setFutureSchemes([...merged.values()]);
+      }
+    } catch (error) {
+      console.warn('Future schemes unavailable:', error?.message);
+    }
+  }, []);
+
   const fetchStoreSettings = useCallback(async () => {
     try {
       const response = await axios.get(
@@ -584,12 +660,16 @@ export default function App() {
     fetchProducts();
     fetchCategories();
     fetchStoreSettings();
+    fetchAnnouncements();
+    fetchUpcomingSchemes();
     syncCustomerData();
     fetchPaymentRequests();
   }, [
     fetchProducts,
     fetchCategories,
     fetchStoreSettings,
+    fetchAnnouncements,
+    fetchUpcomingSchemes,
     syncCustomerData,
     fetchPaymentRequests
   ]);
@@ -668,8 +748,8 @@ export default function App() {
     fetchPaymentRequests
   ]);
 
-  const handleTabChange = tab => {
-    const hash = tab === 'scheme' ? '#/scheme' : '#/';
+  const handleTabChange = (tab, schemeSlug = 'swarn-bachat-yojana') => {
+    const hash = tab === 'scheme' ? '#/scheme' : tab === 'coming-soon' ? `#/schemes/${schemeSlug}` : '#/';
 
     if (window.location.hash === hash) {
       setRoute(readRoute());
@@ -682,6 +762,7 @@ export default function App() {
     }
 
     setMobileMenuOpen(false);
+    setSchemesMenuOpen(false);
 
     if (tab === 'scheme' && authState === 'guest') {
       setShowLoginModal(true);
@@ -709,6 +790,7 @@ export default function App() {
     }
 
     setMobileMenuOpen(false);
+    setSchemesMenuOpen(false);
   };
 
   const handleSearchSubmit = event => {
@@ -779,15 +861,8 @@ export default function App() {
       return;
     }
 
-    if (!schemeUser?.email) {
-      setJoinError(
-        'Please add your email in My Profile before joining.'
-      );
-      return;
-    }
-
     const confirmed = window.confirm(
-      `Join Rahul Jewellers Gold Scheme at ₹${money(amount)} ` +
+      `Join Rahul Jewellers No Making Charge Scheme at ₹${money(amount)} ` +
       'per month for 12 months? Your first payment window ' +
       'starts on the enrollment date.'
     );
@@ -936,7 +1011,7 @@ export default function App() {
         <h1 style="color:#b88a3b">
           RAHUL JEWELLERS SHEOGANJ
         </h1>
-        <h2>Gold Scheme Benefit Claim Card</h2>
+        <h2>No Making Charge Scheme Benefit Claim Card</h2>
         <p>Customer</p>
         <h2>${escapeHtml(schemeUser?.name)}</h2>
         <p>Customer ID:
@@ -960,7 +1035,7 @@ export default function App() {
         <p>Verified Installments: 12 / 12</p>
         <p>Total Paid: ₹${money(totalPaid)}</p>
         <h2>100% OFF MAKING / LABOUR CHARGES</h2>
-        <p>On eligible Gold Jewellery only.</p>
+        <p>On eligible Gold Jewellery or Gold Coins up to verified scheme deposits.</p>
         <p>Not free gold or a free installment.</p>
         <h3>Claim ID:
           ${escapeHtml(claim.claimId)}
@@ -1107,12 +1182,27 @@ export default function App() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleTabChange('scheme')}
-            >
-              Gold Scheme <ChevronDown size={13} />
-            </button>
+            <div className={`rj-nav-dropdown rj-schemes-dropdown ${schemesMenuOpen ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                aria-expanded={schemesMenuOpen}
+                aria-haspopup="true"
+                onClick={() => setSchemesMenuOpen(value => !value)}
+              >
+                Schemes <ChevronDown size={13} />
+              </button>
+              <div className="rj-dropdown-menu">
+                <button type="button" onClick={() => handleTabChange('scheme')}>
+                  No Making Charge
+                </button>
+                {futureSchemes.map(item => (
+                  <button key={item.slug} type="button"
+                    onClick={() => handleTabChange('coming-soon', item.slug)}>
+                    {item.name} · Coming Soon
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <button type="button" onClick={scrollToAbout}>
               About Us
@@ -1207,8 +1297,12 @@ export default function App() {
         <>
           {/* Smooth slider */}
           <HeroSlider
-            slides={HERO_SLIDES}
-            onExplore={category => openCollection(category)}
+            slides={carouselSlides}
+            onExplore={slide => {
+              if (slide.action === 'scheme') handleTabChange('scheme');
+              else if (slide.action === 'coming-soon') handleTabChange('coming-soon', slide.schemeSlug || 'swarn-bachat-yojana');
+              else openCollection('All');
+            }}
             intervalMs={6500}
           />
 
@@ -1316,7 +1410,7 @@ export default function App() {
 
             <div className="rj-scheme-copy">
               <p className="rj-eyebrow">
-                RAHUL JEWELLERS GOLD SCHEME
+                NO MAKING CHARGE ON JEWELLERY SCHEME
               </p>
 
               <h2>
@@ -1333,7 +1427,8 @@ export default function App() {
                 verified, the benefit unlocks on the
                 original 13th-month eligibility date.
                 The benefit applies to making/labour
-                charges on eligible Gold Jewellery only.
+                charges on eligible Gold Jewellery and Gold Coins,
+                up to the total verified amount deposited.
                 No free gold or 13th installment.
               </p>
             </div>
@@ -1346,6 +1441,8 @@ export default function App() {
               Join Scheme <ArrowRight size={17} />
             </button>
           </section>
+
+          <SchemeTerms compact />
 
           {/* Product catalogue */}
           <section
@@ -1584,6 +1681,25 @@ export default function App() {
         </>
       )}
 
+      {activeTab === 'coming-soon' && (
+        <main className="rj-coming-soon" aria-labelledby="rj-coming-title">
+          <div className="rj-coming-soon-inner">
+            <span className="rj-coming-sparkle" aria-hidden="true">✦</span>
+            <p>RAHUL JEWELLERS SHEOGANJ PRESENTS</p>
+            <h1 id="rj-coming-title">{selectedUpcomingScheme.name}</h1>
+            <strong>COMING SOON</strong>
+            <p className="rj-coming-description">
+              {selectedUpcomingScheme.description ||
+                'इस नई योजना की पूरी जानकारी और नियम जल्द साझा किए जाएँगे।'}
+            </p>
+            <button type="button" className="rj-gold-button"
+              onClick={() => handleTabChange('showroom')}>
+              Explore Jewellery Collections <ArrowRight size={17} />
+            </button>
+          </div>
+        </main>
+      )}
+
       {/* Scheme: checking */}
       {activeTab === 'scheme' &&
         authState === 'checking' && (
@@ -1629,7 +1745,7 @@ export default function App() {
 
               <p>
                 Log in or create your profile to access
-                the Gold Scheme.
+                the No Making Charge scheme.
               </p>
 
               <button
@@ -1699,7 +1815,7 @@ export default function App() {
                     OPTIONAL · GOLD ONLY
                   </small>
                   <h2>
-                    Choose Your Gold Scheme
+                    No Making Charge on Jewellery Scheme
                   </h2>
                 </div>
               </div>
@@ -1716,7 +1832,7 @@ export default function App() {
               </p>
 
               <p style={{ marginBottom: 10 }}>
-                Registered email:
+                Email (optional):
                 {' '}
                 <strong>
                   {schemeUser.email || 'Not provided'}
@@ -1731,7 +1847,7 @@ export default function App() {
                     textDecoration: 'underline'
                   }}
                 >
-                  Edit Email
+                  Add / Edit Email
                 </button>
               </p>
 
@@ -1791,7 +1907,8 @@ export default function App() {
                   The making/labour charge benefit on
                   eligible Gold Jewellery unlocks only
                   on the original 13th-month eligibility
-                  date. No free gold or 13th installment.
+                  date, for a purchase up to total verified deposits.
+                  No free gold or 13th installment.
                 </p>
 
                 <label style={{
@@ -1811,10 +1928,11 @@ export default function App() {
                   />
 
                   <span>
-                    I accept the five-calendar-date
-                    installment deadline, cancellation,
-                    admin reactivation and refund review
-                    terms.
+                    I accept the scheme Terms & Conditions,
+                    including the 12-installment schedule,
+                    five-calendar-date payment window,
+                    13th-month eligibility, deposit-based purchase
+                    limit, cancellation and refund review terms.
                   </span>
                 </label>
 
@@ -1834,7 +1952,7 @@ export default function App() {
                 >
                   {joinLoading
                     ? 'Joining...'
-                    : 'Confirm & Join Gold Scheme'}
+                    : 'Confirm & Join Scheme'}
 
                   <ArrowRight size={16} />
                 </button>
@@ -1955,7 +2073,7 @@ export default function App() {
                     fontSize: 19,
                     fontWeight: 900
                   }}>
-                    Your Gold Scheme is Paused /
+                    Your Scheme is Paused /
                     Cancelled
                   </h2>
 
@@ -1973,7 +2091,7 @@ export default function App() {
                       message:
                         `Namaste Rahul Jewellers SHEOGANJ,\n` +
                         `Customer ID: ${schemeUser.customerId}\n` +
-                        'Please help me with my paused Gold Scheme.'
+                        'Please help me with my paused No Making Charge scheme.'
                     })}
                     style={{
                       fontWeight: 900,
@@ -2090,7 +2208,7 @@ export default function App() {
               <div className="rj-progress-top">
                 <div>
                   <small>
-                    12-MONTH GOLD SCHEME
+                    NO MAKING CHARGE SCHEME
                   </small>
                   <h2>Your Scheme Progress</h2>
                 </div>
@@ -2400,6 +2518,8 @@ export default function App() {
           </main>
         )}
 
+      {activeTab === 'scheme' && <SchemeTerms />}
+
       {/* Footer */}
       <footer className="rj-footer rj-footer--refined" id="contact">
         <div className="rj-footer-shell">
@@ -2455,8 +2575,15 @@ export default function App() {
                 type="button"
                 onClick={() => handleTabChange('scheme')}
               >
-                12+1 Gold Scheme
+                No Making Charge Scheme
               </button>
+
+              {futureSchemes.map(item => (
+                <button key={item.slug} type="button"
+                  onClick={() => handleTabChange('coming-soon', item.slug)}>
+                  {item.name} · Coming Soon
+                </button>
+              ))}
 
               <button
                 type="button"
@@ -2508,7 +2635,7 @@ export default function App() {
           <div className="rj-footer-bottom">
             <span>
               © {new Date().getFullYear()}
-              {' '}Rahul Jewellers SHEOGANJ.
+              {' '}RAHUL JEWELLERS SHEOGANJ.
               All rights reserved.
             </span>
             <span>Gold · Diamond · Silver</span>

@@ -367,7 +367,7 @@ export default function ProfileDashboard({ user, onUpdateUser }) {
 
               <div>
                 <h3 className="font-serif text-lg text-[#F4E8CB]">
-                  Your 12+1 Gold Scheme
+                  Your No Making Charge Scheme
                 </h3>
 
                 <p className="text-[10px] text-gray-500">

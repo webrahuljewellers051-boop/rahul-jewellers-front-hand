@@ -1,0 +1,14 @@
+/* Readable bilingual scheme terms; does not alter existing page layout. */
+.rj-site .rj-scheme-terms {max-width:1160px; margin:28px auto 40px; padding:clamp(20px,3vw,34px); border:1px solid #d9c49e; border-radius:18px; background:#fffaf1; color:#3b2c20; box-shadow:0 8px 24px rgba(73,46,18,.07)}
+.rj-site .rj-scheme-terms.is-compact {max-width:920px; margin:22px auto 34px}
+.rj-scheme-terms-head {display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:17px}
+.rj-site .rj-scheme-terms-kicker {display:flex;align-items:center;gap:7px;color:#785222;font-size:11px;font-weight:700;letter-spacing:.1em;margin:0 0 7px}
+.rj-site .rj-scheme-terms h2 {font-family:Georgia,serif; font-size:clamp(19px,2vw,25px); font-weight:600; color:#332519; margin:0}
+.rj-site .rj-scheme-terms h2 span {font-family:inherit;font-size:.7em;color:#6c4a2c}
+.rj-scheme-language {display:inline-flex; padding:3px; gap:3px; border:1px solid #d4bc91; border-radius:10px; background:#f2e8d6}
+.rj-site .rj-scheme-language button {border:0;border-radius:8px;background:transparent;color:#4c3b2d;font-size:13px;font-weight:700;padding:8px 13px}
+.rj-site .rj-scheme-language button.active {background:#432819;color:#fff9ed;box-shadow:0 2px 8px #0002}
+.rj-site .rj-scheme-terms ol {padding-left:22px;margin:0;display:grid;gap:10px}
+.rj-site .rj-scheme-terms li {color:#46372a;line-height:1.65;font-size:13.5px;padding-left:3px}
+.rj-site .rj-scheme-language button:focus-visible {outline:3px solid #b88c3f;outline-offset:2px}
+@media(max-width:640px){.rj-site .rj-scheme-terms {margin:20px 14px 30px;padding:19px 16px}.rj-scheme-terms-head {align-items:flex-start}}

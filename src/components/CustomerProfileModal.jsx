@@ -147,8 +147,8 @@ export default function CustomerProfileModal({
       return;
     }
 
-    if (!form.email.trim()) {
-      setError('Email Address जरूरी है।');
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
+      setError('सही Email डालें या Email खाली छोड़ दें।');
       return;
     }
 
@@ -368,10 +368,9 @@ export default function CustomerProfileModal({
               size={14}
               className="mr-1 inline"
             />
-            Email Address
+            Email Address (Optional)
 
             <input
-              required
               type="email"
               maxLength={254}
               autoComplete="email"

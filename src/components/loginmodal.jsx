@@ -124,8 +124,13 @@ export default function CustomerLoginModal({
         return;
       }
 
-      if (!form.email.trim() || !form.dob) {
-        setError('Email और Date of Birth जरूरी हैं।');
+      if (!form.dob) {
+        setError('Date of Birth जरूरी है।');
+        return;
+      }
+
+      if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
+        setError('सही Email डालें या Email खाली छोड़ दें।');
         return;
       }
 
@@ -409,10 +414,9 @@ export default function CustomerLoginModal({
                   size={14}
                   className="mr-1 inline"
                 />
-                Email Address
+                Email Address (Optional)
 
                 <input
-                  required
                   type="email"
                   maxLength={254}
                   autoComplete="email"
@@ -518,7 +522,7 @@ export default function CustomerLoginModal({
               </label>
 
               <p className="text-xs text-[#c9b58f]">
-                Profile बनाने से Gold Scheme शुरू नहीं होती।
+                Profile बनाने से Jewellery Scheme शुरू नहीं होती।
                 Login के बाद Scheme अलग से Join कर सकते हैं।
               </p>
             </>

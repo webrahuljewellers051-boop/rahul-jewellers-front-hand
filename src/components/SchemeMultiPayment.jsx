@@ -318,7 +318,7 @@ export default function SchemeMultiPayment({
         </button>
 
         <p className="text-xs font-bold uppercase tracking-widest text-[#c9a76b]">
-          Rahul Jewellers · Gold Scheme
+          Rahul Jewellers · No Making Charge Scheme
         </p>
 
         <h2 className="mt-2 font-serif text-2xl font-bold">
@@ -332,7 +332,7 @@ export default function SchemeMultiPayment({
 
         {!schemeActive && (
           <p role="alert" className="mt-3 rounded-xl bg-amber-950/40 p-3 text-sm text-amber-200">
-            आपकी Gold Scheme अभी Active नहीं है।
+            आपकी योजना अभी Active नहीं है।
           </p>
         )}
 

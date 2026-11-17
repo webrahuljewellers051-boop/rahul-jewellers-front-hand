@@ -47,7 +47,7 @@ export default function SupportChatWidget() {
     {
       sender: 'bot',
       text:
-        'नमस्ते! Rahul Jewellers SHEOGANJ में आपका स्वागत है। Jewellery Collection, Gold Scheme या Payment के बारे में मैं आपकी क्या सहायता कर सकता हूँ?'
+        'नमस्ते! Rahul Jewellers SHEOGANJ में आपका स्वागत है। Jewellery Collection, No Making Charge Scheme या Payment के बारे में मैं आपकी क्या सहायता कर सकता हूँ?'
     }
   ]);
 
@@ -102,7 +102,7 @@ export default function SupportChatWidget() {
       setInputMessage(
         String(
           event.detail?.message ||
-          'I need help with my Gold Scheme.'
+          'I need help with my No Making Charge Scheme.'
         )
       );
     };
@@ -277,7 +277,7 @@ export default function SupportChatWidget() {
             />
 
             <p className="text-[10px] text-[#b9a88d]">
-              Jewellery · 12+1 Gold Scheme · Support
+              Jewellery · No Making Charge Scheme · Support
             </p>
           </div>
 

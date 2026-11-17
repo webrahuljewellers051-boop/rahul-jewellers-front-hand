@@ -10,57 +10,25 @@ export default function HeroSlider({
   intervalMs = 6500
 }) {
   const [active, setActive] = useState(0);
-  const [ready, setReady] = useState({});
   const [paused, setPaused] = useState(false);
 
+  // Navigation is never blocked by an image download. This also allows
+  // wrap-around when an image is temporarily unavailable or fails to load.
   useEffect(() => {
-    let alive = true;
-    setActive(0);
-    setReady({});
-
-    slides.forEach((slide, index) => {
-      if (!slide.image) return;
-
-      const image = new Image();
-      image.decoding = 'async';
-
-      const done = () => {
-        if (!alive) return;
-        setReady(old => ({ ...old, [index]: true }));
-      };
-
-      image.onload = done;
-      image.onerror = () => {
-        console.warn('Hero image could not load:', slide.image);
-      };
-
-      image.src = slide.image;
-
-      if (image.complete && image.naturalWidth > 0) {
-        done();
-      }
-    });
-
-    return () => {
-      alive = false;
-    };
-  }, [slides]);
+    setActive(index => Math.min(index, Math.max(0, slides.length - 1)));
+  }, [slides.length]);
 
   useEffect(() => {
     if (paused || slides.length < 2) return;
-
     const timer = window.setTimeout(() => {
-      const next = (active + 1) % slides.length;
-      if (ready[next]) setActive(next);
+      setActive(index => (index + 1) % slides.length);
     }, intervalMs);
-
     return () => window.clearTimeout(timer);
-  }, [active, ready, paused, intervalMs, slides.length]);
+  }, [active, paused, intervalMs, slides.length]);
 
   const goTo = index => {
-    if (!slides.length) return;
-    const next = (index + slides.length) % slides.length;
-    if (ready[next]) setActive(next);
+    if (slides.length < 2) return;
+    setActive((index + slides.length) % slides.length);
   };
 
   if (!slides.length) return null;
@@ -113,6 +81,22 @@ export default function HeroSlider({
           z-index: 4;
         }
 
+        .rj-smooth-slider.is-scheme-slide .rj-hero-content h1 {
+          font-size: clamp(42px, 5.4vw, 74px);
+          line-height: 1.05;
+        }
+
+        .rj-smooth-slider.is-coming-slide .rj-hero-content h1 {
+          font-size: clamp(42px, 5.3vw, 72px);
+          line-height: 1.12;
+        }
+
+        .rj-smooth-slider .rj-hero-arrow:focus-visible,
+        .rj-smooth-slider .rj-hero-dots button:focus-visible {
+          outline: 3px solid #f6d58f;
+          outline-offset: 3px;
+        }
+
         .rj-smooth-slider .rj-slide-text {
           animation: rj-text-enter 850ms ease both;
         }
@@ -140,8 +124,8 @@ export default function HeroSlider({
       `}</style>
 
       <section
-        className="rj-hero rj-smooth-slider"
-        aria-label="Featured jewellery collections"
+        className={`rj-hero rj-smooth-slider ${slide.action === 'scheme' ? 'is-scheme-slide' : slide.action === 'coming-soon' ? 'is-coming-slide' : ''}`}
+        aria-label="Rahul Jewellers featured collections, schemes and announcements"
         aria-roledescription="carousel"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
@@ -160,7 +144,7 @@ export default function HeroSlider({
             aria-hidden="true"
             className={
               'rj-slide-image' +
-              (active === index && ready[index] ? ' is-active' : '')
+              (active === index ? ' is-active' : '')
             }
             loading={index === 0 ? 'eager' : 'lazy'}
             fetchPriority={index === 0 ? 'high' : 'auto'}
@@ -201,9 +185,9 @@ export default function HeroSlider({
             <button
               type="button"
               className="rj-outline-button"
-              onClick={() => onExplore(slide.category)}
+              onClick={() => onExplore(slide)}
             >
-              Explore Collection <ArrowRight size={18} />
+              {slide.cta || 'Explore Collection'} <ArrowRight size={18} />
             </button>
           </div>
         </div>
