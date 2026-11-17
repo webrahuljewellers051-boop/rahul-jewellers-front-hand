@@ -1212,6 +1212,16 @@ export default function App() {
             intervalMs={6500}
           />
 
+          {/* SEO: Rahul Jewellers Sheoganj showroom intro */}
+          <section aria-label="Rahul Jewellers Sheoganj showroom" style={{ maxWidth: 1100, margin: '20px auto 28px', padding: '0 20px', textAlign: 'center' }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(19px, 2.2vw, 27px)' }}>
+              Rahul Jewellers Sheoganj – Gold, Diamond &amp; Silver Jewellery
+            </h2>
+            <p style={{ margin: '0 auto', maxWidth: 840, lineHeight: 1.7 }}>
+              Discover gold, Polki, Kundan, diamond and silver jewellery at Rahul Jewellers in Sheoganj, Rajasthan. Visit our showroom at Dhan Mandi Corner, Main Market, Sheoganj, or contact us for jewellery enquiries.
+            </p>
+          </section>
+
           {/* Trust strip */}
           <section className="rj-trust-strip">
             <div>

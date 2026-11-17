@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rahuljewellerSHEOGANJ.com/sitemap.xml
+Sitemap: https://rahuljewellersheoganj.com/sitemap.xml
