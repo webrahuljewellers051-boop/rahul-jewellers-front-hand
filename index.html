@@ -14,6 +14,10 @@
 
   <link rel="canonical" href="https://rahuljewellersheoganj.com/" />
 
+  <!-- Rahul Jewellers Favicon -->
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
+
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_IN" />
@@ -27,47 +31,40 @@
   <meta name="twitter:title" content="Rahul Jewellers Sheoganj | Gold, Diamond &amp; Silver Jewellery" />
   <meta name="twitter:description" content="Discover gold, diamond, silver, Polki and Kundan jewellery collections at Rahul Jewellers in Sheoganj, Rajasthan." />
 
-  <!-- Favicon -->
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href="/favicon.svg"
-  />
-
   <!-- Jewellery Business Structured Data -->
   <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://rahuljewellersheoganj.com/#website",
-      "url": "https://rahuljewellersheoganj.com/",
-      "name": "Rahul Jewellers Sheoganj",
-      "inLanguage": "en-IN"
-    },
-    {
-      "@type": "JewelryStore",
-      "@id": "https://rahuljewellersheoganj.com/#store",
-      "name": "Rahul Jewellers Sheoganj",
-      "url": "https://rahuljewellersheoganj.com/",
-      "description": "Gold, Polki, Kundan, diamond and silver jewellery showroom in Sheoganj, Rajasthan.",
-      "telephone": [
-        "+91-9950091024",
-        "+91-9461452322"
-      ],
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Dhan Mandi Corner, Main Market",
-        "addressLocality": "Sheoganj",
-        "addressRegion": "Rajasthan",
-        "postalCode": "307027",
-        "addressCountry": "IN"
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://rahuljewellersheoganj.com/#website",
+        "url": "https://rahuljewellersheoganj.com/",
+        "name": "Rahul Jewellers Sheoganj",
+        "inLanguage": "en-IN"
+      },
+      {
+        "@type": "JewelryStore",
+        "@id": "https://rahuljewellersheoganj.com/#store",
+        "name": "Rahul Jewellers Sheoganj",
+        "url": "https://rahuljewellersheoganj.com/",
+        "description": "Gold, Polki, Kundan, diamond and silver jewellery showroom in Sheoganj, Rajasthan.",
+        "telephone": [
+          "+91-9950091024",
+          "+91-9461452322"
+        ],
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Dhan Mandi Corner, Main Market",
+          "addressLocality": "Sheoganj",
+          "addressRegion": "Rajasthan",
+          "postalCode": "307027",
+          "addressCountry": "IN"
+        }
       }
-    }
-  ]
-}
-</script>
+    ]
+  }
+  </script>
 
   <!-- Cookie Consent Styling -->
   <style>
@@ -90,7 +87,7 @@
       color: #ffffff;
       border: 1px solid #c7a86b;
       border-radius: 14px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
       font-family: Arial, Helvetica, sans-serif;
       z-index: 99999;
     }
@@ -177,11 +174,7 @@
     aria-modal="false"
     hidden
   >
-
-    <h2
-      id="rj-cookie-heading"
-      class="rj-cookie-title"
-    >
+    <h2 id="rj-cookie-heading" class="rj-cookie-title">
       Your Privacy Matters
     </h2>
 
@@ -196,7 +189,6 @@
     </p>
 
     <div class="rj-cookie-actions">
-
       <button
         id="rj-cookie-accept"
         class="rj-cookie-button rj-cookie-accept"
@@ -212,7 +204,6 @@
       >
         Reject Analytics
       </button>
-
     </div>
   </div>
 
@@ -222,8 +213,6 @@
       "use strict";
 
       const MEASUREMENT_ID = "G-08L67ZJ05H";
-
-      // Existing key preserves earlier visitor choices.
       const STORAGE_KEY = "rj_analytics_consent_v1";
 
       const banner = document.getElementById(
@@ -253,19 +242,15 @@
         ad_personalization: "denied"
       };
 
-      // Deny analytics by default.
       window.gtag(
         "consent",
         "default",
         deniedConsent
       );
 
-      // Read saved choice.
       function readConsent() {
         try {
-          const value = localStorage.getItem(
-            STORAGE_KEY
-          );
+          const value = localStorage.getItem(STORAGE_KEY);
 
           if (
             value === "accepted" ||
@@ -280,19 +265,14 @@
         }
       }
 
-      // Save choice.
       function saveConsent(value) {
         try {
-          localStorage.setItem(
-            STORAGE_KEY,
-            value
-          );
+          localStorage.setItem(STORAGE_KEY, value);
         } catch (error) {
-          // Storage may be disabled by the browser.
+          // Storage may be disabled.
         }
       }
 
-      // Enable Google Analytics only after consent.
       function enableAnalytics() {
         if (analyticsLoaded) {
           return;
@@ -331,7 +311,6 @@
         document.head.appendChild(script);
       }
 
-      // Remove accessible GA cookies on rejection.
       function clearAnalyticsCookies() {
         const cookieNames = document.cookie
           .split(";")
@@ -375,11 +354,8 @@
         });
       }
 
-      // Accept or Reject handler.
       function chooseConsent(value) {
         saveConsent(value);
-
-        // Hide popup after user makes a choice.
         banner.hidden = true;
 
         if (value === "accepted") {
@@ -395,7 +371,6 @@
         }
       }
 
-      // Accept button.
       acceptButton.addEventListener(
         "click",
         function () {
@@ -403,7 +378,6 @@
         }
       );
 
-      // Reject button.
       rejectButton.addEventListener(
         "click",
         function () {
@@ -411,27 +385,14 @@
         }
       );
 
-      // Check consent when website loads.
       const savedConsent = readConsent();
 
       if (savedConsent === "accepted") {
-
-        // Previous visitor accepted.
-        // Do not show popup.
         enableAnalytics();
-
       } else if (savedConsent === "rejected") {
-
-        // Previous visitor rejected.
-        // Do not show popup.
-        // Do not load analytics.
         clearAnalyticsCookies();
-
       } else {
-
-        // First visit: ask user once.
         banner.hidden = false;
-
       }
 
     })();
