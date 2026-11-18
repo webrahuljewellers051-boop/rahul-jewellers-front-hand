@@ -81,7 +81,7 @@ const HERO_SLIDES = [
     description:
       'A timeless range of traditional and modern jewellery crafted for every occasion.',
     image:
-      'https://images.unsplash.com/photo-1635767798638-3665a6b2b9b5?q=90&w=2000&auto=format&fit=crop',
+      '/images/heritage-collection-hero.webp',
     category: 'All',
     action: 'collection'
   },
