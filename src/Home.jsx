@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react';
 
@@ -356,6 +357,8 @@ export default function App() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showMultiPayment, setShowMultiPayment] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const termsCloseRef = useRef(null);
 
   const [storeUpiId, setStoreUpiId] = useState('');
   const [storeMerchantName, setStoreMerchantName] =
@@ -690,6 +693,45 @@ export default function App() {
     return () =>
       window.removeEventListener('hashchange', handleHash);
   }, []);
+
+  // Terms are read in a dedicated dialog, without taking space on the homepage.
+  useEffect(() => {
+    if (!showTermsModal) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    termsCloseRef.current?.focus();
+
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        setShowTermsModal(false);
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+      const dialog = termsCloseRef.current?.closest('[role="dialog"]');
+      if (!dialog) return;
+      const controls = Array.from(dialog.querySelectorAll(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      ));
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showTermsModal]);
 
   useEffect(() => {
     if (!route.collectionView) return;
@@ -1074,6 +1116,39 @@ export default function App() {
 
       <SupportChatWidget />
 
+      {showTermsModal && (
+        <div
+          className="rj-terms-overlay"
+          onMouseDown={event => {
+            if (event.target === event.currentTarget) {
+              setShowTermsModal(false);
+            }
+          }}
+        >
+          <div
+            className="rj-terms-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="No Making Charge Scheme Terms and Conditions"
+          >
+            <div className="rj-terms-dialog-toolbar">
+              <span>RAHUL JEWELLERS SHEOGANJ</span>
+              <button
+                type="button"
+                ref={termsCloseRef}
+                className="rj-terms-dialog-close"
+                onClick={() => setShowTermsModal(false)}
+                aria-label="Close terms and conditions"
+              >
+                <X size={18} aria-hidden="true" />
+                बंद करें / Close
+              </button>
+            </div>
+            <SchemeTerms />
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="rj-topbar rj-topbar--refined">
         <div className="rj-topbar-inner">
@@ -1430,6 +1505,16 @@ export default function App() {
                 charges on eligible Gold Jewellery and Gold Coins,
                 up to the total verified amount deposited.
                 No free gold or 13th installment.
+                {' '}
+                <button
+                  type="button"
+                  className="rj-scheme-terms-trigger"
+                  onClick={() => setShowTermsModal(true)}
+                  aria-haspopup="dialog"
+                >
+                  Terms &amp; Conditions / नियम एवं शर्तें
+                  <ArrowRight size={14} aria-hidden="true" />
+                </button>
               </p>
             </div>
 
@@ -1442,7 +1527,7 @@ export default function App() {
             </button>
           </section>
 
-          <SchemeTerms compact />
+          {/* Full scheme terms open from the link in the banner. */}
 
           {/* Product catalogue */}
           <section

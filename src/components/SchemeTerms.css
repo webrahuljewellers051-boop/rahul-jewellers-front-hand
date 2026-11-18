@@ -12,3 +12,115 @@
 .rj-site .rj-scheme-terms li {color:#46372a;line-height:1.65;font-size:13.5px;padding-left:3px}
 .rj-site .rj-scheme-language button:focus-visible {outline:3px solid #b88c3f;outline-offset:2px}
 @media(max-width:640px){.rj-site .rj-scheme-terms {margin:20px 14px 30px;padding:19px 16px}.rj-scheme-terms-head {align-items:flex-start}}
+
+/* Homepage: replace the always-visible terms box with a discreet link and a full-size dialog. */
+.rj-site .rj-scheme-terms-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: #70431a;
+  font: inherit;
+  font-weight: 750;
+  line-height: 1.45;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.rj-site .rj-scheme-terms-trigger:hover { color: #9b681e; }
+.rj-site .rj-scheme-terms-trigger:focus-visible {
+  outline: 3px solid #b78c43;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.rj-site .rj-terms-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(25, 15, 8, .75);
+  backdrop-filter: blur(6px);
+}
+.rj-site .rj-terms-dialog {
+  width: min(100%, 960px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  border: 1px solid #d6b67c;
+  border-radius: 22px;
+  background: #fffaf1;
+  color: #38281c;
+  box-shadow: 0 24px 75px rgba(15, 8, 4, .38);
+}
+.rj-site .rj-terms-dialog-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px clamp(18px, 4vw, 42px);
+  border-bottom: 1px solid #e7d6b9;
+  background: #f5ead8;
+}
+.rj-site .rj-terms-dialog-toolbar > span {
+  color: #825b2d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+.rj-site .rj-terms-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border: 1px solid #c6aa7e;
+  border-radius: 9px;
+  background: #fffaf1;
+  color: #4c321c;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.rj-site .rj-terms-dialog-close:hover { background: #ead8b7; }
+.rj-site .rj-terms-dialog-close:focus-visible {
+  outline: 3px solid #ae7830;
+  outline-offset: 2px;
+}
+.rj-site .rj-terms-dialog .rj-scheme-terms {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(22px, 4vw, 44px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.rj-site .rj-terms-dialog .rj-scheme-terms h2 {
+  font-size: clamp(25px, 3vw, 34px);
+}
+.rj-site .rj-terms-dialog .rj-scheme-terms ol {
+  gap: 15px;
+  padding-left: 28px;
+}
+.rj-site .rj-terms-dialog .rj-scheme-terms li {
+  padding-left: 6px;
+  font-size: clamp(15px, 1.55vw, 17px);
+  line-height: 1.8;
+}
+@media (max-width: 640px) {
+  .rj-site .rj-terms-overlay { padding: 10px; }
+  .rj-site .rj-terms-dialog { max-height: calc(100dvh - 20px); border-radius: 16px; }
+  .rj-site .rj-terms-dialog-toolbar { padding: 10px 14px; }
+  .rj-site .rj-terms-dialog-toolbar > span { font-size: 9px; letter-spacing: .08em; }
+  .rj-site .rj-terms-dialog-close { font-size: 11px; padding: 7px; }
+  .rj-site .rj-terms-dialog .rj-scheme-terms { margin: 0; padding: 23px 18px; }
+  .rj-site .rj-terms-dialog .rj-scheme-terms ol { padding-left: 23px; }
+}
