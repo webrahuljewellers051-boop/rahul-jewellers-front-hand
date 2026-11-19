@@ -1,3 +1,4 @@
+import './styles/RJGoldAmountV4.css';
 
 import React, {
   useCallback,
@@ -365,7 +366,7 @@ export default function App() {
     useState('Rahul Jewellers');
   const [storeQrCodeUrl, setStoreQrCodeUrl] = useState('');
 
-  const [joinAmount, setJoinAmount] = useState('5000');
+  const [joinAmount, setJoinAmount] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState('');
   const [joinTermsAccepted, setJoinTermsAccepted] =
@@ -1948,25 +1949,26 @@ export default function App() {
                   (₹5,000 – ₹10,00,000)
                 </label>
 
-                <input
-                  id="join-amount"
-                  type="number"
-                  min="5000"
-                  max="1000000"
-                  step="1"
-                  required
-                  value={joinAmount}
-                  onChange={event =>
-                    setJoinAmount(event.target.value)
-                  }
-                  style={{
-                    padding: 14,
-                    borderRadius: 10,
-                    color: '#22170d',
-                    background: '#fff',
-                    width: '100%'
-                  }}
-                />
+                <div className="rj-v4-web-amount">
+                  <span className="rj-v4-web-rupee" aria-hidden="true">₹</span>
+                  <input
+                    id="join-amount"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="5000"
+                    aria-describedby="rj-v4-web-amount-hint"
+                    min="5000"
+                    max="1000000"
+                    step="1"
+                    required
+                    value={joinAmount}
+                    onChange={event => setJoinAmount(event.target.value)}
+                    className="rj-v4-web-input"
+                  />
+                </div>
+                <small id="rj-v4-web-amount-hint" className="rj-v4-web-amount-hint">
+                  Enter your monthly installment (example ₹5,000). This is editable before joining.
+                </small>
 
                 <div className="rj-progress-numbers">
                   <div>

@@ -1,0 +1,9 @@
+/* Website frontend only: custom amount visual clarity. No business logic changes. */
+.rj-v4-web-amount{display:flex;align-items:stretch;width:100%;min-height:58px;border:2px solid #b18a57;border-radius:14px;background:#fffdf8;overflow:hidden;box-shadow:0 5px 18px #48231e16;transition:border-color .2s,box-shadow .2s}
+.rj-v4-web-amount:focus-within{border-color:#64283e;box-shadow:0 0 0 4px #ba965633}
+.rj-v4-web-rupee{display:grid;place-items:center;flex:0 0 54px;background:#f5e7d2;color:#6f3546;border-right:1px solid #dbc3a2;font:700 22px Georgia,serif}
+.rj-v4-web-input{display:block;flex:1;min-width:0;width:100%;border:0!important;outline:0!important;border-radius:0!important;box-shadow:none!important;color:#372331!important;background:#fffdf8!important;padding:14px!important;font:600 20px system-ui,sans-serif!important;appearance:textfield}
+.rj-v4-web-input::placeholder{color:#a39488;opacity:1;font-weight:400}
+.rj-v4-web-input::-webkit-inner-spin-button,.rj-v4-web-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.rj-v4-web-amount-hint{display:block;margin-top:-4px;color:#806c61;font-size:12px;line-height:1.5}
+@media(prefers-reduced-motion:reduce){.rj-v4-web-amount{transition:none}}
